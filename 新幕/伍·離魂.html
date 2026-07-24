@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<!--
+═══════════════════════════════════════════════════════════════════════
+量子游园 · 第伍幕 · 離魂(独立试验幕)
+═══════════════════════════════════════════════════════════════════════
+概念:退相干不可逆 —— 观测能延缓退相干,但救不了。中秋雨夜(《牡丹亭·闹殇》),
+杜麗娘病殁。观众的目光是烛焰仅剩的暖:护焰有用,但永远徒劳。
+
+交互流程:
+  1. 入园(轻触,激活 AudioContext;可选麦克风)。
+  2. 生命值 V 自 1 持续衰减:基础 -0.012/s + 雨密附加(最高 +0.010/s)。
+     指针悬于焰侧(柔光圈触及焰心)= 护焰:衰减减半(下限 -0.005/s)、
+     焰亮且肉眼可见地稳住(摇曳/明灭幅度随 protectK 收敛)、麗娘卧影回暖
+     —— 但 V 仍单调下行,救不回来。
+  2b. 自主风:守烛期每 15–25s 随机一阵风(焰猛晃,V -0.02~0.035);
+     护焰=挡风,风损 ×(1-0.6×protectK)——"我在场,焰稳;不在场,险些灭"。
+  3. 麦克风(可选,入园遮罩有说明):吹气=一阵风,V 骤减 0.06×挡风(不应期 2s);
+     持续环境噪声(TH 档)只令焰晃、不减命。空格 = 一记轻风(无麦时同享反讽)。
+  4. V<0.3:焰色金→青白,雨声渐近;提示语三阶段(0.7/0.45/0.22)。
+  5. V=0:烛灭 —— 声场塌陷 + 低宫重磬;全场转冷;满园字粒散落(falling);
+     麗娘化魂粒(14–18 颗)缓缓上升消散。静默 2 秒后金句徐现:
+     「怎能勾月落重生燈再紅」,句中「燈」先以冷玉"未燃"占位,
+     随 gateA 2.6s 复红泛金 = 出口(燈熄而後再紅,缺字即点题)。
+  6. 点「燈」或 → 键:本幕终(離魂)→ 淡出回开场遮罩。R = 重新守烛。
+
+参数表:
+  V 衰减       基础 0.012/s;雨密附加 0.010×rainK;护焰 = max(0.005, 半衰)
+  自主风       间隔 15–25s(首阵 12–20s,提前入题);损失 (0.02+rnd×0.015)×(1-0.6×protectK)
+  rainK        min(1, T/70 + (1-V)×0.25) —— 雨随时间与衰亡渐密
+  吹气         RMS:PUFF 0.10 立断,骤减 0.06×(1-0.6×protectK),不应期 2s;
+               TH 0.045 持续 0.22s = 轻风(焰晃不减命);空格=轻风 0.03×挡风(不应期 1.5s,防连发)
+  护焰判定     指针距焰心 < BRUSH(短边×0.2)
+  凝定度 c     柔光圈内按 dt 归一上升(60fps 时 0.12),只升不降;c≥0.8 显真字(同主作品);
+               月 c 封顶 0.5(雨夜无月,观测不出——"月落重生"的前提);题词成组判明(组均>0.6 整句立)
+  烛灭节奏     0.45s 焰熄 → 字粒散落+魂粒升 → 2.6s 后金句,gateA 再 2.6s;verse 90s 无人自动谢幕
+  声景         雨滴=带通 1200–3000Hz 短噪(单粒≤0.012,近雨≤0.015);远雷≈20s 一次 0.04;
+               焰噼啪=偶发 25ms 高通噪点;律制三分损益,GONG=523.25
+  布局随机     确定性 LCG 种子 20260612;动效用 Math.random()
+
+文案考证:
+  「怎能勾月落重生燈再紅」——《牡丹亭·鬧殤》【尾聲】(旦)原文(维基文库核:
+    "禁了這一夜雨。(歎介)怎能勾月落重生燈再紅!")。原稿用「但願那月落重生
+    燈再紅」系青春版《離魂》一系演出本改词,依诗句池铁律"只截不改、仿作不可
+    标注为原文"改回原文——绝望反问反而更贴"护焰有用但徒劳",燈门复亮即剧场
+    对这句反问的回答。
+  右侧题词「冷雨幽窗燈不紅」——《闹殇》,主作品诗句池中已两源核证之备选句。
+  终句裸排不施引号——有意不承驚夢臺引号定式:它是天问,不是引诗。
+  全部 hint 提示语及「一口氣——焰險些滅了;你也是這場風雨」均为自拟,非原文。
+  字形规则:凡本幕在场物名(燭焰燈魂雨)与引文从繁;观众可见 hint/UI 全繁体全角。
+
+修订记录:
+  2026-06-12 三评审(观众动线/策展视觉/文本考证)意见修订——终句改回《鬧殤·尾聲》
+    原文;守烛期加自主风(护焰=挡风);麗娘初始 c=0.85 全程在场;护焰稳焰可见;
+    hint/副题全繁体全角;燈门亮度提至不弱于邻字+衬纸减淡+点击半径<半字距+冷玉
+    未燃占位;落款改右侧竖排「鬧殤·尾聲」;键位说明分阶段;TH 持续档降级为不减命
+    轻风+入园麦克风小字说明;空格=轻风;雲靄减密拉横;檠/離魂/中秋款识 c=1;雨丝
+    自然收束不跳变;触屏抬指即离;谢幕回遮罩后雨声归静;lang=zh-Hant+繁体字体兜底。
+  2026-06-12b 三评审二轮(观众动线/策展视觉/文本考证)修订——空格防连发(ev.repeat 守卫+1.5s
+    不应期,入园余波 0.8s);触屏落指即至(与抬指即离配对);中秋款识上移避離魂碰撞盒(此前被静默
+    吞掉);verse 90s 无人点燈自动谢幕归位;V<0.85 微事件(她睡淺了+轻角磬)+首次护焰回执(焰穩
+    了些)填守烛空窗;HINT0 讲明护焰代价、删幕名复读;燈门点击半径改 0.48 字距兑现"恒小于半字
+    距"注释;入园遮罩加深 0.92 防烛焰咬字;题词设组成组判明(扫半即整句立,不留锯齿)+冷句只留
+    燈紅二金、seal 降 0.35(金只许烛焰/指针环/燈门);燭随焰同冷同暗+焰簇钉芯微右倾+烛芯随 V
+    下沉(烧矮即进度);月随生命西沉至云线且 c 封顶 0.5(雨夜无月,合"月落重生"前提);KEYS1 待燈
+    显形才提(勿照做没反应);谢幕清键位说明、幕间烛不复燃、遮罩副题改「願再守一回麼」区分再来;
+    hint 两拍换字(先隐后现);雨粒近雨上限 0.015 入注;自主风首阵 12–20s 入注;终句裸排有意入注;
+    已知坑:字粒散落存像素坐标,落字 5–7s 内 resize 会错位(试验稿接受)。
+
+自检探针(headless 截图用,不影响正常游玩):
+  URL 加 #probe=guard|low|verse 自动入园并直跳该状态(静音)。
+═══════════════════════════════════════════════════════════════════════
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>量子游园 · 第伍幕 · 離魂</title>
+<style>
+  :root{ --serif:"Songti SC","STSong","Noto Serif TC","PMingLiU","SimSun",serif; --sans:-apple-system,"PingFang SC",system-ui,sans-serif;
+         --ink:#07100e; --night:#0b1814; --jade:#83998f; --ivory:#ede7d8;
+         --gold:#d2ae68; --cinnabar:#c66858; --teal:#668d82; }
+  *{margin:0;padding:0;box-sizing:border-box;letter-spacing:0}
+  html,body{height:100%;overflow:hidden;background:var(--ink)}
+  body{font-family:var(--sans);color:var(--ivory);user-select:none}
+  button{font:inherit;letter-spacing:0}
+  #scene{position:fixed;inset:0;display:block;cursor:none;z-index:1;touch-action:none}
+  .ui{position:fixed;inset:0;pointer-events:none;z-index:5;font-family:var(--serif)}
+  .ui .seal{position:absolute;top:22px;left:22px;font-size:13px;color:var(--gold);opacity:.35}
+  .ui .hint{position:absolute;left:22px;bottom:18px;max-width:min(62vw,640px);text-align:left;
+      font-size:clamp(12px,1.6vw,15px);color:var(--jade);
+      opacity:0;transition:opacity 1.6s;text-shadow:0 1px 14px rgba(7,16,14,.6)}
+  .ui .hint.show{opacity:.8}
+  .ui .keys{position:absolute;right:22px;bottom:18px;font-size:11px;
+      color:var(--jade);opacity:0;transition:opacity 1.6s}
+  .ui .keys.show{opacity:.5}
+  #enter{position:fixed;inset:0;z-index:9;background:rgba(7,16,14,.94);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      font-family:var(--serif);transition:opacity 1.6s}
+  #enter.gone{opacity:0;pointer-events:none}
+  #enter .big{font-size:clamp(28px,6vw,52px);color:var(--ivory);text-shadow:0 2px 30px rgba(7,16,14,.7)}
+  #enter .sub{margin-top:22px;font-size:clamp(13px,1.8vw,16px);color:var(--jade)}
+  #enter .story{margin-top:18px;max-width:min(88vw,560px);font-size:clamp(12px,1.5vw,15px);line-height:1.9;color:var(--jade);opacity:.82;text-align:center}
+  #enter .blink{min-width:44px;min-height:44px;margin-top:38px;padding:0 16px;font-size:14px;color:var(--gold);opacity:.85;
+      border:1px solid rgba(210,174,104,.45);border-radius:3px;background:rgba(11,24,20,.5);cursor:pointer;
+      animation:blink 2.6s ease-in-out infinite}
+  #enter .blink:focus-visible,#fsBtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  #enter .mic{margin-top:16px;font-size:12px;color:var(--jade);opacity:.55}
+  #enter.journey .sub,#enter.journey .story,#enter.journey .blink,#enter.journey .mic{display:none}
+  #enter.journey .big::before{content:'第 伍 幕';display:block;margin-bottom:14px;font-size:13px;color:var(--gold)}
+  #fsBtn{position:fixed;top:14px;right:16px;z-index:50;width:44px;height:44px;color:var(--jade);
+      opacity:.55;cursor:pointer;border:1px solid rgba(131,153,143,.35);border-radius:3px;
+      background:rgba(11,24,20,.45);transition:.25s;user-select:none}
+  #fsBtn:hover{color:var(--gold);border-color:rgba(210,174,104,.65);opacity:.95}
+  @keyframes blink{0%,100%{opacity:.25}50%{opacity:.9}}
+  @media (max-width:640px){.ui .hint{right:22px;bottom:66px;max-width:none}}
+  @media (prefers-reduced-motion:reduce){#enter .blink{animation:none}.ui .hint,.ui .keys,#enter,#fsBtn{transition:none}}
+</style>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div class="ui">
+    <div class="seal">第 伍 幕 · 離 魂</div>
+    <div class="hint" id="hint"></div>
+    <div class="keys" id="keys">R 重新守燭</div>
+  </div>
+  <div id="enter">
+    <div class="big">離 魂</div>
+    <div class="sub">中秋雨夜 —— 替她守住這一點燭火</div>
+    <div class="story">中秋雨夜，燈將盡，人將逝 —— 她終是為情而死</div>
+    <button class="blink" id="enterBtn" type="button">輕 觸 入 園</button>
+    <div class="mic">（可允許麥克風 —— 但小心你的呼吸）</div>
+  </div>
+<script>
+"use strict";
+const SERIF='"Songti SC","STSong","Noto Serif TC","PMingLiU","SimSun",serif', TAU=Math.PI*2;
+const cv=document.getElementById('scene');
+let ctx=cv.getContext('2d');
+let W,H,DPR=1, scale, ox, oy, BRUSH=200;
+const REDUCED_MOTION=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const motionSin=x=>REDUCED_MOTION?0:Math.sin(x);
+
+/* 确定性随机(仅用于布局) */
+const SEED=20260612>>>0; let _s=SEED;
+const rnd=()=>{ _s=(_s*1664525+1013904223)>>>0; return _s/4294967296; };
+
+/* ====== 字阶 / 色板(承主作品) ====== */
+const T1=1.0,T2=0.78,T3=0.56,T4=0.42,T5=0.33,T6=0.26,T7=0.21,T8=0.175;
+const TOKEN={ink:"#07100e",night:"#0b1814",jade:"#83998f",ivory:"#ede7d8",gold:"#d2ae68",cinnabar:"#c66858",teal:"#668d82"};
+const RGB={ink:[7,16,14],night:[11,24,20],jade:[131,153,143],ivory:[237,231,216],gold:[210,174,104],cinnabar:[198,104,88],teal:[102,141,130]};
+const COL={ fig:TOKEN.ivory, near:TOKEN.ivory, mid:TOKEN.jade, far:TOKEN.jade,
+            faint:TOKEN.teal, ghost:TOKEN.teal, water:TOKEN.teal, gold:TOKEN.cinnabar, GOLD:TOKEN.gold };
+const VW=16, VH=9;
+const items=[], boxes=[], PROTECT=[]; let _grp=null;
+function hit(x,y,w,h){ for(const b of boxes){ if(Math.abs(x-b.x)<(w+b.w)/2 && Math.abs(y-b.y)<(h+b.h)/2) return true; } return false; }
+function put(x,y,text,size,color,o){
+  o=o||{}; const vert=!!o.vert, f=o.f==null?0.94:o.f, pad=o.pad==null?0.05:o.pad;
+  const w=((vert?1:text.length)*size+pad)*f, h=((vert?text.length:1)*size+pad)*f;
+  if(hit(x,y,w,h)) return false;
+  boxes.push({x,y,w,h});
+  items.push({x,y,text,size,color,vert,grp:_grp,a:o.a==null?(0.85+rnd()*0.15):o.a});
+  return true;
+}
+function protect(x0,y0,x1,y1){ PROTECT.push({x0,y0,x1,y1}); }
+function inProtect(x,y){ for(const p of PROTECT){ if(x>=p.x0&&x<=p.x1&&y>=p.y0&&y<=p.y1) return true; } return false; }
+const pick=v=>v[(rnd()*v.length)|0];
+function organic(cx,cy,rx,ry,vocab,size,color,density){ density=density==null?1:density;
+  const n=Math.max(4,(Math.PI*rx*ry/(size*size)*density)|0); let placed=0,tries=0;
+  while(placed<n && tries<n*7){ tries++; const a=rnd()*Math.PI*2,r=Math.sqrt(rnd());
+    if(put(cx+Math.cos(a)*rx*r,cy+Math.sin(a)*ry*r,pick(vocab),size*(0.85+rnd()*0.3),color,{f:0.95,pad:0.04})) placed++; } }
+function gridRow(cx,y,cols,gx,vocab,size,color,jit){ jit=jit==null?0.05:jit; const x0=cx-(cols-1)*gx/2;
+  for(let c=0;c<cols;c++) put(x0+c*gx+(rnd()-0.5)*gx*jit, y+(rnd()-0.5)*size*jit, pick(vocab), size, color,{f:0.96,pad:0.03}); }
+function gridCol(cx,y0,rows,gy,vocab,size,color,jit){ jit=jit==null?0.05:jit;
+  for(let r=0;r<rows;r++) put(cx+(rnd()-0.5)*size*jit, y0+r*gy+(rnd()-0.5)*gy*jit, pick(vocab), size, color,{f:0.96,pad:0.03}); }
+
+/* ====== 本幕布景 · 中秋雨夜 ====== */
+const FL={x:9.6,y:4.66};                                  // 焰心(护焰/光晕的圆心,虚拟坐标)
+function compose(){
+  items.length=0; boxes.length=0; PROTECT.length=0; _s=SEED;
+  /* 题词(右,竖)——《闹殇》原句(主作品诗句池两源核证之备选句);冷句只「燈紅」二字燃金 */
+  { const ins=[..."冷雨幽窗燈不紅"]; const x=15.62,y0=1.05,st=0.64; _grp='題詞';
+    ins.forEach((c,i)=>put(x,y0+i*st,c,T4,(c==='燈'||c==='紅')?COL.gold:COL.far,{f:0.85})); _grp=null; }
+  put(0.92,8.42,"離魂",T3,COL.gold,{pad:0.14}); put(0.92,7.62,"中秋",T5,COL.far,{pad:0.1}); // 中秋上移避離魂碰撞盒(dy 0.80>0.53),x 对齐
+  protect(15.0,0.6,16,6.2); protect(0.4,7.4,1.9,8.9);
+  /* 云后将落之月(极淡——"但願那月落重生") */
+  put(2.45,1.2,"月",T4,COL.faint,{a:0.5});
+  organic(2.5,1.3,2.0,0.38,[..."雲靄"],T7,COL.ghost,0.25);   // 一抹横云,勿压月、勿与焰争
+
+  protect(0.8,0.5,4.4,2.1);
+  /* 帷幔(左缘) */
+  gridCol(0.85,3.2,5,0.52,[..."帷幔"],T6,COL.ghost,0.06);
+  protect(0.4,2.8,1.4,6.2);
+  /* 卧榻 + 麗娘卧影(横置:枕—麗娘—衾,冷玉半透) */
+  gridRow(4.1,6.62,9,0.5,[..."榻簟"],T6,COL.faint,0.04);
+  _grp='麗娘';
+  put(1.95,5.88,"枕",T5,"#aebfb4",{a:0.78});
+  put(2.85,5.74,"麗",T3,"#cfe6d8",{a:0.85});
+  put(3.86,5.78,"娘",T3,"#cfe6d8",{a:0.85});
+  put(4.78,5.9,"衾",T4,"#aebfb4",{a:0.8});
+  put(5.6,5.98,"衾",T5,"#9fb2a7",{a:0.72});
+  put(6.3,6.04,"裙",T6,"#9fb2a7",{a:0.66});
+  _grp=null;
+  protect(1.2,5.0,7.1,7.1);
+  /* 烛 —— 全场唯一暖光 */
+  put(9.6,5.55,"燭",T3,COL.GOLD,{pad:0.14,a:1});
+  put(9.6,6.28,"檠",T6,COL.faint,{a:0.8});
+  protect(8.6,3.5,10.6,6.8);
+  /* 焰簇(动态摇曳,标 fl;不入碰撞盒) */
+  for(const [fx,fy,fs,fi] of [[9.60,5.00,T5,0],[9.66,4.60,T5*0.92,1],[9.71,4.24,T6,2]])  // 底焰钉芯零偏移,向上小幅右倾(风从西来),摇曳交给 sw
+    items.push({x:fx,y:fy,text:"焰",size:fs,color:"#e8c98a",a:1,fl:true,fi,grp:'焰'});
+  /* 远处侍立小像(冷,极淡) */
+  _grp='春香'; put(12.68,2.78,"春",T6,COL.ghost,{a:0.55}); put(12.68,3.22,"香",T6,COL.ghost,{a:0.55}); _grp=null;
+  _grp='杜母'; put(13.66,2.84,"杜",T6,COL.ghost,{a:0.5});  put(13.66,3.28,"母",T6,COL.ghost,{a:0.5});  _grp=null;
+  protect(12.2,2.3,14.2,3.8);
+  /* 地面散字(寒夜虫苔,稀疏) */
+  { const size=T8,step=size*1.9, pool=[..."寒蛩苔階露涼螢草"];
+    for(let y=1.7;y<8.5;y+=step) for(let x=0.7;x<15.9;x+=step){ if(rnd()>0.16) continue;
+      const jx=x+(rnd()-0.5)*step*0.6, jy=y+(rnd()-0.5)*step*0.6; if(inProtect(jx,jy)) continue;
+      put(jx,jy,pick(pool),size,COL.ghost,{f:0.7,pad:0.02,a:0.55}); } }
+}
+const MX=x=>ox+x*scale, MY=y=>oy+y*scale;
+
+/* 夜绢底(承主作品 paper(),逐帧贴离屏) */
+function paper(g,w,h){
+  const bg=g.createLinearGradient(0,0,0,h); bg.addColorStop(0,TOKEN.night); bg.addColorStop(0.58,TOKEN.night); bg.addColorStop(1,TOKEN.ink);
+  g.fillStyle=bg; g.fillRect(0,0,w,h);
+  for(const [fx,fy,fr,al] of [[0.5,0.42,0.6,0.05],[0.18,0.72,0.42,0.035],[0.84,0.34,0.42,0.04]]){
+    const gr=g.createRadialGradient(w*fx,h*fy,0,w*fx,h*fy,Math.max(w,h)*fr); gr.addColorStop(0,`rgba(131,153,143,${al})`); gr.addColorStop(1,'rgba(131,153,143,0)'); g.fillStyle=gr; g.fillRect(0,0,w,h); }
+  let g2=20260606>>>0; const r2=()=>{g2=(g2*1664525+1013904223)>>>0;return g2/4294967296;};
+  const fibers=Math.max(10,Math.min(24,Math.round(h/72)));
+  for(let i=0;i<fibers;i++){ let x=-w*.04,y=r2()*h; g.beginPath(); g.moveTo(x,y);
+    const parts=5+((r2()*5)|0); for(let p=0;p<parts;p++){ const nx=w*(p+1)/parts+w*(r2()-.5)*.05,ny=y+(r2()-.5)*Math.max(12,h*.035);
+      g.quadraticCurveTo((x+nx)/2,(y+ny)/2+(r2()-.5)*Math.max(8,h*.025),nx,ny); x=nx;y=ny; }
+    g.globalAlpha=.018+r2()*.026; g.strokeStyle=r2()<.28?TOKEN.ivory:TOKEN.jade; g.lineWidth=.35+r2()*.75; g.stroke(); }
+  const grains=Math.max(90,Math.min(360,Math.floor(w*h/5600))); g.globalAlpha=1; g.fillStyle='rgba(237,231,216,.07)';
+  for(let i=0;i<grains;i++){ const d=.45+r2()*.9; g.fillRect(r2()*w,r2()*h,d,d); }
+  const v=g.createRadialGradient(w/2,h/2,Math.min(w,h)*.34,w/2,h/2,Math.max(w,h)*.74); v.addColorStop(0,'rgba(7,16,14,0)'); v.addColorStop(1,'rgba(7,16,14,.55)'); g.fillStyle=v; g.fillRect(0,0,w,h); g.globalAlpha=1;
+}
+let paperCv=null;
+function buildPaper(){ paperCv=document.createElement('canvas'); paperCv.width=W*DPR; paperCv.height=H*DPR;
+  const pc=paperCv.getContext('2d'); pc.setTransform(DPR,0,0,DPR,0,0); paper(pc,W,H); }
+
+/* ====== 量子态:每字粒凝定度 c∈[0,1](承主作品) ====== */
+let GPOOL=[];
+function randGlyphs(n){ let s=''; for(let i=0;i<n;i++) s+=GPOOL[(Math.random()*GPOOL.length)|0]; return s; }
+function hex2rgb(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+const COLD=RGB.teal;                                      // 未观测的冷玉色
+function initQuantum(){
+  GPOOL=[...new Set([].concat(...items.map(it=>[...it.text])).concat([..."01零一雨夜寒燈魂月霖瀝"]))];
+  for(const it of items){
+    it.c=0; it.trgb=hex2rgb(it.color); it.tA=it.a;
+    it.ph1=Math.random()*TAU; it.ph2=Math.random()*TAU;
+    it.sp1=0.3+Math.random()*0.55; it.sp2=0.3+Math.random()*0.55;
+    it.jamp=0.12+Math.random()*0.18;
+    it.flickT=Math.random()*0.3; it.flickEvery=0.05+Math.random()*0.14;
+    it.cur=randGlyphs(it.text.length);
+    it.fall=false; it.dead=false;
+    if(it.fl || it.text==='燭' || it.text==='檠' || it.text==='離魂' || it.text==='中秋') it.c=1; // 烛具与款识:确定之物,不入叠加
+    if(it.grp==='麗娘') it.c=0.85;                        // 她也是这夜里正在消逝的确定之物——从一开始就在场
+    if(it.text==='月'){ it.cmax=0.5; it.my0=it.y; MOON=it; } // 雨夜无月:c 封顶 0.5 永不凝形,且随生命西沉(见 render)
+  }
+}
+
+/* ====== 律(三分损益,承主作品) ====== */
+const GONG=523.25;
+const LV={gong:1, shang:9/8, jue:81/64, zhi:3/2, yu:27/16, qgong:2, qshang:9/4};
+
+/* ====== 状态机 ====== */
+/* phase: guard(守烛) → dying(烛灭·字散·魂升) → verse(金句·燈门) → end(谢幕) */
+let phase='guard', running=false;
+let V=1, T=0, rainK=0, dieT=0, fellDone=false, verseT=0, gateA=0, endT=0, gateT=0;
+let gust=0, protectK=0, protecting=false, warmL=0, hintStage=0, blewOnce=false, ended=false;
+const SH={on:false, x:0, y:0, r:0};                       // 遮挡(伞):跟着鼠标走,移近烛焰才成形——指针即遮挡
+let windT=12+Math.random()*8, verseHinted=false;          // 自主风倒计时(首阵 12–20s 提前入题,续阵 15–25s,见头注) / verse 提示只发一次
+let spaceCD=0, protectedOnce=false, tiMing=false, MOON=null; // 空格不应期 / 首次护焰回执 / 题词已判明 / 月(随生命西沉)
+let mouseX=-1e4, mouseY=-1e4, mouseOver=false, last=performance.now();
+const SOULS=[], RAIN=[];
+let passX=0,passY=0,passR=0;
+const VERSE=[..."怎能勾月落重生燈再紅"];                  // 《鬧殤·尾聲》(旦)原文(维基文库核,见头注)
+const DENG=VERSE.indexOf('燈');
+let hintTmr=0;
+function setHint(t){ const h=document.getElementById('hint');               // 两拍换字:先隐 0.6s 再现,合全幕徐现节奏
+  if(!h.classList.contains('show')){ h.textContent=t; h.classList.add('show'); return; }
+  if(h.textContent===t) return;
+  clearTimeout(hintTmr); h.classList.remove('show');
+  hintTmr=setTimeout(()=>{ if(phase!=='idle'){ h.textContent=t; h.classList.add('show'); } },600); }
+function setKeys(t){ document.getElementById('keys').textContent=t; }
+const KEYS0='R 重新守燭', KEYS1='R 重新守燭　·　→ 點「燈」出幕';   // 键位分阶段:守烛时场上无「燈」
+const HINT0='中秋雨夜 —— 移指至燭焰上方，以一葉荷為它遮雨；你守著，它便亮著，一旦松手，風雨立時欺上，燈頃刻將盡';   // 动作与代价一次讲清;幕名交给 seal 与款识
+
+/* ====== 声 · 雨夜(底噪极轻,宁静勿吵) ====== */
+const Sound={ ac:null, master:null, rainGain:null, started:false, alive_:false, timers:[], rainK:0, near:false, noiseBuffers:{},
+  start(){ if(this.started) return; this.started=true;
+    const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+    const ac=this.ac=new AC(); const m=this.master=ac.createGain(); m.gain.value=0; m.connect(ac.destination);
+    const rg=this.rainGain=ac.createGain(); rg.gain.value=0; rg.connect(m);
+    m.gain.linearRampToValueAtTime(0.7, ac.currentTime+2.0);
+    this.alive(); },
+  stopTimers(){ for(const t of this.timers) clearInterval(t); this.timers=[]; },
+  alive(){ if(!this.ac) return; this.stopTimers(); this.alive_=true;
+    const t=this.ac.currentTime;
+    this.rainGain.gain.cancelScheduledValues(t); this.rainGain.gain.setValueAtTime(this.rainGain.gain.value,t);
+    this.rainGain.gain.linearRampToValueAtTime(1,t+2.0);
+    this.timers.push(setInterval(()=>{ if(!this.alive_) return;                       // 雨:密集小颗粒
+      const n=1+((this.rainK*2.4)|0); for(let i=0;i<n;i++) if(Math.random()<0.8) this.drop(); },110));
+    this.timers.push(setInterval(()=>{ if(this.alive_&&Math.random()<0.72) this.thunder(); },20000)); // 远雷
+    this.timers.push(setInterval(()=>{ if(this.alive_&&phase==='guard'&&Math.random()<0.28) this.crackle(); },650)); }, // 焰噼啪
+  noise(len){ const ac=this.ac, key=String(len); let buf=this.noiseBuffers[key];
+    if(!buf){ buf=this.noiseBuffers[key]=ac.createBuffer(1,Math.max(64,(ac.sampleRate*len)|0),ac.sampleRate); const d=buf.getChannelData(0);
+      for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; }
+    const s=ac.createBufferSource(); s.buffer=buf; return s; },
+  drop(){ const ac=this.ac; if(!ac) return; const t=ac.currentTime, s=this.noise(0.1);  // 一粒雨(带通 1200–3000Hz)
+    const bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1200+Math.random()*1800; bp.Q.value=2.2;
+    const g=ac.createGain(), v=(0.003+Math.random()*0.007)*(this.near?1.5:1);
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+0.008); g.gain.exponentialRampToValueAtTime(0.0004,t+0.05+Math.random()*0.05);
+    let tail=g; if(ac.createStereoPanner){ const p=ac.createStereoPanner(); p.pan.value=(Math.random()*2-1)*0.7; g.connect(p); tail=p; }
+    s.connect(bp); bp.connect(g); tail.connect(this.rainGain); s.start(t); s.stop(t+0.13); },
+  thunder(){ const ac=this.ac; if(!ac) return; const t=ac.currentTime, s=this.noise(4.5); // 远雷:低通噪涌
+    const lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=150; lp.Q.value=0.6;
+    const g=ac.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.04,t+1.3); g.gain.exponentialRampToValueAtTime(0.0006,t+4.2);
+    s.connect(lp); lp.connect(g); g.connect(this.master); s.start(t); s.stop(t+4.5); },
+  crackle(){ const ac=this.ac; if(!ac) return; const t=ac.currentTime, s=this.noise(0.03); // 焰噼啪:极短噪点
+    const hp=ac.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=2800;
+    const g=ac.createGain(); g.gain.setValueAtTime(0.008,t); g.gain.exponentialRampToValueAtTime(0.0004,t+0.025);
+    s.connect(hp); hp.connect(g); g.connect(this.master); s.start(t); s.stop(t+0.04); },
+  gustWind(vol){ const ac=this.ac; if(!ac) return; const t=ac.currentTime, s=this.noise(0.9); // 一阵风掠过(vol 可调:吹气/自主风 0.05,轻风更轻)
+    const bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.setValueAtTime(1400,t);
+    bp.frequency.exponentialRampToValueAtTime(300,t+0.7); bp.Q.value=1.0;
+    const g=ac.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol==null?0.05:vol,t+0.1); g.gain.exponentialRampToValueAtTime(0.0005,t+0.85);
+    s.connect(bp); bp.connect(g); g.connect(this.master); s.start(t); s.stop(t+0.95); },
+  death(){ this.alive_=false; const ac=this.ac; if(!ac) return; const t=ac.currentTime;   // 声场塌陷+低宫重磬
+    this.bell(GONG/2,0.26);
+    this.rainGain.gain.cancelScheduledValues(t); this.rainGain.gain.setValueAtTime(this.rainGain.gain.value,t);
+    this.rainGain.gain.linearRampToValueAtTime(0.0001,t+2.8);
+    setTimeout(()=>{ if(!this.alive_) this.stopTimers(); },3000); },
+  stop(){ this.alive_=false; this.stopTimers(); this.noiseBuffers={};
+    if(this.ac){ try{ const p=this.ac.close(); if(p&&p.catch)p.catch(()=>{}); }catch(e){} } this.ac=null; this.started=false; },
+  bell(freq,vol){ const ac=this.ac; if(!ac) return; const t=ac.currentTime;               // 磬(承主作品合成)
+    const o=ac.createOscillator(),g=ac.createGain(),o2=ac.createOscillator(),g2=ac.createGain();
+    o.type='sine';o.frequency.value=freq;o2.type='sine';o2.frequency.value=freq*2.01;g2.gain.value=0.3;
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+2.6);
+    o.connect(g);o2.connect(g2);g2.connect(g);g.connect(this.master); o.start(t);o2.start(t);o.stop(t+2.7);o2.stop(t+2.7); } };
+
+/* ====== 麦克风(可选)· 吹气=一阵风(设计的残忍:观众会忍不住吹) ====== */
+const MIC={ on:false, requesting:false, raw:0, analyser:null, source:null, stream:null, buf:null, TH:0.045, PUFF:0.10, HOLD:0.22, hold:0, refractory:0,
+  async request(){ if(this.on||this.requesting) return; this.requesting=true; try{ if(!navigator.mediaDevices||!Sound.ac) throw 0;
+    let selected=''; try{ selected=localStorage.getItem('qg_mic')||''; }catch(e){}
+    const audio={echoCancellation:false,noiseSuppression:false,autoGainControl:false}; if(selected) audio.deviceId={exact:selected};
+    let stream; try{ stream=await navigator.mediaDevices.getUserMedia({audio}); }
+    catch(e){ if(!selected) throw e; delete audio.deviceId; stream=await navigator.mediaDevices.getUserMedia({audio}); }
+    const ac=Sound.ac, src=ac.createMediaStreamSource(stream), an=ac.createAnalyser();
+    an.fftSize=1024; an.smoothingTimeConstant=0.6; src.connect(an); this.stream=stream; this.source=src; this.analyser=an; this.buf=new Float32Array(an.fftSize); this.on=true;
+    stream.getTracks().forEach(t=>t.addEventListener('ended',()=>this.stop(),{once:true}));
+  }catch(e){ this.stop(); }finally{ this.requesting=false; } },
+  stop(){ const stream=this.stream; this.stream=null; if(stream) stream.getTracks().forEach(t=>t.stop()); if(this.source)try{this.source.disconnect();}catch(e){} if(this.analyser)try{this.analyser.disconnect();}catch(e){}
+    this.on=false; this.source=null; this.analyser=null; this.buf=null; this.hold=0; },
+  read(){ if(!this.analyser) return 0; this.analyser.getFloatTimeDomainData(this.buf);
+    let s=0; for(let i=0;i<this.buf.length;i++) s+=this.buf[i]*this.buf[i]; return Math.sqrt(s/this.buf.length); },
+  tick(dt){ if(!this.on) return; this.raw=this.read(); if(this.refractory>0) this.refractory-=dt;
+    if(phase==='guard' && this.refractory<=0){
+      if(this.raw>this.PUFF){ this.refractory=2.0; gustBlow(1); }
+      else if(this.raw>this.TH){ this.hold+=dt; if(this.hold>this.HOLD){ this.hold=0; this.refractory=2.0; gustSoft(); } } // 持续档=环境噪声:焰晃不减命
+      else this.hold=Math.max(0,this.hold-dt*1.2); } } };
+function gustBlow(k){ if(phase!=='guard') return; k=k==null?1:k;    // k=1 吹气 / 0.5 空格轻风
+  gust=Math.max(gust,0.5+0.5*k); V=Math.max(0,V-0.06*k*(1-0.6*protectK)); Sound.gustWind(0.05*Math.max(0.5,k)); // 护焰=挡风
+  if(!blewOnce){ blewOnce=true; setHint('一口氣 —— 焰險些滅了；你也是這場風雨'); }   // 自拟
+  if(V<=0) die(); }
+function gustSoft(){ if(phase!=='guard') return; gust=Math.max(gust,0.5); Sound.gustWind(0.02); } // 只晃不罚
+function ambientGust(){ if(phase!=='guard') return;                 // 自主风:守烛期的节拍器,也让"护焰=挡风"可感
+  gust=Math.max(gust,0.7); V=Math.max(0,V-(0.02+Math.random()*0.015)*(1-0.6*protectK));
+  Sound.gustWind(); if(V<=0) die(); }
+
+/* ====== 烛灭 ====== */
+const lerp=(a,b,t)=>a+(b-a)*t;
+function pickSoulCh(){ const pool=[..."魂夢影息麗娘"]; return pool[(Math.random()*pool.length)|0]; }
+function startFall(it){ it.fall=true; it.fsx=MX(it.x); it.fsy=MY(it.y);   // 已知坑:散落存像素坐标,落字 5–7s 内 resize 会错位(试验稿接受)
+  it.fvx=(Math.random()*2-1)*26; it.fvy=20+Math.random()*70; it.fa=0.18+0.5*it.c; }
+function die(){ if(phase!=='guard') return;
+  phase='dying'; dieT=0; fellDone=false; V=0;
+  MIC.stop(); Sound.death();
+  for(const it of items) if(it.fl) it.dead=true;          // 焰熄于一瞬
+  setHint('燭滅 —— 滿園字散，魂歸於夜'); }                  // 自拟
+function fallAndRise(){                                   // 字粒散落 + 麗娘化魂粒上升
+  for(const it of items) if(!it.fl) startFall(it);
+  const ln=items.filter(it=>it.grp==='麗娘');
+  const n=14+((Math.random()*5)|0);
+  for(let i=0;i<n;i++){ const src=ln.length?ln[(Math.random()*ln.length)|0]:{x:3.4,y:5.8};
+    SOULS.push({x:src.x+(Math.random()-0.5)*0.9, y:src.y+(Math.random()-0.5)*0.5,
+      vy:0.22+Math.random()*0.3, dr:Math.random()*TAU, ch:pickSoulCh(),
+      al:0.25+Math.random()*0.3, fs:T6*(0.8+Math.random()*0.6), t:0, life:5+Math.random()*3}); } }
+function endScene(){ if(phase!=='verse'||gateA<0.15||ended) return; ended=true;   // 燈一显形即可点,勿让"照做没反应"
+  phase='end'; endT=0; Sound.bell(GONG*2,0.07); }   // 清宫:与惊梦台「再夢」同音——月落重生燈再紅,律上接住
+function resetScene(){                                    // R:重新守烛(从头再守一回)
+  compose(); initQuantum(); SOULS.length=0;
+  phase='guard'; V=1; T=0; rainK=0; dieT=0; fellDone=false; verseT=0; gateA=0; endT=0;
+  gust=0; protectK=0; warmL=0; hintStage=0; blewOnce=false; ended=false;
+  spaceCD=0; protectedOnce=false; tiMing=false;
+  windT=12+Math.random()*8; verseHinted=false; setKeys(KEYS0);
+  if(Sound.ac && running) Sound.alive();                  // 谢幕回遮罩(running=false)不再起雨,幕间归静
+  if(running&&Sound.ac&&!MIC.on) MIC.request();
+  if(running) setHint(HINT0); }
+
+/* ====== 分级提示(V 单调下行,只会逐级触发;首级=守烛前段微事件,填空窗) ====== */
+function hints(){ let st=0; if(V<0.85) st=1; if(V<0.7) st=2; if(V<0.45) st=3; if(V<0.22) st=4;
+  if(st>hintStage){ hintStage=st;
+    if(st===1){ setHint('她睡淺了'); Sound.bell(GONG*LV.jue,0.025); }   // 一记极轻角磬:系统活着,你做的有效
+    if(st===2) setHint('雨密了，守著她的燭');
+    if(st===3) setHint('焰在抖，你的目光是它僅剩的暖');
+    if(st===4) setHint('守不住的，陪它到最後'); } }
+
+/* ====== 绘制 ====== */
+function drawGlow(){                                      // 暖金光晕:全场唯一暖光
+  if(phase==='idle') return;                              // 谢幕回遮罩:烛不复燃(退相干不可逆,幕间留黑等再入园)
+  let a,R; const fx=MX(FL.x), fy=MY(FL.y+(1-V)*0.45);     // 光晕重心随烛芯下沉
+  const flick=0.9+0.1*Math.sin(gateT*9)+gust*0.25*(Math.random()-0.5);
+  if(phase==='guard'){ a=(0.09+0.13*V+0.10*protectK)*flick; R=scale*(1.1+1.7*V)*(1+protectK*0.22); }   // 护焰更可感:光晕明显涨
+  else { a=Math.max(0,0.16*(1-dieT/0.5)); R=scale*1.4; }  // 烛灭:光在半秒内收尽
+  if(a<=0.002) return;
+  const coldR=Math.max(0,Math.min(1,(0.3-V)/0.3));        // V<0.3:焰光由金转青白
+  const cr=lerp(224,180,coldR)|0, cg=lerp(178,205,coldR)|0, cb=lerp(110,210,coldR)|0;
+  const g=ctx.createRadialGradient(fx,fy,0,fx,fy,R);
+  g.addColorStop(0,`rgba(${cr},${cg},${cb},${a.toFixed(3)})`);
+  g.addColorStop(0.45,`rgba(${cr},${cg},${cb},${(a*0.35).toFixed(3)})`);
+  g.addColorStop(1,`rgba(${cr},${cg},${cb},0)`);
+  ctx.fillStyle=g; ctx.fillRect(fx-R,fy-R,R*2,R*2);
+}
+function drawFlameItem(it){                               // 焰簇:摇曳的字
+  if(it.dead||phase==='idle') return;                     // 幕间(回遮罩)焰不复燃
+  const k=it.fi, calm=1-0.82*protectK, expose=1-protectK;  // 护得越好越稳、越直、越亮;没护住=雨打风欺,持续乱抖(即时可感,非写定表演)
+  const sw=(Math.sin(gateT*2.1+k)*0.09+Math.sin(gateT*5.3+k*1.7)*0.04)*(1+k*0.8)*calm   // 基础摇曳被遮挡压住
+           +expose*(Math.sin(gateT*7.7+k*2.7)*0.07+(Math.random()-0.5)*0.05)*(1+k*0.7)  // 暴露:额外乱抖(雨直打焰上)
+           +expose*0.05*Math.sin(gateT*1.3+k)                                            // 暴露:焰被风压得偏斜(护住即回正)
+           +gust*Math.sin(gateT*17+k*2.3)*0.2*(1+k*0.7);                                  // 阵风:猛晃
+  const fl=0.72+0.28*Math.sin(gateT*9+k*2.1)*(0.35+0.65*expose)                          // 明灭:护住则稳(幅小),暴露则忽明忽暗
+           +expose*0.12*(Math.random()-0.5)+gust*0.3*(Math.random()-0.5);                // 暴露/阵风:颗粒级骤闪
+  const coldR=Math.max(0,Math.min(1,(0.3-V)/0.3));
+  const r=lerp(232,196,coldR)|0, g=lerp(201,219,coldR)|0, b=lerp(138,222,coldR)|0;
+  const fs=Math.max(6,(scale*it.size*(0.78+0.32*V))|0);
+  const sx=MX(it.x+sw), sy=MY(it.y+(1-V)*0.45+Math.sin(gateT*6+k)*0.02*calm+(k===2?Math.sin(gateT*3.7)*0.03*calm:0)); // 烛芯随 V 下沉(烧矮即进度)+顶焰纵向窜动
+  ctx.font=`${fs}px ${SERIF}`;
+  ctx.shadowColor=`rgba(${r},${g},${b},0.7)`; ctx.shadowBlur=fs*0.4;
+  ctx.fillStyle=`rgba(${r},${g},${b},${Math.max(0,Math.min(1,(0.5+0.42*fl)*(0.3+0.7*V))).toFixed(3)})`;
+  ctx.fillText(it.text,sx,sy); ctx.shadowBlur=0;
+}
+function drawItems(dt){
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  const glowR=2.6*V+0.5;                                  // 烛照半径(虚拟单位):光内字粒微微回暖
+  for(const it of items){
+    if(it.fall){                                          // 烛灭:满园字粒如雨散落
+      it.fvy+=60*dt; it.fsx+=it.fvx*dt; it.fsy+=it.fvy*dt; it.fa=Math.max(0,it.fa-dt*0.14);
+      if(it.fa>0.01){ const fs=Math.max(6,(scale*it.size)|0); ctx.font=`${fs}px ${SERIF}`;
+        ctx.fillStyle=`rgba(${COLD[0]},${COLD[1]},${COLD[2]},${it.fa.toFixed(3)})`;   // 全场转冷
+        if(it.vert){ let y=it.fsy-(it.text.length-1)*fs/2; for(const ch of it.text){ ctx.fillText(ch,it.fsx,y); y+=fs; } }
+        else ctx.fillText(it.text,it.fsx,it.fsy); }
+      continue; }
+    if(it.fl){ drawFlameItem(it); continue; }
+    /* 凝定度:柔光圈内上升,只升不降(守烛阶段才有观测) */
+    const hsx=MX(it.x), hsy=MY(it.y); let infl=0;
+    if(phase==='guard' && running && mouseOver){
+      const dx=hsx-mouseX,dy=hsy-mouseY,d=Math.hypot(dx,dy);
+      if(d<BRUSH){ const t=1-d/BRUSH; infl=t*t*(3-2*t); } }
+    if(infl>it.c) it.c=Math.min(it.cmax||1, it.c+(infl-it.c)*(1-Math.pow(.88,dt*60))); // dt 归一；cmax:月封顶 0.5
+    const c=it.c;
+    if(!REDUCED_MOTION) it.flickT+=dt*(1+(1-c)*7);
+    if(!REDUCED_MOTION&&it.flickT>it.flickEvery){ it.flickT=0; if(c<0.8) it.cur=randGlyphs(it.text.length); }
+    const txt=(c>=0.8)?it.text:it.cur;
+    it.ph1+=it.sp1*dt; it.ph2+=it.sp2*dt;
+    const amp=(1-c)*it.jamp;
+    const sx=MX(it.x+Math.cos(it.ph1)*amp), sy=MY(it.y+Math.sin(it.ph2)*amp*0.8);
+    const fs=Math.max(6,(scale*it.size*(0.82+0.18*c))|0);
+    /* 烛照回暖:光内字粒向暖金微移;护焰时麗娘再多一分 */
+    const dl=Math.hypot(it.x-FL.x,it.y-FL.y);
+    let wk=Math.max(0,1-dl/glowR)*(0.3+0.4*protectK)*V;
+    if(it.grp==='麗娘') wk=Math.min(0.6,wk+warmL*V*0.6);
+    let r=COLD[0]+(it.trgb[0]-COLD[0])*c, g=COLD[1]+(it.trgb[1]-COLD[1])*c, b=COLD[2]+(it.trgb[2]-COLD[2])*c;
+    r=lerp(r,224,wk*0.5); g=lerp(g,193,wk*0.5); b=lerp(b,120,wk*0.5);
+    let aa=Math.min(1, 0.14+(it.tA-0.14)*c + wk*0.12);
+    if(it.text==='燭'){ const cR=Math.max(0,Math.min(1,(0.3-V)/0.3));  // 燭与焰同冷同暗:烛身随焰一起衰亡
+      r=lerp(r,196,cR); g=lerp(g,219,cR); b=lerp(b,222,cR); aa*=(0.55+0.45*V); }
+    if(it.text==='月') aa*=(0.4+0.6*V);                   // 将落之月,随生命转黯
+    ctx.font=`${fs}px ${SERIF}`;
+    ctx.fillStyle=`rgba(${r|0},${g|0},${b|0},${aa.toFixed(3)})`;
+    if(c>0.25){ ctx.shadowColor='rgba(0,0,0,0.5)'; ctx.shadowBlur=fs*0.16*c; } else ctx.shadowBlur=0;
+    if(it.vert){ let y=sy-(txt.length-1)*fs/2; for(const ch of txt){ ctx.fillText(ch,sx,y); y+=fs; } }
+    else ctx.fillText(txt,sx,sy);
+  }
+  ctx.shadowBlur=0;
+}
+function drawSouls(dt){                                   // 魂粒:自卧影缓缓上升消散
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(let i=SOULS.length-1;i>=0;i--){ const s=SOULS[i]; s.t+=dt;
+    if(s.t>s.life){ SOULS.splice(i,1); continue; }
+    s.y-=s.vy*dt; s.x+=Math.sin(s.t*0.9+s.dr)*0.16*dt;
+    const p=s.t/s.life, a=(p<0.12?p/0.12:1-(p-0.12)/0.88)*s.al;
+    const fl=0.7+0.3*Math.sin(s.t*6+s.dr);
+    ctx.font=`${Math.max(6,(scale*s.fs)|0)}px ${SERIF}`;
+    ctx.fillStyle=`rgba(207,230,216,${Math.max(0,a*fl).toFixed(3)})`;
+    ctx.fillText(s.ch,MX(s.x),MY(s.y)); }
+}
+function newStreak(anyY){ return { x:Math.random()*W, y:anyY?Math.random()*H:-30-Math.random()*60,
+  sp:scale*(6.5+Math.random()*3.5), len:scale*(0.16+Math.random()*0.16), a:0.07+Math.random()*0.14 }; }
+function drawRain(dt){                                    // 雨:1px 竖细线短划,密度随 rainK 渐增
+  const target=(phase==='guard'&&running)?(30+190*rainK):(phase==='dying'?80:(phase==='verse'||phase==='end')?8:22); // 烛灭后只余残滴,合于声场已塌
+  while(RAIN.length<target) RAIN.push(newStreak(RAIN.length<30));
+  const fx=SH.x, fy=SH.y, RS=(phase==='guard'&&SH.on)?SH.r:0;   // 伞心=鼠标(遮挡跟手);穹弧本体在 drawCursor 画
+  ctx.lineWidth=1;
+  for(let i=RAIN.length-1;i>=0;i--){ const r=RAIN[i]; r.y+=r.sp*dt;
+    if(r.y>H+40){ if(RAIN.length>target){ RAIN.splice(i,1); continue; }   // 超额雨丝下完即收,不半空截断
+      r.x=Math.random()*W; r.y=-30-Math.random()*80; }
+    if(RS>6){ const dx=r.x-fx, dy=r.y-fy;
+      if(dy>-RS && dy<RS*0.7 && Math.abs(dx)<RS){ const d=Math.hypot(dx,dy);
+        if(d<RS){ r.x+=(dx>=0?1:-1)*(RS-d)*dt*3.4;                        // 顺穹面滑开:雨从遮挡两侧淌下
+          ctx.strokeStyle=`rgba(168,192,184,${(r.a*0.18).toFixed(3)})`;   // 伞下只余微痕
+          ctx.beginPath(); ctx.moveTo(r.x,r.y); ctx.lineTo(r.x,r.y+r.len*0.4); ctx.stroke(); continue; } } }
+    ctx.strokeStyle=`rgba(168,192,184,${r.a})`;
+    ctx.beginPath(); ctx.moveTo(r.x,r.y); ctx.lineTo(r.x,r.y+r.len); ctx.stroke(); }
+}
+function drawVerse(){                                     // 金句徐现,「燈」字=单字出口
+  const va=Math.min(1,Math.max(0,verseT/2.2));
+  const n=VERSE.length; let fs=Math.min(W,H)*0.062, sp=fs*1.42; const maxW=W*0.86;
+  if(sp*(n-1)>maxW){ sp=maxW/(n-1); fs=sp/1.42; }
+  const x0=W/2-sp*(n-1)/2, y=H*0.44;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(let i=0;i<n;i++){ const x=x0+i*sp;
+    if(i===DENG){                                         // 出口:燈先熄著(冷玉占位),随 gateA 复红泛金——「燈再紅」逐字演出来
+      passX=x; passY=y; passR=Math.min(sp*0.48,Math.max(40,fs*1.1));   // 半径恒小于半字距,点邻字不误触(唯一的门,宁小勿抢)
+      ctx.font=`${fs|0}px ${SERIF}`; ctx.shadowBlur=0;
+      if(gateA<1) { ctx.fillStyle=`rgba(143,176,158,${(0.25*va*(1-gateA)).toFixed(3)})`; ctx.fillText('燈',x,y); } // 未燃之燈
+      if(gateA>0.01){
+        const R=fs*0.95, pulse=0.5+0.5*Math.sin(gateT*2.2);
+        ctx.save(); ctx.globalAlpha=gateA;
+        const dg=ctx.createRadialGradient(x,y,0,x,y,R*1.2);            // 衬纸减淡缩小:夜绢已暗,勿成黑洞
+        dg.addColorStop(0,'rgba(6,9,8,0.30)'); dg.addColorStop(0.66,'rgba(6,9,8,0.16)'); dg.addColorStop(1,'rgba(6,9,8,0)');
+        ctx.fillStyle=dg; ctx.fillRect(x-R*1.2,y-R*1.2,R*2.4,R*2.4);
+        ctx.font=`${fs|0}px ${SERIF}`;
+        ctx.shadowColor='rgba(224,193,120,0.85)'; ctx.shadowBlur=fs*0.3*(0.4+0.6*pulse);
+        ctx.fillStyle=`rgba(238,231,206,${(0.80+0.18*pulse).toFixed(3)})`;   // 谷值不低于邻字 0.78,唯一可点的字永远最亮
+        ctx.fillText('燈',x,y); ctx.shadowBlur=0; ctx.restore(); }
+    } else {
+      ctx.font=`${fs|0}px ${SERIF}`;
+      ctx.shadowColor='rgba(0,0,0,0.55)'; ctx.shadowBlur=fs*0.16;
+      ctx.fillStyle=`rgba(224,193,120,${(0.78*va).toFixed(3)})`;
+      ctx.fillText(VERSE[i],x,y); ctx.shadowBlur=0; } }
+  const tfs=Math.max(11,fs*0.28), tx=x0+sp*(n-1)+fs*1.1;  // 落款:右下竖排(承驚夢臺款识定式)
+  ctx.font=`${tfs|0}px ${SERIF}`;
+  ctx.fillStyle=`rgba(224,193,120,${(0.5*va).toFixed(3)})`;
+  { let ty=y+fs*0.35; for(const ch of '鬧殤·尾聲'){ ctx.fillText(ch,tx,ty); ty+=tfs*1.15; } }
+}
+function drawCursor(){                                    // 自绘指针:柔光圈+小金环;移近烛焰即化为"遮挡"(一道穹弧伞)
+  if(!mouseOver) return;
+  if(phase==='guard'){
+    if(SH.on){                                           // 指针即遮挡:一片荷叶覆于焰上(雨夜以荷遮烛)——叶缘微皱、放射叶脉、随焰轻倾,非规整圆弧
+      const RS=SH.r, aA=0.24+0.4*protectK, gA=(0.14+0.24*protectK);
+      const tilt=Math.sin(gateT*0.7)*0.05+ (SH.x-MX(FL.x))*0.0006;   // 随风轻倾(并略随手偏)
+      const a0=Math.PI*1.0, a1=Math.PI*2.0, segs=44;
+      const rAt=a=>RS*(1+0.06*Math.sin(a*5.0+0.6)+0.03*Math.sin(a*9.0));   // 荷叶皱边(正弦叠加,非完美弧)
+      ctx.save(); ctx.translate(mouseX,mouseY); ctx.rotate(tilt);
+      ctx.strokeStyle=`rgba(150,184,150,${aA.toFixed(3)})`; ctx.lineWidth=1.6; ctx.lineJoin='round';
+      ctx.beginPath();                                                 // 叶缘
+      for(let i=0;i<=segs;i++){ const a=a0+(a1-a0)*i/segs, r=rAt(a), x=Math.cos(a)*r, y=Math.sin(a)*r*0.86;
+        i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+      ctx.stroke();
+      const apY=-RS*0.14;                                              // 叶心(叶脉与叶柄交于此)
+      ctx.strokeStyle=`rgba(150,184,150,${(aA*0.55).toFixed(3)})`; ctx.lineWidth=1;
+      for(let k=0;k<=6;k++){ const a=a0+(a1-a0)*k/6, r=rAt(a);          // 放射叶脉
+        ctx.beginPath(); ctx.moveTo(0,apY); ctx.lineTo(Math.cos(a)*r, Math.sin(a)*r*0.86); ctx.stroke(); }
+      ctx.strokeStyle=`rgba(150,184,150,${aA.toFixed(3)})`; ctx.lineWidth=1.5;   // 叶柄(短,向上;像被一只手擎着)
+      ctx.beginPath(); ctx.moveTo(0,apY); ctx.quadraticCurveTo(RS*0.04,apY-RS*0.16, -RS*0.02,apY-RS*0.30); ctx.stroke();
+      ctx.restore();
+      const g=ctx.createRadialGradient(mouseX,mouseY,0,mouseX,mouseY,RS*0.9);   // 叶下一团暖荫
+      g.addColorStop(0,`rgba(190,200,150,${(0.04+0.09*protectK).toFixed(3)})`); g.addColorStop(1,'rgba(190,200,150,0)');
+      ctx.fillStyle=g; ctx.fillRect(mouseX-RS,mouseY-RS,RS*2,RS*2);
+    } else {
+      const g=ctx.createRadialGradient(mouseX,mouseY,0,mouseX,mouseY,BRUSH*0.62);
+      g.addColorStop(0,'rgba(216,236,223,0.12)'); g.addColorStop(0.6,'rgba(216,236,223,0.04)'); g.addColorStop(1,'rgba(216,236,223,0)');
+      ctx.fillStyle=g; ctx.fillRect(mouseX-BRUSH,mouseY-BRUSH,BRUSH*2,BRUSH*2);
+      ctx.strokeStyle='rgba(224,193,120,0.3)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(mouseX,mouseY,9,0,TAU); ctx.stroke();
+    }
+  } else if(phase==='verse'){
+    const near=gateA>0.15 && Math.hypot(mouseX-passX,mouseY-passY)<passR;
+    ctx.strokeStyle=`rgba(224,193,120,${near?0.85:0.42})`; ctx.lineWidth=near?1.4:1;
+    ctx.beginPath(); ctx.arc(mouseX,mouseY,near?13:9,0,TAU); ctx.stroke();
+    if(near){ ctx.fillStyle='rgba(224,193,120,0.5)'; ctx.beginPath(); ctx.arc(mouseX,mouseY,2,0,TAU); ctx.fill(); }
+  } else {
+    ctx.strokeStyle='rgba(224,193,120,0.3)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.arc(mouseX,mouseY,9,0,TAU); ctx.stroke(); }
+}
+function drawEnd(){                                       // 谢幕:暗下,一行字,回开场
+  const dim=Math.min(1,endT/1.8);
+  ctx.fillStyle=`rgba(6,9,8,${(dim*0.92).toFixed(3)})`; ctx.fillRect(0,0,W,H);
+  const ta=Math.min(1,Math.max(0,(endT-1.2)/1.0));
+  if(ta>0){ const fs=Math.max(15,Math.min(W,H)*0.034);
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font=`${fs|0}px ${SERIF}`;
+    ctx.fillStyle=`rgba(238,231,206,${(0.8*ta).toFixed(3)})`;
+    ctx.fillText('本 幕 終 —— 離 魂', W/2, H*0.47); }
+  if(endT>4.2){                                           // 八幕链:此燈既滅,且去拾畫(重守一回仍走 R)
+    if(!window._went){ window._went=true; location.href='陸·拾畫叫畫.html'; } return;
+    phase='idle'; running=false; resetScene(); phase='idle';
+    document.getElementById('enter').classList.remove('gone');
+    clearTimeout(hintTmr); document.getElementById('hint').classList.remove('show');
+    document.getElementById('keys').classList.remove('show');                       // 键位说明随幕收,两次开场等价
+    document.querySelector('#enter .sub').textContent='她已離魂 —— 願再守一回麼';   // 再来与初见有别,自拟
+    document.querySelector('#enter .blink').textContent='再 守 一 回'; }
+}
+
+/* ====== 主渲染(probe 可直接调用以推进状态) ====== */
+function render(dt){
+  gateT+=dt;
+  ctx.setTransform(DPR,0,0,DPR,0,0); ctx.clearRect(0,0,W,H);
+  if(paperCv) ctx.drawImage(paperCv,0,0,W,H);
+  if(!running) ctx.globalAlpha=0.45;                      // 遮罩期画面退后(配遮罩 0.92):烛焰金柱不咬遮罩排版;入园瞬间复满,跳变藏在 1.6s 遮罩淡出里
+  if(phase==='guard' && running){
+    T+=dt; spaceCD=Math.max(0,spaceCD-dt);
+    rainK=Math.min(1, T/70 + (1-V)*0.25);
+    /* 遮挡=你的在场,跟着鼠标走;须小心罩住焰尖(焰尖随风轻摆,手要跟着护),甜区窄,稍一松手便护不住 */
+    const fxS=MX(FL.x), fyS=MY(FL.y+(1-V)*0.45);
+    const lean=(Math.sin(gateT*0.85)*0.16+gust*0.5)*(0.5+0.6*(1-protectK));  // 焰尖随风摆(没护住摆得更凶)——手得跟着挪
+    const tipX=fxS+lean*scale, tipY=fyS-BRUSH*0.55;       // 要护的是焰尖(焰心上方一点)
+    const dM=Math.hypot(mouseX-tipX, mouseY-tipY);
+    SH.on = mouseOver && dM < BRUSH*1.9;                  // 移近焰尖才成形(收窄)
+    let q=0;
+    if(SH.on) q=Math.max(0, 1-Math.max(0,dM-BRUSH*0.28)/(BRUSH*1.0));        // 甜区窄:焰尖 0.28 半径内满护,1.3 外为零——必须小心罩准
+    if(mouseY>fyS+BRUSH*0.2) q=0;                         // 落到焰下=挡不住自上而下的雨
+    protecting = q>0.05;
+    protectK += (q-protectK)*Math.min(1,dt*5);            // 跟手紧:护几分即时可感
+    SH.x=mouseX; SH.y=mouseY; SH.r=scale*(0.42+0.3*Math.min(1,protectK*1.1));  // 穹弧收小:一只手掌覆住焰,而非大半个天
+    warmL += ((protecting?0.55*protectK:0)-warmL)*Math.min(1,dt*0.5);
+    if(protectK>0.5 && !protectedOnce){ protectedOnce=true; setHint('焰穩了些 —— 雨,被你分開了'); }  // 首次护焰回执:点明"你是伞"
+    if(MOON) MOON.y=MOON.my0+(1-V)*1.6;                   // 月随生命西沉,烛灭恰落尽——金句"月落"观众自己接上
+    if(!tiMing){ let s=0,n=0; for(const it of items) if(it.grp==='題詞'){s+=it.c;n++;}
+      if(n&&s/n>0.6){ tiMing=true; for(const it of items) if(it.grp==='題詞') it.c=1; } } // 题词成组判明:扫半即整句立,不留锯齿
+    let dec=0.006+0.010*rainK;                            // 护住时:慢衰(雨愈密愈快,仍不可逆——徒劳)
+    const neglect=1-protectK;                             // 疏于看护的程度
+    dec += neglect*neglect*(0.22+0.18*(1-V));             // 手一移开:衰减立时陡增,且越弱衰越快——立竿见影,约三四秒灯尽(幕中段更快),幕提前结束
+    V=Math.max(0,V-dec*dt);
+    gust*=Math.pow(0.2,dt);
+    windT-=dt; if(windT<=0){ windT=15+Math.random()*10; ambientGust(); }   // 自主风:守烛期不再真空
+    if(MIC.on) MIC.tick(dt);
+    Sound.rainK=rainK; Sound.near=(V<0.3);                // V<0.3:雨声渐近
+    hints();
+    if(V<=0) die();
+  } else if(phase==='dying'){
+    dieT+=dt; gust*=Math.pow(0.2,dt);
+    if(!fellDone && dieT>0.45){ fellDone=true; fallAndRise(); }   // 烛灭 0.45s:字散+魂升
+    if(dieT>0.6+2.0){ phase='verse'; verseT=0;            // 静默 2 秒后金句徐现
+      Sound.bell(GONG/2,0.06); }                          // 只余一记尾磬
+  } else if(phase==='verse'){
+    verseT+=dt; gateA=Math.min(1,Math.max(0,(verseT-1.0)/2.6));
+    if(!verseHinted && gateA>0.1){ verseHinted=true;      // 静默—金句—提示,三拍分开;不复读全句
+      setKeys(KEYS1);                                     // 燈显形了,键位说明才提它(勿"照做没反应")
+      setHint('句中「燈」字漸漸亮了 —— 點它出幕'); }
+    if(verseT>90 && !ended) endScene();                   // 无人点燈 90s 自动谢幕归位,等下一位观众
+  } else if(phase==='end'){
+    verseT+=dt; endT+=dt;
+  }
+  drawGlow();
+  drawItems(dt);
+  drawSouls(dt);
+  drawRain(dt);
+  if(phase==='verse'||phase==='end') drawVerse();
+  drawCursor();
+  if(phase==='end') drawEnd();
+  ctx.globalAlpha=1;
+}
+function frame(now){
+  const dt=Math.min(0.05,(now-last)/1000); last=now;
+  render(dt);
+  requestAnimationFrame(frame);
+}
+
+/* ====== 尺寸 / 入园 / 事件 ====== */
+function resizeLayout(){
+  W=window.innerWidth; H=window.innerHeight;
+  DPR=Math.max(.5,Math.min(window.devicePixelRatio||1,2,Math.sqrt(8000000/Math.max(1,W*H))));
+  cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  scale=Math.min(W/VW,H/VH)*0.95; ox=(W-VW*scale)/2; oy=(H-VH*scale)/2;
+  BRUSH=Math.min(W,H)*0.2; buildPaper();
+}
+window.addEventListener('resize', resizeLayout);
+cv.addEventListener('pointermove', e=>{ mouseX=e.clientX; mouseY=e.clientY; mouseOver=true; });
+cv.addEventListener('pointerleave', ()=>{ mouseOver=false; });
+cv.addEventListener('pointerup', e=>{ if(e.pointerType==='touch'){ mouseOver=false; mouseX=mouseY=-1e4; } }); // 触屏:抬指即离,必须按住才算守(防幽灵手指)
+cv.addEventListener('pointercancel', e=>{ if(e.pointerType==='touch'){ mouseOver=false; mouseX=mouseY=-1e4; } });
+cv.addEventListener('pointerdown', e=>{
+  mouseX=e.clientX; mouseY=e.clientY; mouseOver=true;     // 触屏:落指即至(按住=守,与抬指即离配对;对鼠标无副作用)
+  if(phase==='verse' && gateA>0.15 && Math.hypot(e.clientX-passX,e.clientY-passY)<passR) endScene(); });
+function enter(silent){
+  const e=document.getElementById('enter');
+  if(!e.classList.contains('gone')) e.classList.add('gone');
+  document.getElementById('keys').classList.add('show');
+  if(!silent){ Sound.start(); Sound.alive(); if(!MIC.on) MIC.request(); setTimeout(()=>Sound.bell(GONG*LV.zhi,0.055),340); }   // 入幕一记磬(徵)
+  if(!running || phase!=='guard'){ resetScene(); }
+  running=true; spaceCD=0.8; setHint(HINT0);              // 入园余波 0.8s 内忽略空格风(防"空格入园"顺手吹灭)
+}
+document.getElementById('enterBtn').addEventListener('click', ()=>enter(false));
+window.addEventListener('keydown', ev=>{
+  if(ev.repeat) return;                                   // 防按住连发:auto-repeat 不算新的一口气
+  const entered=document.getElementById('enter').classList.contains('gone');
+  if(!entered){ if(ev.code==='Space'||ev.key==='Enter'){ ev.preventDefault(); enter(false); } return; }
+  if(ev.key==='r'||ev.key==='R'){ resetScene(); }
+  if(ev.key==='ArrowRight'){ endScene(); }
+  if(ev.code==='Space' && phase==='guard'){ ev.preventDefault();
+    if(spaceCD<=0){ spaceCD=1.5; gustBlow(0.5); } }       // 空格=一记轻风(不应期 1.5s,与吹气同口径):无麦观众也尝到"你也是這場風雨"
+});
+
+/* ====== 启动 ====== */
+resizeLayout();
+compose(); initQuantum();
+try{ if(!location.hash&&new URLSearchParams(location.search).get('debug')!=='1'&&sessionStorage.getItem('qg_journey_active')==='1'){
+  document.getElementById('enter').classList.add('journey'); setTimeout(()=>enter(false),REDUCED_MOTION?220:900); } }catch(e){}
+requestAnimationFrame(frame);
+
+/* ====== 自检探针(#probe=guard|low|verse;静音,正常游玩无感) ====== */
+(function(){
+  const m=location.hash.match(/probe=([a-z]+)/); if(!m) return;
+  enter(true);
+  document.getElementById('enter').style.display='none';  // headless 虚拟时间下 CSS 过渡走不完,直接藏
+  mouseX=MX(9.6); mouseY=MY(4.5); mouseOver=true;          // 指针悬于焰侧=护焰
+  const k=m[1];
+  if(k==='guard'){ V=0.86; T=14;
+    for(const it of items){ if(it.grp==='麗娘'||Math.random()<0.45) it.c=0.95; }
+    warmL=0.5; protectK=1;
+    for(let i=0;i<150;i++) render(1/60);
+  } else if(k==='low'){ V=0.21; T=66;
+    for(const it of items){ if(Math.random()<0.7) it.c=0.95; }
+    for(let i=0;i<150;i++) render(1/60);
+  } else if(k==='verse'){ V=0.04; T=70;
+    for(const it of items){ if(Math.random()<0.7) it.c=0.95; }
+    for(let i=0;i<30;i++) render(1/60);
+    die();
+    for(let i=0;i<210;i++) render(1/60);                   // 走完 字散+魂升+静默
+    verseT=4.2;                                            // 金句全显,gateA=1
+    for(let i=0;i<8;i++) render(1/60);
+  }
+})();
+
+/* ====== 全屏沉浸(2026-06-13 一葳):右上角可见入口「全屏」+ 入园自动 + F 键;装在 沉浸.html 外壳(iframe)里时,全屏整个外壳——跨幕换页不掉全屏 ====== */
+(function(){
+  var framed=false; try{ framed = (window.self!==window.top) && !!window.top.document; }catch(e){ framed=false; }
+  function fsDoc(){ try{ return framed?window.top.document:document; }catch(e){ return document; } }
+  function fsEl(){ try{ return framed?window.top.document.documentElement:document.documentElement; }catch(e){ return document.documentElement; } }
+  function isFS(){ try{ return !!fsDoc().fullscreenElement; }catch(e){ return false; } }
+  function canFS(){ try{ const doc=fsDoc(), el=fsEl(), pol=doc.permissionsPolicy||doc.featurePolicy; return doc.fullscreenEnabled===true && !!el.requestFullscreen && !(typeof navigator!=='undefined'&&navigator.webdriver) && !(pol&&pol.allowsFeature&&pol.allowsFeature('fullscreen')===false); }catch(e){ return false; } }
+  function reqFS(){ try{ if(!isFS()&&canFS()){ const p=fsEl().requestFullscreen(); if(p&&p.catch)p.catch(()=>{}); } }catch(_){} }
+  function exitFS(){ try{ if(isFS()){ const p=fsDoc().exitFullscreen(); if(p&&p.catch)p.catch(()=>{}); } }catch(_){} }
+  var btn=document.createElement('button'); btn.id='fsBtn'; btn.type='button'; btn.textContent='⛶'; btn.title='全屏'; btn.setAttribute('aria-label','全屏');
+  function toggle(e){ if(e){ e.stopPropagation(); e.preventDefault(); } isFS()?exitFS():reqFS(); }
+  btn.addEventListener('click', toggle);
+  function syncLabel(){ const active=isFS(); btn.title=active?'退出全屏':'全屏'; btn.setAttribute('aria-label',btn.title); btn.setAttribute('aria-pressed',String(active)); }
+  document.addEventListener('fullscreenchange', syncLabel);
+  var topDoc=null; try{ if(framed){ topDoc=window.top.document; topDoc.addEventListener('fullscreenchange', syncLabel); } }catch(e){ topDoc=null; }
+  function mount(){ (document.body||document.documentElement).appendChild(btn); }
+  if(document.body) mount(); else addEventListener('DOMContentLoaded', mount);
+  /* 入园那一下顺手全屏(展览触屏);失败也无妨,右上角按钮兜底 */
+  var auto=false; function autoFS(){ if(auto) return; auto=true; reqFS(); }
+  const enterEl=document.getElementById('enter'), enterBtn=document.getElementById('enterBtn');
+  if(enterBtn) enterBtn.addEventListener('pointerdown', function(){ autoFS(); }, {capture:true, once:true});
+  addEventListener('keydown', function(e){
+    if(e.key==='f'||e.key==='F'){ toggle(e); return; }
+    if(!auto && enterEl&&!enterEl.classList.contains('gone') && (e.code==='Space'||e.key==='Enter')) autoFS();
+  }, {capture:true});
+  addEventListener('pagehide',()=>{ document.removeEventListener('fullscreenchange',syncLabel); if(topDoc)try{topDoc.removeEventListener('fullscreenchange',syncLabel);}catch(e){} MIC.stop(); Sound.stop(); },{once:true});
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="《量子游园》：以《牡丹亭·游园惊梦》与量子观测为线索的八幕浏览器交互作品。">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>量子游园 · 沉浸</title>
+<!--
+  沉浸外壳:把整个八幕体验装进一层"永不跳转"的页面(iframe)。
+  全屏只加在这一层——内部换幕(iframe 内部 location.href 跳转)不会让浏览器退出全屏,
+  于是跨幕全程沉浸,不再每切一幕就弹回有边框的窗口。
+  普通浏览器测试用这个入口最顺;展览机用 启动·展览全屏.command(kiosk)更彻底。
+  iframe 开放 camera/microphone/fullscreen 权限,目光与吹气照常(localhost 同源)。
+-->
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#07100e}
+  #stage{position:fixed;inset:0;width:100vw;height:100vh;border:0;display:block;background:#07100e}
+  #loadVeil{position:fixed;z-index:2;inset:0;background:#07100e;display:grid;place-items:center;transition:opacity .45s ease,visibility .45s ease}
+  #loadVeil.done{opacity:0;visibility:hidden;pointer-events:none}
+  #loadMark{width:48px;height:1px;background:rgba(102,141,130,.25);overflow:hidden}
+  #loadMark::after{content:"";display:block;width:18px;height:1px;background:#c66858;animation:seek 1.2s ease-in-out infinite}
+  #loadFail{position:fixed;z-index:3;left:20px;bottom:18px;display:none;align-items:center;gap:12px;color:#a7b6ae;font:12px -apple-system,"PingFang SC",sans-serif}
+  #loadFail.show{display:flex}
+  #retry{width:44px;height:44px;border:1px solid rgba(198,104,88,.72);background:#07100e;color:#ede7d8;font-size:18px;cursor:pointer}
+  #retry:focus-visible{outline:1px solid #ede7d8;outline-offset:3px}
+  #orientationGate{display:none;position:fixed;z-index:4;inset:0;background:#07100e;color:#ede7d8;font-family:"Songti SC","STSong",serif;
+    align-items:center;justify-content:center;flex-direction:column;text-align:center}
+  #orientationGate .turn{font-size:34px;color:#c66858}
+  #orientationGate strong{margin-top:18px;font-size:20px;font-weight:400}
+  #orientationGate small{margin-top:10px;font-size:12px;color:#83998f}
+  @keyframes seek{0%{transform:translateX(-20px)}50%{transform:translateX(50px)}100%{transform:translateX(-20px)}}
+  @media(prefers-reduced-motion:reduce){#loadMark::after{animation:none;transform:translateX(15px)}}
+  @media(orientation:portrait) and (max-width:720px){#orientationGate{display:flex}}
+</style>
+</head>
+<body>
+  <div id="loadVeil" role="status" aria-label="正在载入量子游园"><span id="loadMark" aria-hidden="true"></span></div>
+  <div id="loadFail" role="alert"><span>载入超过十二秒，请检查本地服务。</span><button id="retry" type="button" aria-label="重新载入" title="重新载入">↻</button></div>
+  <div id="orientationGate" role="status"><span class="turn" aria-hidden="true">↻</span><strong>請橫置屏幕</strong><small>園林以十六比九展開</small></div>
+  <iframe id="stage" title="量子游园沉浸舞台"
+          allow="camera; microphone; fullscreen; autoplay"
+          allowfullscreen></iframe>
+<script>
+"use strict";
+// 测试期白名单路由。正式入口不带参数，仍从一园春开始走完整单向叙事。
+const params=new URLSearchParams(location.search);
+const routes={
+  '1':{title:'一園春',url:'量子游园·丙·交互体验.html?act=0'},
+  '2':{title:'驚夢臺',url:'量子游园·丙·交互体验.html?act=1'},
+  '3':{title:'尋夢廊',url:'量子游园·丙·交互体验.html?act=2'},
+  '4':{title:'寫真',url:'新幕/肆·寫真.html'},
+  '5':{title:'離魂',url:'新幕/伍·離魂.html'},
+  '6':{title:'拾畫·叫畫',url:'新幕/陸·拾畫叫畫.html'},
+  '7':{title:'糾纏橋',url:'量子游园·丙·交互体验.html?act=3'},
+  '8':{title:'三生路',url:'新幕/柒·三生路.html'}
+};
+const scene=params.get('scene');
+const route=routes[scene]||null;
+let target=route?route.url:'量子游园·丙·交互体验.html';
+if(!route && params.has('act')){                         // 兼容旧的 沉浸.html?act=N 直入方式
+  const act=Number(params.get('act'));
+  if(Number.isInteger(act)&&act>=0&&act<=3) target='量子游园·丙·交互体验.html?act='+act;
+}
+const targetUrl=new URL(target,location.href);
+if(route) targetUrl.searchParams.set('debug','1');
+if(scene==='8'){
+  const fate=params.get('fate');
+  targetUrl.searchParams.set('fate',['yuan','shang','hua'].includes(fate)?fate:'yuan');
+}
+if(params.get('setup')==='1') targetUrl.searchParams.set('setup','1');
+const stage=document.getElementById('stage'), veil=document.getElementById('loadVeil'), fail=document.getElementById('loadFail');
+let loadTimer=setTimeout(()=>fail.classList.add('show'),12000);
+stage.addEventListener('load',()=>{ clearTimeout(loadTimer); veil.classList.add('done'); fail.classList.remove('show'); },{once:true});
+stage.addEventListener('error',()=>{ clearTimeout(loadTimer); fail.classList.add('show'); });
+document.getElementById('retry').addEventListener('click',()=>{ fail.classList.remove('show'); veil.classList.remove('done');
+  loadTimer=setTimeout(()=>fail.classList.add('show'),12000); stage.src=stage.src; });
+stage.src=targetUrl.href;
+if(route) document.title='量子游园 · '+route.title+' · 调试';
+
+// 全屏整个外壳:内部 iframe 换幕不影响,全屏全程保持。
+// 内部页面(同源)的「全屏」按钮/F 键会请求全屏本层;自动 pointerdown 会在受限/自动化浏览器里制造权限红字,改为显式触发。
+function canFS(){ try{ const pol=document.permissionsPolicy||document.featurePolicy; return document.fullscreenEnabled===true && !(typeof navigator!=='undefined'&&navigator.webdriver) && !(pol&&pol.allowsFeature&&pol.allowsFeature('fullscreen')===false); }catch(e){ return false; } }
+function reqFS(){ try{ if(!document.fullscreenElement && canFS()){ const p=document.documentElement.requestFullscreen(); if(p&&p.catch) p.catch(()=>{}); } }catch(e){} }
+addEventListener('keydown', e=>{ if(e.key==='f'||e.key==='F'){
+  try{ if(document.fullscreenElement){ const p=document.exitFullscreen(); if(p&&p.catch) p.catch(()=>{}); } else reqFS(); }catch(_){} } });
+</script>
+</body>
+</html>

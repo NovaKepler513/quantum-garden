@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>量子游园 · 第肆幕 · 寫真 · 她的神拷不走</title>
+<!--
+══════════════════════════════════════════════════════════════════
+量子游园 · 第肆幕 · 寫真(独立试验幕)
+══════════════════════════════════════════════════════════════════
+概念:不可克隆定理(no-cloning theorem)——任意未知量子态不可被完美复制。
+戏文:《牡丹亭·写真》杜丽娘病中自画像并自题诗;末了藏画于太湖石——
+藏石事借自第二十出《闹殇》遗嘱(「盛著紫檀匣兒,藏在太湖石底」),前置入本幕,非《写真》原有情节。
+观者以指针在素绢立轴上"描"她的画像:衣鬢眉唇皆可描真,
+唯独双瞳(c 永远封顶 0)描不出——她的神,拷不走。
+
+交互流程:
+ 1. 绢上隐着画像字粒(c=0,几乎不可见),指针柔光圈扫过即显(凝定度模型);
+    进度提示"已描 x 分"(十分制汉字,回扣金句"三分春色");
+    收尾时(≥八分半)未亮字粒呼吸提亮,≥97% 自解锁 +0.09/s(幕一 GUIDE 语言)。
+ 2. 其余全亮(双瞳除外)→ dot 相位:提示"畫成了,只差點睛";双瞳呼吸提亮引观者亲试,
+    笔到瞳亮(0.14+0.42*infl)笔走则灭;累计 triedT>1s 才进入下一相位，久候只提示,
+    才触发金句「三分春色描來易,一段傷心畫出難」(写真原句)——
+    "點睛不得"是观者亲手撞上的墙,不是被告知的。
+ 3. 麗娘(左侧,完整版带釵步搖)缓缓走到轴前(组位移 6.5s smoothstep,均速 0.6 单位/s 合 GUIDE;
+    最后半步 e≥0.85 即起笔,人未停笔已起),题诗「他年得傍蟾宮客,不在梅邊在柳邊」(写真题诗原句)
+    逐字浮现于轴侧,每字一记小磬(三分损益,音阶下行:清商→宫,两字一阶);金句随题笔起徐隐。
+ 4. 题罢像散:画像字粒如花瓣徐徐脱落,横向漂坠,汇落到右下太湖石处,落地后贴地滑向石;
+    题款晚 2.2s 起飞,字随画去(原著「题诗在上」,诗画同藏);
+    一缕轻风噪(低通 380Hz,峰值 0.03,约 3s)。
+ 5. 石上浮出口字「藏」(gateA 2.6s 渐显,金晕呼吸),点击或 → 键出幕(门随黑纱同隐):
+    显示"本幕終 —— 寫真",淡出回开场遮罩。
+
+参数表:
+ 虚拟坐标 16:9(scale/ox/oy/MX/MY 照主作品) ｜ 布局 LCG 种子 20260612
+ BRUSH = min(W,H)*0.13(描像须细笔,故小于主作品的 0.2)· infl 核区 ×1.5(光圈视界≈可点亮范围)
+ c 上升按 dt 归一(60fps 时 0.12) · 只升不降 · 显示阈 0.8 ｜ 双瞳 c 封顶 0(T6 号,笔到则亮笔走则灭)
+ 金句浮现 vA dt/2.2,题笔起则 dt/2.6 徐隐 ｜ 麗娘行步 6.5s smoothstep,位移 +3.9(起点 4.6)
+ 题字间隔 0.62s/字 · 渐显 0.5s · 磬量 0.05 · 音列 [清商 清宫 羽 徵 角 商 宫]×2字/阶 · 题款 T5
+ 像散:落速上限 H*0.14/s · 横漂正弦 1.7Hz · 归石 lerp 0.22 · 落地后沿地滑向石 1.4 · 落点 y≈7.55–8.05 · 兜底 8.5s
+ 出口 gateA 2.6s · passR = min(W,H)*0.078*1.6 ｜ 键盘:R 重看 · → 出幕 ｜ 触屏点按=0.3s 描笔脉冲
+ 声:三分损益 GONG=523.25,bell() 照主作品;全静+磬;风噪≤0.03(底噪铁律≤0.05)
+
+文案考证:两句金句皆《牡丹亭·写真》原句。「三分春色描來易,一段傷心畫出難」
+为春香(贴)携绢笔上场之语(「(貼下取絹、筆上)…絹幅丹青,俱已齊備」),剧中先于作画而发;
+本幕移作画成之叹,系挪用,非丽娘自题。「他年得傍蟾宮客,不在梅邊在柳邊」为丽娘画上题诗末二句。
+"藏画于太湖石"见《闹殇》遗嘱,借入本幕(见上)。提示条文案为自拟,不标注为原文。
+
+测试钩子(headless 截图用,不影响正常流程):
+ URL 加 #probe1(描了上半)/#probe2(描成+金句)/#probe3(题款已成)/#probe4(像散归石·藏字现)/#probe5(點睛相位:笔在瞳上)
+
+修订记录:2026-06-12 三方评审修订——入幕前不漏提示(entered 守门+遮罩加深)/瞳升 T6·笔到则亮·点睛须亲试/
+ 题款随画同散/落瓣归石收敛(贴地滑行 1.4)/麗娘步速合 GUIDE(0.6 单位/s)/题款字阶 T5·列距放宽/金句题笔起徐隐/
+ 考证更正(金句系春香语·藏石借《闹殇》·"下款"改"题诗")/立轴改天桿地軸綾边/对外文案统一全角标点/
+ lang=zh-Hant/scatter 期 resize 瓣坐标重映射/出幕门随黑纱同隐/台口印章改「神不可摹」。
+修订记录:2026-06-12(二) 三方复审落码——上一条所记各项此前仅入记录未入代码,本次全部落实;另:
+ dot 點睛相位(triedT>1s，时间不代演)/收尾呼吸提亮+97% 自解锁/infl 核区 ×1.5 真落码/「重看本幕」入幕浮现/
+ 触屏点按 0.3s 描笔脉冲/进度改十分制汉字「已描幾分」/金句时刻底部提示让位画面/删「睫」字让瞳呼吸/
+ 「藏」门上移 7.25 浮于石上/keys 速查精简/「重看/题诗/全角」probe 文案同步。
+══════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{ --serif:"Songti SC","STSong","SimSun",serif; --sans:-apple-system,"PingFang SC",system-ui,sans-serif;
+         --ink:#07100e; --night:#0b1814; --jade:#83998f; --ivory:#ede7d8;
+         --gold:#d2ae68; --cinnabar:#c66858; --teal:#668d82; }
+  *{margin:0;padding:0;box-sizing:border-box;letter-spacing:0}
+  html,body{height:100%;overflow:hidden;background:var(--ink)}
+  body{font-family:var(--sans);color:var(--ivory);user-select:none}
+  button{font:inherit;letter-spacing:0}
+  #scene{position:fixed;inset:0;display:block;cursor:none;z-index:1;touch-action:none}
+  .ui{position:fixed;inset:0;pointer-events:none;z-index:5;font-family:var(--serif)}
+  .ui .seal{position:absolute;top:22px;left:22px;font-size:13px;color:var(--gold);opacity:.5}
+  .ui .hint{position:absolute;left:22px;bottom:18px;max-width:min(62vw,640px);text-align:left;
+      font-size:clamp(12px,1.6vw,15px);color:var(--jade);
+      opacity:0;transition:opacity 1.6s;text-shadow:0 1px 14px rgba(7,16,14,.6)}
+  .ui .hint.show{opacity:.8}
+  .ui .foot{position:absolute;top:14px;right:68px;font-size:13px;
+      opacity:0;transition:opacity 1.6s}
+  .ui .foot.show{opacity:1}
+  .ui .keys{position:absolute;right:22px;bottom:18px;font-size:11px;
+      color:var(--jade);opacity:0;transition:opacity 1.6s}
+  .ui .keys.show{opacity:.5}
+  .ui .foot .lnk{pointer-events:none;min-width:44px;min-height:44px;padding:0 10px;cursor:pointer;
+      color:var(--jade);opacity:.78;border:1px solid rgba(131,153,143,.35);border-radius:3px;
+      background:rgba(11,24,20,.45);transition:.25s}
+  .ui .foot.show .lnk{pointer-events:auto}
+  .ui .foot .lnk:hover{color:var(--gold);border-color:var(--gold)}
+  .ui .foot .lnk:focus-visible,#enter .blink:focus-visible,#fsBtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  #enter{position:fixed;inset:0;z-index:9;background:rgba(7,16,14,.97);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      font-family:var(--serif);transition:opacity 1.6s}
+  #enter.gone{opacity:0;pointer-events:none}
+  #enter .big{font-size:clamp(28px,6vw,52px);color:var(--ivory);text-shadow:0 2px 30px rgba(7,16,14,.7)}
+  #enter .sub{margin-top:22px;font-size:clamp(13px,1.8vw,16px);color:var(--jade)}
+  #enter .story{margin-top:18px;max-width:min(88vw,560px);font-size:clamp(12px,1.5vw,15px);line-height:1.9;color:var(--jade);opacity:.82;text-align:center}
+  #enter .blink{min-width:44px;min-height:44px;margin-top:38px;padding:0 16px;font-size:14px;color:var(--gold);opacity:.85;
+      border:1px solid rgba(210,174,104,.45);border-radius:3px;background:rgba(11,24,20,.5);cursor:pointer;
+      animation:blink 2.6s ease-in-out infinite}
+  #enter.journey .sub,#enter.journey .story,#enter.journey .blink{display:none}
+  #enter.journey .big::before{content:'第 肆 幕';display:block;margin-bottom:14px;font-size:13px;color:var(--gold)}
+  #fsBtn{position:fixed;top:14px;right:16px;z-index:50;width:44px;height:44px;color:var(--jade);
+      opacity:.55;cursor:pointer;border:1px solid rgba(131,153,143,.35);border-radius:3px;
+      background:rgba(11,24,20,.45);transition:.25s;user-select:none}
+  #fsBtn:hover{color:var(--gold);border-color:rgba(210,174,104,.65);opacity:.95}
+  @keyframes blink{0%,100%{opacity:.25}50%{opacity:.9}}
+  @media (max-width:640px){.ui .hint{right:22px;bottom:66px;max-width:none}.ui .foot{top:64px;right:16px}}
+  @media (prefers-reduced-motion:reduce){#enter .blink{animation:none}.ui .hint,.ui .foot,.ui .keys,#enter,#fsBtn{transition:none}}
+</style>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div class="ui">
+    <div class="seal">第 肆 幕 · 寫 真 · 神 不 可 摹</div>
+    <div class="foot"><button class="lnk" id="relook" type="button">↺ 重 看 本 幕</button></div>
+    <div class="hint" id="hint"></div>
+    <div class="keys" id="keys">R 重看　·　→ 出幕</div>
+  </div>
+  <div id="enter">
+    <div class="big">寫 真</div>
+    <div class="sub">她的神，拷不走 —— 以指為筆，描她在絹上的影</div>
+    <div class="story">相思成疾，杜麗娘對鏡自畫一幅春容，把自己留在畫裡</div>
+    <button class="blink" id="enterBtn" type="button">輕 觸 入 幕</button>
+  </div>
+<script>
+"use strict";
+const SERIF='"Songti SC","STSong","SimSun",serif', TAU=Math.PI*2;
+const cv=document.getElementById('scene');
+let ctx=cv.getContext('2d');
+let W,H,DPR=1, scale, ox, oy, BRUSH=160;
+const REDUCED_MOTION=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* 确定性随机(仅用于布局;动效用 Math.random) */
+const SEED=20260612>>>0; let _s=SEED;
+const rnd=()=>{ _s=(_s*1664525+1013904223)>>>0; return _s/4294967296; };
+const pick=v=>v[(rnd()*v.length)|0];
+
+/* ====== 字号 / 色板(照主作品) ====== */
+const T3=0.56,T4=0.42,T5=0.33,T6=0.26,T7=0.21,T8=0.175;
+const TOKEN={ink:"#07100e",night:"#0b1814",jade:"#83998f",ivory:"#ede7d8",gold:"#d2ae68",cinnabar:"#c66858",teal:"#668d82"};
+const RGB={ink:[7,16,14],night:[11,24,20],jade:[131,153,143],ivory:[237,231,216],gold:[210,174,104],cinnabar:[198,104,88],teal:[102,141,130]};
+const COL={ fig:TOKEN.ivory, near:TOKEN.ivory, mid:TOKEN.jade, far:TOKEN.jade,
+            faint:TOKEN.teal, ghost:TOKEN.teal, moss:TOKEN.teal, gold:TOKEN.gold };
+const VW=16, VH=9;
+const COLD=RGB.teal;                            // 未观测的冷玉色
+const MX=x=>ox+x*scale, MY=y=>oy+y*scale;
+const lerp=(a,b,t)=>a+(b-a)*t;
+function hex2rgb(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+
+/* ====== 字粒布点 ====== */
+const items=[], boxes=[]; let _grp=null, _kind='scene';
+function putRaw(x,y,text,size,color,o){ o=o||{};
+  items.push({x,y,text,size,color,vert:!!o.vert,grp:_grp,kind:_kind,a:o.a==null?(0.85+rnd()*0.15):o.a});
+  return items[items.length-1]; }
+function hit(x,y,w,h){ for(const b of boxes){ if(Math.abs(x-b.x)<(w+b.w)/2 && Math.abs(y-b.y)<(h+b.h)/2) return true; } return false; }
+function put(x,y,text,size,color,o){ o=o||{}; const vert=!!o.vert, f=o.f==null?0.94:o.f, pad=o.pad==null?0.05:o.pad;
+  const w=((vert?1:[...text].length)*size+pad)*f, h=((vert?[...text].length:1)*size+pad)*f;
+  if(hit(x,y,w,h)) return false; boxes.push({x,y,w,h}); putRaw(x,y,text,size,color,o); return true; }
+
+/* ====== 场景元素 ====== */
+const PCX=11.55;                                            // 画像中轴(绢面内)
+const SCR={x0:9.45, x1:13.45, y0:1.15, y1:7.65};            // 立轴范围(x0/x1=轴边竖列)
+const GATE={x:14.35, y:7.25};                               // 「藏」字出口(浮于太湖石上方,不压锚字)
+const COLO_X1=10.34, COLO_X2=9.96, COLO_Y0=2.45, COLO_ST=0.52;  // 题款两列(右起,列距0.38·离绢缘0.14)
+const COLO_N=14;
+
+function heroine(x,top,size){                               // 完整版麗娘(照主作品:釵+步搖+鬢髻袖裙帶)
+  const nm=[...'麗娘']; let y=top;
+  put(x,y,nm[0],size,COL.fig,{f:0.96,pad:0.05,a:0.97}); const headY=y;
+  put(x-size*0.8,y,'袖',size*0.44,COL.near,{f:0.85,a:0.82}); put(x+size*0.8,y,'袖',size*0.44,COL.near,{f:0.85,a:0.82});
+  y+=size*1.18; put(x,y,nm[1],size,COL.fig,{f:0.96,pad:0.05,a:0.97}); y+=size*0.9;
+  put(x-size*0.42,y,'裙',size*0.5,COL.near,{f:0.85,a:0.82}); put(x+size*0.42,y,'帶',size*0.5,COL.near,{f:0.85,a:0.82});
+  const hy=headY-size*0.74; put(x,hy,'釵',size*0.5,COL.gold,{f:0.66,pad:0.02,a:0.95});
+  put(x-size*0.5,hy+size*0.05,'鬢',size*0.32,COL.near,{f:0.66,a:0.8}); put(x+size*0.5,hy+size*0.05,'髻',size*0.32,COL.near,{f:0.66,a:0.8});
+  put(x+size*0.52,hy-size*0.34,'步搖',size*0.28,COL.gold,{f:0.66,a:0.82});
+}
+function scrollFrame(){                                     // 立轴形制:天桿横陈于顶·地軸卧于底(軸頭加重)·两侧綾边
+  for(let x=SCR.x0+0.5;x<=SCR.x1-0.4;x+=0.5){
+    putRaw(x,SCR.y0,'桿',T7,COL.faint,{a:0.6}); putRaw(x,SCR.y1,'軸',T7,COL.faint,{a:0.6}); }
+  putRaw(SCR.x0,SCR.y0,'桿',T6,COL.far,{a:0.85}); putRaw(SCR.x1,SCR.y0,'桿',T6,COL.far,{a:0.85});
+  putRaw(SCR.x0,SCR.y1,'軸',T5,COL.far,{a:0.9});  putRaw(SCR.x1,SCR.y1,'軸',T5,COL.far,{a:0.9});
+  for(let y=SCR.y0+0.6;y<=SCR.y1-0.5;y+=0.55){
+    putRaw(SCR.x0,y,'綾',T8,COL.ghost,{a:0.45}); putRaw(SCR.x1,y,'綾',T8,COL.ghost,{a:0.45}); }
+}
+function taihu(cx,cy){                                      // 太湖石:石/巖/苔字堆,石身留竅
+  putRaw(cx-0.08,cy-0.45,'石',T4,COL.mid,{a:0.95});
+  const vocab=[...'巖石磴罅竅峰'];
+  let placed=0,tries=0;
+  while(placed<22&&tries<260){ tries++;
+    const a=rnd()*TAU, r=Math.sqrt(rnd());
+    const x=cx+Math.cos(a)*0.82*r, y=cy+Math.sin(a)*0.66*r;
+    if(Math.hypot(x-(cx-0.08),y-(cy-0.45))<0.34) continue;          // 让「石」字透气
+    if(put(x,y,pick(vocab),T7*(0.85+rnd()*0.35),COL.far,{f:0.8,pad:0.03,a:0.6+rnd()*0.3})) placed++;
+  }
+  for(let i=0;i<6;i++) put(cx-0.7+rnd()*1.5, cy+0.46+rnd()*0.24,'苔',T8,COL.moss,{f:0.8,pad:0.02,a:0.55});
+}
+function portrait(){                                        // 绢上画像:侧立女子(面朝左,即望向真身麗娘)
+  const X=PCX, F=COL.fig, N=COL.near, G=COL.gold;
+  _kind='portrait';
+  const pts=[
+    /* 鬢髮(髻绾于后) */
+    [-0.34,2.20,'鬢',T7,N],[-0.14,2.06,'鬢',T7,N],[0.08,2.00,'鬢',T7,N],[0.28,2.04,'鬢',T7,N],
+    [0.45,2.16,'鬢',T7,N],[0.53,2.37,'鬢',T7,N],[0.50,2.59,'鬢',T7,N],
+    [0.16,1.78,'髻',T6,N],[0.40,1.87,'髻',T7,N],
+    [0.04,1.64,'釵',T7,G],
+    /* 眉鼻唇腮頸(原有「睫」与瞳相叠,删之,让双瞳缺口透气) */
+    [-0.30,2.33,'眉',T7,F],
+    [-0.45,2.65,'鼻',T7,F],[-0.36,2.84,'唇',T7,F],[0.01,2.77,'腮',T7,N],
+    [-0.10,3.02,'頸',T7,F],[0.03,3.17,'頸',T8,N],
+    /* 两袖(前袖微拢) */
+    [-0.30,3.37,'袖',T6,F],[-0.50,3.63,'袖',T6,F],[-0.64,3.93,'袖',T6,F],[-0.72,4.25,'袖',T6,F],[-0.69,4.54,'袖',T7,N],
+    [0.34,3.41,'袖',T6,F],[0.52,3.69,'袖',T6,F],[0.64,4.01,'袖',T6,F],[0.68,4.33,'袖',T6,F],[0.61,4.61,'袖',T7,N],
+    /* 衣帶(胸前结至垂带) */
+    [-0.05,3.66,'帶',T7,N],[-0.02,4.02,'帶',T7,N],[0.00,4.34,'帶',T6,F],
+    [0.05,4.82,'帶',T7,N],[0.08,5.32,'帶',T7,N],[0.05,5.80,'帶',T8,N],
+    /* 裙(两侧轮廓,A 字渐张) */
+    [-0.48,4.66,'裙',T6,F],[-0.58,5.06,'裙',T6,F],[-0.68,5.46,'裙',T6,F],[-0.78,5.86,'裙',T6,F],[-0.88,6.26,'裙',T6,F],[-0.96,6.62,'裙',T6,F],
+    [0.50,4.66,'裙',T6,F],[0.62,5.06,'裙',T6,F],[0.72,5.46,'裙',T6,F],[0.82,5.86,'裙',T6,F],[0.92,6.26,'裙',T6,F],[0.99,6.62,'裙',T6,F],
+    /* 裙摺(内里淡些) */
+    [-0.26,4.96,'裙',T7,N],[-0.20,5.56,'裙',T7,N],[-0.30,6.16,'裙',T7,N],
+    [0.24,5.01,'裙',T7,N],[0.30,5.61,'裙',T7,N],[0.20,6.21,'裙',T7,N],[-0.02,6.02,'裙',T8,N],
+    /* 裾(下襬弧) */
+    [-0.92,6.95,'裾',T6,F],[-0.62,6.97,'裾',T6,F],[-0.31,6.99,'裾',T6,F],[0.00,7.00,'裾',T6,F],
+    [0.31,6.99,'裾',T6,F],[0.62,6.97,'裾',T6,F],[0.93,6.95,'裾',T6,F],
+  ];
+  for(const [dx,dy,ch,sz,co] of pts) putRaw(X+dx,dy,ch,sz,co,{a:0.95});
+  putRaw(X+0.60,1.96,'步搖',T8,G,{vert:true,a:0.92});         // 步摇垂于髻后
+  _kind='pupil';                                              // 双瞳:c 永远封顶 0 —— 描不出(T6,笔到则亮笔走则灭)
+  putRaw(X-0.21,2.50,'瞳',T6,F,{a:0.95});
+  putRaw(X+0.03,2.53,'瞳',T6,F,{a:0.95});
+  _kind='scene';
+}
+function compose(){
+  items.length=0; boxes.length=0; _s=SEED;
+  _kind='scene';
+  put(0.92,8.42,'寫真',T3,COL.gold,{pad:0.14});                // 景名(照主作品左下款)
+  put(0.96,7.95,'第肆幕',T5,COL.far,{pad:0.1});
+  _grp='麗娘'; heroine(4.6,3.5,T3); _grp=null;                 // 真身:温暖象牙,带釵步搖(起点4.6,行+3.9至轴前)
+  scrollFrame();
+  taihu(14.35,7.95);
+  for(let i=0;i<16;i++){ const x=0.8+rnd()*12.4, y=8.05+rnd()*0.55;   // 地苔疏点
+    if(x<2.3) continue; if(x>13.0) continue;
+    put(x,y,pick([...'苔蘚石']),T8,COL.ghost,{f:0.7,pad:0.02,a:0.5}); }
+  portrait();
+  _kind='colophon';                                           // 题款(写真原句),右列先题
+  const c1=[...'他年得傍蟾宮客'], c2=[...'不在梅邊在柳邊'];
+  c1.forEach((ch,i)=>{ putRaw(COLO_X1,COLO_Y0+i*COLO_ST,ch,T5,COL.gold,{a:0.92}).idx=i; });
+  c2.forEach((ch,i)=>{ putRaw(COLO_X2,COLO_Y0+i*COLO_ST,ch,T5,COL.gold,{a:0.92}).idx=7+i; });
+  _kind='scene';
+}
+
+/* ====== 量子态:凝定度 c(scene 已坍缩 c=1;portrait c=0;pupil 封顶 0) ====== */
+const GPOOL=[];
+function randGlyphs(n){ let s=''; for(let i=0;i<n;i++) s+=GPOOL[(Math.random()*GPOOL.length)|0]; return s; }
+function initQuantum(){
+  GPOOL.length=0;
+  GPOOL.push(...new Set([].concat(...items.map(it=>[...it.text])).concat([...'影魂夢息綃絹丹青筆墨'])));
+  for(const it of items){
+    it.c=(it.kind==='scene')?1:0;
+    it.trgb=hex2rgb(it.color); it.tA=it.a;
+    it.ph1=Math.random()*TAU; it.ph2=Math.random()*TAU;
+    it.sp1=0.3+Math.random()*0.55; it.sp2=0.3+Math.random()*0.55;
+    it.jamp=0.10+Math.random()*0.14;
+    it.flickT=Math.random()*0.3; it.flickEvery=0.05+Math.random()*0.14;
+    it.cur=randGlyphs([...it.text].length);
+    it.m=null; it.fix=0; it.landed=false;
+  }
+}
+
+/* ====== 夜绢底(照主作品 paper) ====== */
+function paper(g,w,h){
+  const bg=g.createLinearGradient(0,0,0,h); bg.addColorStop(0,TOKEN.night); bg.addColorStop(0.58,TOKEN.night); bg.addColorStop(1,TOKEN.ink);
+  g.fillStyle=bg; g.fillRect(0,0,w,h);
+  for(const [fx,fy,fr,al] of [[0.5,0.42,0.6,0.05],[0.18,0.72,0.42,0.035],[0.84,0.34,0.42,0.04]]){
+    const gr=g.createRadialGradient(w*fx,h*fy,0,w*fx,h*fy,Math.max(w,h)*fr); gr.addColorStop(0,`rgba(131,153,143,${al})`); gr.addColorStop(1,'rgba(131,153,143,0)'); g.fillStyle=gr; g.fillRect(0,0,w,h); }
+  let g2=20260606>>>0; const r2=()=>{g2=(g2*1664525+1013904223)>>>0;return g2/4294967296;};
+  const fibers=Math.max(10,Math.min(24,Math.round(h/72)));
+  for(let i=0;i<fibers;i++){
+    let x=-w*0.04, y=r2()*h; g.beginPath(); g.moveTo(x,y);
+    const parts=5+((r2()*5)|0);
+    for(let p=0;p<parts;p++){ const nx=w*(p+1)/parts+w*(r2()-0.5)*0.05;
+      const ny=y+(r2()-0.5)*Math.max(12,h*0.035); const cx=(x+nx)/2, cy=(y+ny)/2+(r2()-0.5)*Math.max(8,h*0.025);
+      g.quadraticCurveTo(cx,cy,nx,ny); x=nx; y=ny; }
+    g.globalAlpha=0.018+r2()*0.026; g.strokeStyle=r2()<0.28?TOKEN.ivory:TOKEN.jade;
+    g.lineWidth=0.35+r2()*0.75; g.stroke();
+  }
+  const grains=Math.max(90,Math.min(360,Math.floor(w*h/5600)));
+  g.globalAlpha=1; g.fillStyle='rgba(237,231,216,0.07)';
+  for(let i=0;i<grains;i++){ const d=0.45+r2()*0.9; g.fillRect(r2()*w,r2()*h,d,d); }
+  for(let i=0;i<5;i++){ const x=r2()*w,y=r2()*h,rad=10+r2()*32; const gr=g.createRadialGradient(x,y,0,x,y,rad); gr.addColorStop(0,'rgba(131,153,143,0.045)'); gr.addColorStop(1,'rgba(131,153,143,0)'); g.fillStyle=gr; g.fillRect(x-rad,y-rad,rad*2,rad*2); }
+  g.globalAlpha=1;
+  const v=g.createRadialGradient(w/2,h/2,Math.min(w,h)*0.34,w/2,h/2,Math.max(w,h)*0.74); v.addColorStop(0,'rgba(7,16,14,0)'); v.addColorStop(1,'rgba(7,16,14,0.55)'); g.fillStyle=v; g.fillRect(0,0,w,h);
+}
+let paperCv=null;
+function buildPaper(){ paperCv=document.createElement('canvas'); paperCv.width=W*DPR; paperCv.height=H*DPR;
+  const pc=paperCv.getContext('2d'); pc.setTransform(DPR,0,0,DPR,0,0); paper(pc,W,H); }
+
+/* ====== 声 · 全静 + 磬(三分损益) + 像散一缕风 ====== */
+const GONG=523.25;
+const LV={gong:1, shang:9/8, jue:81/64, zhi:3/2, yu:27/16, qgong:2, qshang:9/4};
+const INS_NOTES=[LV.qshang,LV.qgong,LV.yu,LV.zhi,LV.jue,LV.shang,LV.gong];   // 题款下行:清商→宫
+const Sound={ ac:null, master:null, started:false, timers:[],
+  start(){ if(this.started) return; this.started=true;
+    try{ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+      const ac=this.ac=new AC(); const m=this.master=ac.createGain(); m.gain.value=0; m.connect(ac.destination);
+      m.gain.linearRampToValueAtTime(0.6, ac.currentTime+2.0);
+      this.bell(GONG,0.06);                                   // 入幕一记磬
+      this.timers.push(setInterval(()=>{ if(Math.random()<0.22) this.chirp(); }, 1300));  // 夜虫极淡底噪(描像本静,只一缕生气)
+    }catch(e){ this.ac=null; } },
+  chirp(){ const ac=this.ac; if(!ac) return; const t=ac.currentTime, f=4300+Math.random()*900;  // 夜虫:极高频两短点(≤0.016)
+    for(let k=0;k<(Math.random()<0.5?2:1);k++){ const tk=t+k*0.09, o=ac.createOscillator(), g=ac.createGain();
+      o.type='sine'; o.frequency.value=f*(1+k*0.01);
+      g.gain.setValueAtTime(0,tk); g.gain.linearRampToValueAtTime(0.014,tk+0.008); g.gain.exponentialRampToValueAtTime(0.0004,tk+0.07);
+      o.connect(g); g.connect(this.master); o.start(tk); o.stop(tk+0.1); } },
+  stop(){ this.timers.forEach(clearInterval); this.timers.length=0;
+    if(this.ac){ try{ const p=this.ac.close(); if(p&&p.catch)p.catch(()=>{}); }catch(e){} } this.ac=null; this.started=false; },
+  bell(freq,vol){ const ac=this.ac; if(!ac) return; const t=ac.currentTime;
+    const o=ac.createOscillator(),g=ac.createGain(),o2=ac.createOscillator(),g2=ac.createGain();
+    o.type='sine';o.frequency.value=freq;o2.type='sine';o2.frequency.value=freq*2.01;g2.gain.value=0.3;
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+2.6);
+    o.connect(g);o2.connect(g2);g2.connect(g);g.connect(this.master); o.start(t);o2.start(t);o.stop(t+2.7);o2.stop(t+2.7); },
+  wind(){ const ac=this.ac; if(!ac) return; const t=ac.currentTime;          // 像散一缕轻风(低通,峰值 0.03,约 3s)
+    const buf=ac.createBuffer(1,(ac.sampleRate*3.2)|0,ac.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+    const src=ac.createBufferSource(); src.buffer=buf;
+    const lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=380; lp.Q.value=0.6;
+    const g=ac.createGain(); g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(0.03,t+0.7); g.gain.linearRampToValueAtTime(0.018,t+2.2); g.gain.linearRampToValueAtTime(0.0001,t+3.0);
+    src.connect(lp); lp.connect(g); g.connect(this.master); src.start(t); src.stop(t+3.1); } };
+
+/* ====== 幕的进程 ====== */
+const PH={trace:0,dot:1,verse:2,walk:3,inscribe:4,scatter:5,end:6};
+let PHASE='trace', phIdx=()=>PH[PHASE];
+let entered=false, gateT=0, lastProg=-1, lastPct=0;
+let vA=0;                                       // 金句渐显
+const LN={ox:0,oy:0};                           // 麗娘组位移
+let verseT=0, walkT=0, insT=0, insIdx=0, scatT=0, endT=0;
+let dotT=0, triedT=0, pupilInfl=0;              // 點睛相位:亲试计时/瞳上笔强度(每帧重算)
+let pulseT=0;                                   // 触屏点按描笔脉冲(0.3s)
+let gateReady=false, gateA=0, passX=0,passY=0,passR=0;
+let petalN=0, landedN=0;
+let mouseX=-1e4, mouseY=-1e4, mouseOver=false, last=performance.now();
+const PROBE=+((location.hash.match(/probe(\d)/)||[0,0])[1]);
+const FEN=[...'一二三四五六七八九'];              // 进度十分制(回扣「三分春色」)
+const fen=p=>p>=100?'十分':(p<10?'未足一分':FEN[(p/10|0)-1]+'分');
+
+function setHint(t){ const h=document.getElementById('hint'); h.textContent=t; h.classList.add('show'); }
+function clearHint(){ document.getElementById('hint').classList.remove('show'); }
+
+/* ====== 像散:画像字粒化瓣,飘落归石 ====== */
+function initPetals(){
+  petalN=0; landedN=0;
+  for(const it of items){
+    if(it.kind==='pupil'){ it.m='gone'; continue; }            // 描不出的,本就不在画上
+    if(it.kind!=='portrait'&&it.kind!=='colophon') continue;   // 题款随画同散(原著「题诗在上」,诗画同藏)
+    it.m='petal'; petalN++;
+    it.sx=MX(it.x); it.sy=MY(it.y);
+    it.delay=Math.random()*1.4+Math.max(0,(it.y-1.6))*0.12     // 低处先脱,高处后落
+            +(it.kind==='colophon'?2.2:0);                     // 题款晚 2.2s 起飞
+    it.pt=0; it.vy=0; it.ph=Math.random()*TAU;
+    it.rot=(Math.random()-0.5)*0.4; it.rv=(Math.random()-0.5)*1.2;
+    it.landY=MY(7.55+Math.random()*0.5);
+    it.tx=MX(13.9+Math.random()*0.9);
+    it.pa=(it.kind==='colophon')?0.92:Math.max(0.3, 0.14+(it.tA-0.14)*it.c);
+  }
+}
+function drawPetal(it,dt){
+  it.pt+=dt;
+  if(it.pt>it.delay && !it.landed){
+    const t=it.pt-it.delay;
+    it.vy=Math.min(it.vy+H*0.06*dt, H*0.14);
+    it.sy+=it.vy*dt;
+    it.sx+=((it.tx-it.sx)*0.22+Math.sin(t*1.7+it.ph)*H*0.035)*dt;
+    it.rot+=it.rv*dt;
+    if(it.sy>=it.landY){ it.landed=true; landedN++; }
+  }
+  if(it.landed){ it.sx+=(MX(14.35)-it.sx)*Math.min(1,dt*1.4);  // 落地后贴地滑向石——畫魂歸石
+    it.pa-=dt*0.9; if(it.pa<=0){ it.m='gone'; return; } }
+  const fs=Math.max(6,(scale*it.size)|0);
+  ctx.save(); ctx.translate(it.sx,it.sy); ctx.rotate(it.rot);
+  ctx.font=`${fs}px ${SERIF}`;
+  ctx.fillStyle=`rgba(${it.trgb[0]},${it.trgb[1]},${it.trgb[2]},${Math.max(0,it.pa).toFixed(3)})`;
+  if(it.vert){ const cs=[...it.text]; let y=-(cs.length-1)*fs/2; for(const ch of cs){ ctx.fillText(ch,0,y); y+=fs; } }
+  else ctx.fillText(it.text,0,0);
+  ctx.restore();
+}
+
+/* ====== 题款(逐字浮现,每字一磬) ====== */
+function drawColo(it){
+  let a=it.fix;
+  if(!it.fix && phIdx()>=PH.inscribe){
+    a=Math.max(0,Math.min(1,(insT-it.idx*0.62)/0.5));
+    if(a>=1) it.fix=1;
+  }
+  if(a<=0) return;
+  const fs=Math.max(8,(scale*it.size*(0.92+0.08*a))|0);
+  ctx.font=`${fs}px ${SERIF}`;
+  ctx.fillStyle=`rgba(210,174,104,${(0.92*a).toFixed(3)})`;
+  ctx.shadowColor='rgba(7,16,14,0.45)'; ctx.shadowBlur=fs*0.14;
+  ctx.fillText(it.text, MX(it.x), MY(it.y)); ctx.shadowBlur=0;
+}
+
+/* ====== 主绘制:字粒(凝定度模型,双瞳封顶) ====== */
+function drawItems(dt){
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  let lit=0, tot=0; pupilInfl=0;
+  for(const it of items){
+    if(it.m==='gone') continue;
+    if(it.m==='petal'){ drawPetal(it,dt); continue; }          // 瓣判定须先于题款(题款散时已化瓣)
+    if(it.kind==='colophon'){ drawColo(it); continue; }
+    let bx=it.x, by=it.y;
+    if(it.grp==='麗娘'){ bx+=LN.ox; by+=LN.oy; }
+    const hsx=MX(bx), hsy=MY(by);
+    let infl=0;
+    if((mouseOver||pulseT>0) && entered && PHASE!=='end'){     // 触屏点按脉冲亦可描
+      const d=Math.hypot(hsx-mouseX,hsy-mouseY);
+      if(d<BRUSH){ const t=1-d/BRUSH; infl=Math.min(1,t*t*(3-2*t)*1.5); } }   // 核区×1.5:光圈视界≈可点亮范围
+    if(infl>it.c) it.c+=(infl-it.c)*(1-Math.pow(0.88,dt*60));  // dt 归一·只升不降·扫过即留
+    if(it.kind==='portrait' && PHASE==='trace' && lastPct>=97 && it.c<1)
+      it.c=Math.min(1,it.c+0.09*dt);                           // 收尾自解锁(幕一 GUIDE 语言:候而不僵)
+    if(it.kind==='pupil'){ it.c=0; pupilInfl=Math.max(pupilInfl,infl); }   // 不可克隆:双瞳永远描不出
+    const c=it.c;
+    if(it.kind==='portrait'){ tot++; if(c>=0.8) lit++; }
+    if(!REDUCED_MOTION) it.flickT+=dt*(1+(1-c)*7+(it.kind==='pupil'?infl*6:0));    // 强描瞳,它只会闪得更碎
+    if(!REDUCED_MOTION && it.flickT>it.flickEvery){ it.flickT=0; if(c<0.8) it.cur=randGlyphs([...it.text].length); }
+    const txt=(c>=0.8)?it.text:it.cur;
+    if(!REDUCED_MOTION){ it.ph1+=it.sp1*dt; it.ph2+=it.sp2*dt; }
+    const amp=REDUCED_MOTION?0:(1-c)*it.jamp+(it.grp==='麗娘'?0.02:0);  // 真身也留一缕活气
+    const sx=MX(bx+Math.cos(it.ph1)*amp), sy=MY(by+Math.sin(it.ph2)*amp*0.8);
+    const fs=Math.max(6,(scale*it.size*(0.82+0.18*c))|0);
+    ctx.font=`${fs}px ${SERIF}`;
+    const r=COLD[0]+(it.trgb[0]-COLD[0])*c, g=COLD[1]+(it.trgb[1]-COLD[1])*c, b=COLD[2]+(it.trgb[2]-COLD[2])*c;
+    let aa=0.14+(it.tA-0.14)*c;
+    if(it.kind==='pupil'){ aa=0.14+0.42*infl;                  // 笔到则亮笔走则灭——墙长在手感里
+      if(PHASE==='dot') aa=Math.max(aa,REDUCED_MOTION?0.39:0.30+0.18*Math.sin(gateT*2.6)); }    // 點睛相位:双瞳呼吸引笔
+    else if(it.kind==='portrait' && c<0.8 && PHASE==='trace' && lastPct>=85)
+      aa+=REDUCED_MOTION?0.24:0.16+0.16*Math.sin(gateT*2.6+it.ph1);     // 收尾时未亮字粒呼吸提亮(幕一语言)
+    ctx.fillStyle=`rgba(${r|0},${g|0},${b|0},${Math.min(1,aa).toFixed(3)})`;
+    if(c>0.25){ ctx.shadowColor='rgba(7,16,14,0.5)'; ctx.shadowBlur=fs*0.16*c; } else ctx.shadowBlur=0;
+    if(it.vert){ const cs=[...txt]; let y=sy-(cs.length-1)*fs/2; for(const ch of cs){ ctx.fillText(ch,sx,y); y+=fs; } }
+    else ctx.fillText(txt,sx,sy);
+  }
+  ctx.shadowBlur=0;
+  lastPct=tot?Math.floor(lit/tot*100):100;                     // floor:全亮才是 100
+  return lastPct;
+}
+
+/* ====== 素绢(微亮于背景;唯一许可的"面",其余皆字粒/细线/光晕) ====== */
+function drawSilk(){
+  const x0=MX(SCR.x0+0.22), x1=MX(SCR.x1-0.22), y0=MY(SCR.y0+0.12), y1=MY(SCR.y1-0.12);
+  const br=REDUCED_MOTION?1:1+0.06*Math.sin(gateT*0.7);        // 绢面极缓呼吸
+  const a=0.075*br;
+  const g=ctx.createLinearGradient(x0,0,x1,0);
+  g.addColorStop(0,'rgba(237,231,216,0)'); g.addColorStop(0.10,`rgba(237,231,216,${(a*0.7).toFixed(3)})`);
+  g.addColorStop(0.5,`rgba(237,231,216,${a.toFixed(3)})`); g.addColorStop(0.90,`rgba(237,231,216,${(a*0.7).toFixed(3)})`);
+  g.addColorStop(1,'rgba(237,231,216,0)');
+  ctx.fillStyle=g; ctx.fillRect(x0,y0,x1-x0,y1-y0);
+  const hh=(y1-y0)*0.10;
+  const gt=ctx.createLinearGradient(0,y0,0,y0+hh);
+  gt.addColorStop(0,'rgba(11,24,20,0.09)'); gt.addColorStop(1,'rgba(11,24,20,0)');
+  ctx.fillStyle=gt; ctx.fillRect(x0,y0,x1-x0,hh);
+  const gb=ctx.createLinearGradient(0,y1-hh,0,y1);
+  gb.addColorStop(0,'rgba(11,24,20,0)'); gb.addColorStop(1,'rgba(11,24,20,0.09)');
+  ctx.fillStyle=gb; ctx.fillRect(x0,y1-hh,x1-x0,hh);
+}
+
+/* ====== 金句(写真原句) ====== */
+function drawVerse(){
+  if(vA<=0.01) return;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  const fs=Math.max(14,(scale*0.40)|0);
+  ctx.font=`${fs}px ${SERIF}`; ctx.fillStyle=`rgba(210,174,104,${(0.88*vA).toFixed(3)})`;
+  ctx.shadowColor='rgba(7,16,14,0.55)'; ctx.shadowBlur=fs*0.2;
+  ctx.fillText('三分春色描來易，一段傷心畫出難', MX(4.75), MY(1.30));
+  const fs2=Math.max(10,(fs*0.5)|0);
+  ctx.font=`${fs2}px ${SERIF}`; ctx.fillStyle=`rgba(131,153,143,${(0.75*vA).toFixed(3)})`;
+  ctx.fillText('點睛不得 —— 她的神，拷不走', MX(4.75), MY(1.86));
+  ctx.shadowBlur=0;
+}
+
+/* ====== 石上金晕(瓣落渐聚) + 出口「藏」(gateA 2.6s 渐显) ====== */
+function drawRockGlow(){
+  const g=petalN?landedN/petalN:0; if(g<=0.01) return;
+  const cx=MX(14.35), cy=MY(7.85), R=scale*1.3;
+  const pulse=REDUCED_MOTION?0.85:0.7+0.3*Math.sin(gateT*1.6);
+  const gr=ctx.createRadialGradient(cx,cy,0,cx,cy,R);
+  gr.addColorStop(0,`rgba(210,174,104,${(0.10*g*pulse).toFixed(3)})`); gr.addColorStop(1,'rgba(210,174,104,0)');
+  ctx.fillStyle=gr; ctx.fillRect(cx-R,cy-R,R*2,R*2);
+}
+function drawGate(dt){
+  if(!gateReady) return;
+  gateA=Math.min(1,gateA+dt/2.6);
+  const cx=MX(GATE.x), cy=MY(GATE.y), R=Math.min(W,H)*0.078, pulse=REDUCED_MOTION?0.5:0.5+0.5*Math.sin(gateT*2.2);
+  ctx.save(); ctx.globalAlpha=gateA*(PHASE==='end'?Math.max(0,1-endT/1.4):1);
+  const dg=ctx.createRadialGradient(cx,cy,0,cx,cy,R*1.7);                   // 暗底衬纸,无形无框
+  dg.addColorStop(0,'rgba(7,16,14,0.62)'); dg.addColorStop(0.66,'rgba(7,16,14,0.36)'); dg.addColorStop(1,'rgba(7,16,14,0)');
+  ctx.fillStyle=dg; ctx.fillRect(cx-R*1.7,cy-R*1.7,R*3.4,R*3.4);
+  const fs=R*0.95;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.font=`${fs|0}px ${SERIF}`;
+  ctx.shadowColor='rgba(210,174,104,0.85)'; ctx.shadowBlur=fs*0.3*(0.4+0.6*pulse);
+  ctx.fillStyle=`rgba(237,231,216,${(0.62+0.32*pulse).toFixed(3)})`;
+  ctx.fillText('藏',cx,cy); ctx.shadowBlur=0; ctx.restore();
+  passX=cx; passY=cy; passR=R*1.6;
+}
+
+/* ====== 进程推进 ====== */
+function checkPhase(dt,pct){
+  if(PROBE||!entered) return;                                  // 探针态冻结,专供截图;入幕前不漏提示
+  if(PHASE==='trace'){
+    if(pct>=100){ PHASE='dot'; dotT=0; triedT=0;
+      setHint('畫成了，只差點睛 —— 去描她的眼'); }             // 先引向瞳:墙要亲手去撞
+    else if(pct!==lastProg){ lastProg=pct;
+      setHint('〔肆〕寫真 · 以指為筆，描她在絹上的影 —— 已描'+fen(pct)); }
+  } else if(PHASE==='dot'){ dotT+=dt;
+    if(pupilInfl>0.35) triedT+=dt;                             // 点睛失败必须亲自撞见，时间不能替观众完成
+    if(triedT>1){ PHASE='verse'; verseT=0; Sound.bell(GONG*LV.yu,0.07);
+      clearHint(); }                                           // 金句在画面上,提示条让位
+    else if(dotT>7&&!window._dotNudged){ window._dotNudged=true; setHint('雙瞳仍在閃。請把筆停在她眼上，試著點睛。'); }
+  } else if(PHASE==='verse'){ verseT+=dt;
+    if(verseT>3.4){ PHASE='walk'; walkT=0; setHint('麗娘緩步行至軸前 —— 看她題詩畫上'); }
+  } else if(PHASE==='walk'||PHASE==='inscribe'){
+    if(walkT<6.5){ walkT+=dt;                                  // 6.5s 行 3.9 单位=均速 0.6 合 GUIDE
+      const p=Math.min(1,walkT/6.5), e=p*p*(3-2*p);
+      LN.ox=3.9*e; LN.oy=REDUCED_MOTION?0:Math.sin(walkT*3.2)*0.04*4*e*(1-e);   // 摆动包络:行中最盛,起止皆息
+      if(e>=0.85 && PHASE==='walk'){ PHASE='inscribe'; insT=0; insIdx=0; }  // 最后半步,人未停笔已起
+      if(p>=1) LN.oy=0;
+    }
+    if(PHASE==='inscribe'){ insT+=dt;
+      while(insIdx<COLO_N && insT>=insIdx*0.62){
+        Sound.bell(GONG*INS_NOTES[(insIdx/2)|0], 0.05); insIdx++; }
+      if(insT>COLO_N*0.62+1.8){ PHASE='scatter'; scatT=0; initPetals(); Sound.wind();
+        setHint('題罷，像散 —— 描得再像，也不是她'); } }
+  } else if(PHASE==='scatter'){ scatT+=dt;
+    if(!gateReady && (landedN>=petalN*0.92 || scatT>8.5)){
+      gateReady=true; Sound.bell(GONG,0.08);
+      setHint('畫魂歸石 —— 石上浮一「藏」字：點之，藏畫於太湖石（→ 鍵亦可）'); }
+  } else if(PHASE==='end'){ endT+=dt;
+    if(endT>5.2 && !window._went){ window._went=true; location.href='伍·離魂.html'; }   // 八幕链:藏畫既毕→離魂
+  }
+}
+function endAct(){ if(PHASE==='end') return; PHASE='end'; endT=0; clearHint(); Sound.bell(GONG/2,0.12); }
+function resetAct(){
+  compose(); initQuantum();
+  PHASE='trace'; LN.ox=0; LN.oy=0; vA=0; verseT=0; walkT=0; insT=0; insIdx=0; scatT=0; endT=0;
+  dotT=0; triedT=0; pupilInfl=0; pulseT=0; lastPct=0; window._dotNudged=false;
+  gateReady=false; gateA=0; petalN=0; landedN=0; lastProg=0;
+  if(entered) setHint('〔肆〕寫真 · 以指為筆，描她在絹上的影');
+}
+function showEnter(){ entered=false; clearHint();
+  document.getElementById('enter').classList.remove('gone');
+  document.getElementById('keys').classList.remove('show');
+  document.querySelector('.foot').classList.remove('show'); }
+
+/* ====== 帧循环 ====== */
+function frame(now){
+  const dt=Math.min(0.05,(now-last)/1000); last=now; if(!REDUCED_MOTION) gateT+=dt; pulseT=Math.max(0,pulseT-dt);
+  ctx.setTransform(DPR,0,0,DPR,0,0); ctx.clearRect(0,0,W,H);
+  if(paperCv) ctx.drawImage(paperCv,0,0,W,H);
+  drawSilk();
+  const pct=drawItems(dt);
+  if(PHASE!=='end'){                                           // 金句:點睛后浮现,题笔起则徐隐
+    if(phIdx()>=PH.inscribe) vA=Math.max(0,vA-dt/2.6);
+    else if(phIdx()>=PH.verse) vA=Math.min(1,vA+dt/2.2); }
+  drawVerse();
+  drawRockGlow();
+  if(PHASE==='scatter'||PHASE==='end') drawGate(PHASE==='scatter'?dt:0);   // 出幕后门随黑纱同隐
+  checkPhase(dt,pct);
+  if(mouseOver && entered && PHASE!=='end'){                   // 自绘指针:柔光圈+小金环(系统光标已藏)
+    const near=gateReady && Math.hypot(mouseX-passX,mouseY-passY)<passR;
+    const g=ctx.createRadialGradient(mouseX,mouseY,0,mouseX,mouseY,BRUSH*0.62);
+    g.addColorStop(0,'rgba(237,231,216,0.12)'); g.addColorStop(0.6,'rgba(237,231,216,0.04)'); g.addColorStop(1,'rgba(237,231,216,0)');
+    ctx.fillStyle=g; ctx.fillRect(mouseX-BRUSH,mouseY-BRUSH,BRUSH*2,BRUSH*2);
+    ctx.strokeStyle=`rgba(210,174,104,${near?0.85:0.28})`; ctx.lineWidth=near?1.4:1;
+    ctx.beginPath(); ctx.arc(mouseX,mouseY,near?13:9,0,TAU); ctx.stroke();
+    if(near){ ctx.fillStyle='rgba(210,174,104,0.5)'; ctx.beginPath(); ctx.arc(mouseX,mouseY,2,0,TAU); ctx.fill(); }
+  }
+  if(PHASE==='end'){                                           // 终幕字版:淡入·停驻·随幕同隐
+    const veil=Math.min(1,endT/1.8);
+    ctx.fillStyle=`rgba(7,16,14,${(veil*0.93).toFixed(3)})`; ctx.fillRect(0,0,W,H);
+    let ta=Math.max(0,Math.min(1,(endT-0.6)/1.2));
+    if(endT>3.4) ta*=Math.max(0,1-(endT-3.4)/1.2);
+    if(ta>0){ const fs=Math.max(18,(Math.min(W,H)*0.045)|0);
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font=`${fs}px ${SERIF}`; ctx.fillStyle=`rgba(237,231,216,${(0.9*ta).toFixed(3)})`;
+      ctx.fillText('本 幕 終 —— 寫 真', W/2, H*0.46);
+      ctx.font=`${(fs*0.5)|0}px ${SERIF}`; ctx.fillStyle=`rgba(131,153,143,${(0.7*ta).toFixed(3)})`;
+      ctx.fillText('畫已藏石 · 她的神，仍在她身上', W/2, H*0.46+fs*1.5);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ====== 尺寸 / 入幕 / 事件 ====== */
+function resizeLayout(){
+  const os=scale, oox=ox, ooy=oy;                              // 旧映射(scatter 期瓣坐标重映射用)
+  W=window.innerWidth; H=window.innerHeight;
+  DPR=Math.max(.5,Math.min(window.devicePixelRatio||1,2,Math.sqrt(8000000/Math.max(1,W*H))));
+  cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  scale=Math.min(W/VW,H/VH)*0.95; ox=(W-VW*scale)/2; oy=(H-VH*scale)/2;
+  BRUSH=Math.min(W,H)*0.13; buildPaper();
+  if(os) for(const it of items){ if(it.m!=='petal') continue;  // 瓣群随窗变,不与石错位
+    it.sx=ox+(it.sx-oox)/os*scale; it.sy=oy+(it.sy-ooy)/os*scale;
+    it.landY=oy+(it.landY-ooy)/os*scale; it.tx=ox+(it.tx-oox)/os*scale; }
+}
+window.addEventListener('resize', resizeLayout);
+cv.addEventListener('pointermove', e=>{ mouseX=e.clientX; mouseY=e.clientY; mouseOver=true; });
+cv.addEventListener('pointerleave', ()=>{ mouseOver=false; });
+function clearTouchPointer(e){ if(e.pointerType==='touch'){ mouseOver=false; mouseX=mouseY=-1e4; } }
+cv.addEventListener('pointerup', clearTouchPointer);
+cv.addEventListener('pointercancel', clearTouchPointer);
+cv.addEventListener('pointerdown', e=>{
+  mouseX=e.clientX; mouseY=e.clientY; mouseOver=true;          // 落指先更新坐标,再判断幕状态
+  if(!entered || PHASE==='end') return;
+  if(gateReady && Math.hypot(e.clientX-passX,e.clientY-passY)<passR){ endAct(); return; }
+  pulseT=0.3;                                                  // 0.3s 描笔脉冲:点一下亦晕开一小片
+});
+function enter(){ const el=document.getElementById('enter'); if(el.classList.contains('gone')) return;
+  el.classList.add('gone'); entered=true;
+  document.getElementById('keys').classList.add('show');
+  document.querySelector('.foot').classList.add('show');       // 触屏观众的重看入口,随 keys 同现
+  Sound.start();
+  setHint('〔肆〕寫真 · 以指為筆，描她在絹上的影'); lastProg=0; }
+document.getElementById('enterBtn').addEventListener('click', enter);
+document.getElementById('relook').addEventListener('click', e=>{ e.stopPropagation(); if(entered) resetAct(); });
+window.addEventListener('keydown', ev=>{
+  if(!entered && (ev.code==='Space'||ev.key==='Enter')){ ev.preventDefault(); enter(); return; }
+  if(!entered) return;
+  if(ev.key==='ArrowRight' && gateReady && PHASE==='scatter') endAct();
+  if(ev.key==='r'||ev.key==='R') resetAct();
+});
+
+/* ====== 探针(headless 截图专用;PROBE>0 时进程冻结) ====== */
+function applyProbe(){
+  if(!PROBE) return;
+  const en=document.getElementById('enter'); en.classList.add('gone'); en.style.display='none';   // 探针态直接撤幕(headless 虚拟时间走不完 CSS 过渡)
+  entered=true;                                                             // 不启 AudioContext
+  document.getElementById('keys').classList.add('show');
+  document.querySelector('.foot').classList.add('show');
+  const ports=items.filter(it=>it.kind==='portrait');
+  if(PROBE===5){ ports.forEach(it=>it.c=1); PHASE='dot'; dotT=1;            // 點睛相位:全亮+笔停在左瞳上
+    mouseX=MX(PCX-0.21); mouseY=MY(2.50); mouseOver=true;
+    setHint('畫成了，只差點睛 —— 去描她的眼'); return; }
+  if(PROBE===1){ ports.forEach(it=>{ if(it.y<4.3) it.c=1; });
+    mouseX=MX(11.5); mouseY=MY(4.6); mouseOver=true;
+    setHint('〔肆〕寫真 · 以指為筆，描她在絹上的影 —— 已描四分'); }
+  if(PROBE>=2){ ports.forEach(it=>it.c=1); vA=1; PHASE='verse';
+    setHint('「三分春色描來易，一段傷心畫出難」 —— 點睛不得：她的神，拷不走'); }
+  if(PROBE>=3){ PHASE='inscribe'; LN.ox=3.9; insT=999; insIdx=COLO_N; vA=0;
+    setHint('麗娘題詩畫上 —— 他年得傍蟾宮客，不在梅邊在柳邊'); }
+  if(PROBE>=4){ initPetals();
+    for(const it of items){ if(it.m==='petal'){ it.m='gone'; } }
+    landedN=petalN;
+    PHASE='scatter'; gateReady=true; gateA=1;
+    setHint('畫魂歸石 —— 石上浮一「藏」字：點之，藏畫於太湖石（→ 鍵亦可）'); }
+}
+
+function autoEnterJourney(){
+  if(PROBE||new URLSearchParams(location.search).get('debug')==='1') return;
+  try{ if(sessionStorage.getItem('qg_journey_active')!=='1') return; }catch(_){ return; }
+  document.getElementById('enter').classList.add('journey');
+  setTimeout(enter,REDUCED_MOTION?220:900);
+}
+
+/* ====== 启动 ====== */
+resizeLayout();
+compose(); initQuantum();
+applyProbe();
+autoEnterJourney();
+requestAnimationFrame(frame);
+
+/* ====== 全屏沉浸:右上角图标 + 入园自动 + F 键;iframe 内请求外壳全屏 ====== */
+(function(){
+  var framed=false; try{ framed = (window.self!==window.top) && !!window.top.document; }catch(e){ framed=false; }
+  function fsDoc(){ try{ return framed?window.top.document:document; }catch(e){ return document; } }
+  function fsEl(){ try{ return framed?window.top.document.documentElement:document.documentElement; }catch(e){ return document.documentElement; } }
+  function isFS(){ try{ return !!fsDoc().fullscreenElement; }catch(e){ return false; } }
+  function canFS(){ try{ const doc=fsDoc(), el=fsEl(), pol=doc.permissionsPolicy||doc.featurePolicy; return doc.fullscreenEnabled===true && !!el.requestFullscreen && !(typeof navigator!=='undefined'&&navigator.webdriver) && !(pol&&pol.allowsFeature&&pol.allowsFeature('fullscreen')===false); }catch(e){ return false; } }
+  function reqFS(){ try{ if(!isFS()&&canFS()){ const p=fsEl().requestFullscreen(); if(p&&p.catch)p.catch(()=>{}); } }catch(_){} }
+  function exitFS(){ try{ if(isFS()){ const p=fsDoc().exitFullscreen(); if(p&&p.catch)p.catch(()=>{}); } }catch(_){} }
+  var btn=document.createElement('button'); btn.id='fsBtn'; btn.type='button'; btn.textContent='⛶';
+  btn.title='全屏'; btn.setAttribute('aria-label','全屏'); btn.setAttribute('aria-pressed','false');
+  function toggle(e){ if(e){ e.stopPropagation(); e.preventDefault(); } isFS()?exitFS():reqFS(); }
+  btn.addEventListener('click', toggle);
+  function syncLabel(){ const active=isFS(); btn.setAttribute('aria-pressed',String(active)); btn.title=active?'退出全屏':'全屏'; btn.setAttribute('aria-label',btn.title); }
+  document.addEventListener('fullscreenchange', syncLabel);
+  var topDoc=null;
+  try{ if(framed){ topDoc=window.top.document; topDoc.addEventListener('fullscreenchange', syncLabel); } }catch(e){ topDoc=null; }
+  addEventListener('pagehide',function(){
+    document.removeEventListener('fullscreenchange',syncLabel);
+    if(topDoc) try{ topDoc.removeEventListener('fullscreenchange',syncLabel); }catch(_){}
+    Sound.stop();
+  },{once:true});
+  function mount(){ (document.body||document.documentElement).appendChild(btn); }
+  if(document.body) mount(); else addEventListener('DOMContentLoaded', mount);
+  /* 入园那一下顺手全屏(展览触屏);失败也无妨,右上角按钮兜底 */
+  var auto=false; function autoFS(){ if(auto) return; auto=true; reqFS(); }
+  const enterEl=document.getElementById('enter'), enterBtn=document.getElementById('enterBtn');
+  if(enterBtn) enterBtn.addEventListener('pointerdown', function(){ autoFS(); }, {capture:true, once:true});
+  addEventListener('keydown', function(e){
+    if(e.key==='f'||e.key==='F'){ toggle(e); return; }
+    if(!auto && enterEl&&!enterEl.classList.contains('gone') && (e.code==='Space'||e.key==='Enter')) autoFS();
+  }, {capture:true});
+})();
+
+</script>
+</body>
+</html>

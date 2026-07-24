@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>量子游园 · 捌 · 三生路</title>
+<!--
+  ════════ 量子游园 · 捌 · 終幕「牡丹亭上三生路」 ════════
+
+  ◆ 概念(量子:多世界诠释)
+    观者在前几幕走过的测量路径,决定其落在哪一个世界。同一句金句
+    「牡丹亭上三生路」(《牡丹亭·標目》〔蝶戀花〕末句,原文核对)居中,
+    惊梦台款识同款排版(引号+竖排世相落款「終·圓/終·畫」;殤只上引号不落款——话说一半);
+    四周环列前幕记忆锚字十五枚:月柳亭松桐山池(一園春七字)·璧(惊梦玉璧)·橋(纠缠)·
+    廊(寻梦)·燭(离魂)·畫(拾画)·容(写真春容)·瞳(點睛之忆)·梅 —— 均冷玉起始,观之即显。
+
+  ◆ 三世(URL ?fate=yuan|shang|hua,无参数默认 yuan;&dev=1/probe 下键 1/2/3 即时切换,展览态不许键改命)
+    yuan 圓·渡而來(暖):观众先亲手唤醒一字,此后接力观测——当前
+        一忆呼吸相候,看它才醒(时间只提示,不自燃;未轮到的记忆暖而不醒 softCap 0.55),
+        自東而西次第点亮(每字一磬,五声跨三八度严格上行琶音,低宫起,**瞳殿后=末磬最高音**,
+        與觀照校准點睛收官互文);麗娘+柳夢梅小像并立句下;句成→款识徐现→满园
+        字粒化春絮缓缓上飘;出口「遊」。声=琶音磬+春絮(无持续低 pad——低鸣只许惊梦台用)。
+    shang 殤·獨夢而來(冷):同句,但「三生路」三字 c 封顶 0.6——贴顶后显真字而
+        压暗慢呼吸(永远暖不到金);**瞳封顶 0.5 且永闪不定形(這一世點不了睛)**;锚字仅
+        半数可亮且皆冷玉;款识只上引号,引号下垂落题词「冷雨幽窗燈不紅」(《牡丹亭·
+        鬧殤》原句,冷玉不金);唯一暖字=右下一枚「梅」(28s/60s 双兜底提示);
+        麗娘独影 12s 起 55s 间渐淡;出口「夢」。声=单磬(只低宫一音)+远风。
+    hua 畫·拾畫而來(纸境):全园字粒缓缓压扁聚拢,装裱为一幅竖轴——装裱即定影,
+        金句按序题画凝形,锚字随入卷错峰点亮,散字低凝作纸面肌理;天头让出
+        UI 带(天头大于地脚);柳夢梅独立轴外看,款识落定后画外钉一句世界线
+        「有一世,三聲無人應」(自拟);出口「卷」。声=偶发纸响,近乎全静。
+
+  ◆ 交互流程
+    轻触入园(激活 AudioContext)→ 指针柔光圈观测字粒(c 只升不降,按 dt 归一,
+    c≥0.8 显真字,冷玉→本色)→ 各世完成各自命途 → 出口暗底衬纸+金晕呼吸,
+    gateA 2.6s 渐显 → 点击/→键 出幕(门随黑场渐隐) →「本幕終·三生路」淡出回开场。
+
+  ◆ 参数表
+    虚拟坐标 16:9(scale/ox/oy/MX/MY 照主作品)| BRUSH=短边×0.2 | c 系数 0.12
+    显示阈值 0.8 | gateA 2.6s | 布局 LCG 种子 20260612(动效用普通随机)
+    GONG=523.25(黄钟=宫=C5),三分损益 LV | 一切底噪 ≤0.05
+    yuan:接力须观众先点亮一字,其后每个候字仍须观测;bloom 后春絮升速 0.10–0.24 单位/s
+    shang:麗娘 alpha 1→0.22(12s 起,55s);三生路 cap=0.6;暗锚字 cap=0.35
+    hua:装裱 1.2s 起 8.5s 完成,纸响间隔 6.5s(55% 概率)
+
+  ◆ 文案考证
+    「牡丹亭上三生路」=《牡丹亭·標目》原句(可靠)。其余引导提示语皆自拟,
+    不标注为原文。
+
+  ◆ 调试探针(headless 验证用,不影响正常观展)
+    ?probe=in  直入园(跳过遮罩) | ?probe=lit 直设完成态(静默,核对终态构图)
+    1/2/3 切世仅 probe/&dev=1 下生效并露出键位说明(展览态连按键也失效,路径由桥三门定)
+
+  ◆ 修订 2026-06-12:三方审查修订——封顶字贴顶显真字压暗慢呼吸(殤)/装裱即定影(畫)/
+    天头让 UI 带/单字出口遊·夢·卷/圆世首字须亲点+琶音严格上行/门随黑场渐隐/
+    款识殤只上引号/全角标点/触点即观测/出口提示挪至门开并限时退场/兜底提示等。
+  ◆ 修订 2026-06-12(二):三批评人复审逐条落地——贴顶字定格真字停闪(殤三生路可读)/
+    殤款识只画上引号即止/圆世接力须观众逐字观测/殤 28s·60s 双提示
+    +60s 梅呼吸提亮相候/畫世装裱错峰凝形(金句按序题画·锚字随入卷·散字低凝0.5)/
+    1·2·3 切世键位说明仅 probe 露出(按键仍生效)/单字门遊·夢·卷/触点即观测(pointerdown
+    亦写观测点)/门随黑场渐隐(ending 内仍画并衰减)/全部展示文案改全角标点/出口提示
+    挪入 gateOpen 且 9s 限时退场/琶音改五声×三八度严格上行无重叠/锚环错字夢→容/
+    落款改世相签終·圓·畫(殤不落款)/畫世天头让出 UI 带(顶轴行 1.05 起,内容下沉)/
+    畫世纸响排除 frame 且 0.18s 节流/终场字幕展览态去「試驗稿」。
+    GPOOL 含 0/1 为全作量子底色(主作品年谱同用),三世共享同一字池——有意保留,勿过滤。
+-->
+<style>
+  :root{ --serif:"Songti SC","STSong","SimSun",serif; --sans:-apple-system,"PingFang SC",system-ui,sans-serif;
+         --ink:#07100e;--night:#0b1814;--jade:#83998f;--ivory:#ede7d8;
+         --gold:#d2ae68;--cinnabar:#c66858;--teal:#668d82; }
+  *{margin:0;padding:0;box-sizing:border-box;letter-spacing:0}
+  html,body{height:100%;overflow:hidden;background:var(--ink)}
+  body{font-family:var(--sans);color:var(--ivory);user-select:none}
+  button{font:inherit;letter-spacing:0}
+  #scene{position:fixed;inset:0;display:block;cursor:none;z-index:1;touch-action:none}
+  .ui{position:fixed;inset:0;pointer-events:none;z-index:5;font-family:var(--serif)}
+  .ui .seal{position:absolute;top:22px;left:22px;font-size:13px;color:var(--gold);opacity:.5}
+  .ui .fate{position:absolute;top:46px;left:22px;font-size:12px;color:var(--jade);opacity:.6}
+  .ui .hint{position:absolute;left:22px;bottom:18px;max-width:min(62vw,640px);text-align:left;
+      font-size:clamp(12px,1.6vw,15px);color:var(--jade);
+      opacity:0;transition:opacity 1.6s;text-shadow:0 1px 14px rgba(7,16,14,.6)}
+  .ui .hint.show{opacity:.8}
+  .ui .keys{position:absolute;right:22px;bottom:18px;font-size:11px;color:var(--jade);opacity:0;transition:opacity 1.6s}
+  .ui .keys.show{opacity:.5}
+  #enter{position:fixed;inset:0;z-index:9;background:rgba(7,16,14,.94);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      font-family:var(--serif);transition:opacity 1.6s}
+  #enter.gone{opacity:0;pointer-events:none}
+  #enter .big{font-size:clamp(28px,6vw,52px);color:var(--ivory);text-shadow:0 2px 30px rgba(7,16,14,.7)}
+  #enter .sub{margin-top:22px;font-size:clamp(13px,1.8vw,16px);color:var(--jade)}
+  #enter .story{margin-top:18px;max-width:min(88vw,560px);font-size:clamp(12px,1.5vw,15px);line-height:1.9;color:var(--jade);opacity:.82;text-align:center}
+  #enter .blink{min-width:44px;min-height:44px;margin-top:38px;padding:0 16px;font-size:14px;color:var(--gold);opacity:.85;
+      border:1px solid rgba(210,174,104,.45);border-radius:3px;background:rgba(11,24,20,.5);cursor:pointer;
+      animation:blink 2.6s ease-in-out infinite}
+  #enter .blink:focus-visible,#fsBtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  #enter.journey .sub,#enter.journey .story,#enter.journey .blink{display:none}
+  #enter.journey .big::before{content:'第 捌 幕';display:block;margin-bottom:14px;font-size:13px;color:var(--gold)}
+  #fsBtn{position:fixed;top:14px;right:16px;z-index:50;width:44px;height:44px;color:var(--jade);opacity:.55;cursor:pointer;
+      border:1px solid rgba(131,153,143,.35);border-radius:3px;background:rgba(11,24,20,.45);transition:.25s;user-select:none}
+  #fsBtn:hover{color:var(--gold);border-color:rgba(210,174,104,.65);opacity:.95}
+  @keyframes blink{0%,100%{opacity:.25}50%{opacity:.9}}
+  @media(max-width:640px){.ui .hint{right:22px;bottom:66px;max-width:none}}
+  @media(prefers-reduced-motion:reduce){#enter .blink{animation:none}.ui .hint,.ui .keys,#enter,#fsBtn{transition:none}}
+</style>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div class="ui">
+    <div class="seal">第 捌 幕 · 三 生 路</div>
+    <div class="fate" id="fateNote"></div>
+    <div class="hint" id="hint"></div>
+    <div class="keys" id="keys"><span id="keysDev">1 / 2 / 3 切三世　·　</span>→ 出幕　·　R 重看本世</div>
+  </div>
+  <div id="enter">
+    <div class="big">三 生 路</div>
+    <div class="sub">多世界 —— 你一路看過的，決定你落在哪一世</div>
+    <div class="story">幽明既通，她得以回生 —— 三生路上，你一路的觀看決定她落在哪一世</div>
+    <button class="blink" id="enterBtn" type="button">輕 觸 入 園</button>
+  </div>
+<script>
+"use strict";
+const SERIF='"Songti SC","STSong","SimSun",serif', TAU=Math.PI*2;
+const cv=document.getElementById('scene');
+let ctx=cv.getContext('2d');
+let W,H,DPR=1, scale, ox, oy, BRUSH=200;
+const REDUCED_MOTION=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const motionSin=x=>REDUCED_MOTION?0:Math.sin(x);
+const lerp=(a,b,t)=>a+(b-a)*t;
+const clamp01=v=>Math.max(0,Math.min(1,v));
+
+/* 确定性随机(仅用于布局) */
+let _s=20260612>>>0;
+const rnd=()=>{ _s=(_s*1664525+1013904223)>>>0; return _s/4294967296; };
+
+/* ====== 三世(fate) ====== */
+const Q=new URLSearchParams(location.search);
+let FATE=['yuan','shang','hua'].includes(Q.get('fate'))?Q.get('fate'):'yuan';
+const PROBE=Q.get('probe'), DEV=Q.get('dev')==='1';   // 切世键仅 &dev=1 / probe 下生效(展览观众路径由桥三门定,不许键改命)
+const FATE_NOTE={ yuan:'終 幕 · 三 生 路 ｜ 圓 · 渡 而 來',
+                  shang:'終 幕 · 三 生 路 ｜ 殤 · 獨 夢 而 來',
+                  hua:'終 幕 · 三 生 路 ｜ 畫 · 拾 畫 而 來' };
+const FATE_HINT={ yuan:'圓 · 渡而來 —— 先觀測一字；滿園記憶，將自東而西，次第想起',
+                  shang:'殤 · 獨夢而來 —— 以觀測撫字；有些字，這一世再暖不起來',
+                  hua:'畫 · 拾畫而來 —— 且看整園，被緩緩裝入一軸畫中' };
+
+/* ====== 律(三分损益,黄钟=宫=C5) ====== */
+const GONG=523.25;
+const LV={gong:1, shang:9/8, jue:81/64, zhi:3/2, yu:27/16, qgong:2, qshang:9/4};
+const SEQ=[1,9/8,81/64,3/2,27/16,2,9/4];
+const PENT=[1,9/8,81/64,3/2,27/16];
+const NOTES=[0.5,1,2].flatMap(o=>PENT.map(r=>GONG*o*r));       // 渡而来:五声×三八度,低宫起严格上行(无重叠)
+const CATKIN=[...'絮絮花瓣香'];
+
+/* ====== 字粒 ====== */
+const TOKEN={ink:'#07100e',night:'#0b1814',jade:'#83998f',ivory:'#ede7d8',gold:'#d2ae68',cinnabar:'#c66858',teal:'#668d82'};
+const COLD=[102,141,130];                 // 未观测的冷玉
+const items=[];
+function hex2rgb(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+function mk(x,y,text,size,color,o){ o=o||{};
+  const it={x,y,text,size,color, a:o.a==null?(0.85+rnd()*0.15):o.a, vert:!!o.vert,
+    kind:o.kind||'ground', grp:o.grp||null, idx:o.idx, cap:o.cap==null?1:o.cap,
+    noMount:!!o.noMount, drift:o.drift||0};
+  items.push(it); return it; }
+function fig(x,y,ch,s,col,grp){ return mk(x,y,ch,s,col,{kind:'fig',grp,a:0.96}); }
+function heroineMini(x,top,s,grp){                  // 麗娘小像(并立用,袖裙釵齐)
+  fig(x,top,'麗',s,'#efe9d6',grp);
+  fig(x-s*0.8,top,'袖',s*0.44,'#dbd6c3',grp); fig(x+s*0.8,top,'袖',s*0.44,'#dbd6c3',grp);
+  fig(x,top+s*1.18,'娘',s,'#efe9d6',grp);
+  fig(x-s*0.42,top+s*2.05,'裙',s*0.5,'#dbd6c3',grp); fig(x+s*0.42,top+s*2.05,'帶',s*0.5,'#dbd6c3',grp);
+  fig(x,top-s*0.74,'釵',s*0.5,'#e0c178',grp); }
+function heroinePlainMini(x,top,s,grp){             // 素衣独影(殤用,无簪钗外物)
+  fig(x,top,'麗',s,'#efe9d6',grp); fig(x,top+s*1.18,'娘',s,'#efe9d6',grp);
+  fig(x,top+s*2.0,'裙',s*0.5,'#dbd6c3',grp); }
+function liuMini(x,top,s,grp,noMount){              // 柳夢梅小像(冠+名+袖袍)
+  const made=[];
+  [...'柳夢梅'].forEach((ch,i)=>made.push(fig(x,top+i*s*1.18,ch,s,'#efe9d6',grp)));
+  made.push(fig(x,top-s*0.85,'冠',s*0.5,'#dbd6c3',grp));
+  made.push(fig(x-s*0.62,top+s*0.2,'袖',s*0.42,'#dbd6c3',grp));
+  made.push(fig(x+s*0.62,top+s*0.2,'袖',s*0.42,'#dbd6c3',grp));
+  made.push(fig(x,top+s*3.4,'袍',s*0.5,'#dbd6c3',grp));
+  if(noMount) for(const it of made) it.noMount=true; }
+
+/* ====== 构景(per-fate) ====== */
+const PSP=1.16, PX0=8-3*PSP, PY=3.55;               // 金句七字横列
+function compose(){
+  items.length=0; _s=20260612>>>0;
+  /* 金句「牡丹亭上三生路」(《牡丹亭·標目》原句) */
+  [...'牡丹亭上三生路'].forEach((ch,i)=>{
+    const it=mk(PX0+i*PSP,PY,ch,0.95,'#e0c178',{kind:'phrase',idx:i,a:1});
+    if(FATE==='shang'&&i>=4) it.cap=0.6;            // 殤:「三生路」迟迟不亮
+  });
+  /* 记忆锚字环(前幕十四忆,环列;容=写真春容,瞳=點睛之忆) */
+  [...'月璧柳橋亭廊松燭桐畫山容瞳池'].forEach((ch,i,arr)=>{
+    const a=0.35+i/arr.length*TAU;
+    const x=8+Math.cos(a)*6.1+(rnd()-0.5)*0.3, y=4.35+Math.sin(a)*3.15+(rnd()-0.5)*0.2;
+    const col = FATE==='shang' ? '#8fb09e'          // 殤:亮了也仍是冷玉
+              : FATE==='hua'   ? '#dbd6c3'
+              : (ch==='月'||ch==='璧'||ch==='瞳') ? '#e0c178' : '#efe9d6';
+    const it=mk(x,y,ch,0.6,col,{kind:'anchor',a:1});
+    if(ch==='瞳'){                                  // 瞳:圓世琶音末磬;殤世永闪——這一世點不了睛
+      if(FATE==='shang'){ it.cap=0.5; it.everFlick=true; }
+    } else if(FATE==='shang'&&i%2===0) it.cap=0.35; // 殤:只亮一半
+  });
+  const mei=mk(13.0,7.45,'梅',0.6,FATE==='shang'?'#e0c178':'#efe9d6',{kind:'anchor',a:1});
+  mei.mei=true;                                     // 殤之唯一暖字
+  /* 人物 */
+  if(FATE==='yuan'){ heroineMini(7.32,5.1,0.42,'麗娘'); liuMini(8.68,4.83,0.42,'柳夢梅',false); }   // 柳像上提0.12,两像视觉中心同高
+  else if(FATE==='shang'){ heroinePlainMini(8,5.05,0.45,'麗娘'); }
+  else { liuMini(2.9,3.7,0.5,'柳夢梅',true); }      // 畫:柳生独立轴外看(不入裱)
+  /* 园地散字 */
+  const AVOID=[[3.3,2.9,12.7,4.25],[6.3,4.1,9.7,6.7],[6.9,7.1,9.1,8.2],[12.2,6.8,13.8,8.0]];
+  if(FATE==='hua') AVOID.push([1.6,2.6,4.2,6.4],[11.4,6.8,14.0,8.3]);
+  if(FATE==='shang') AVOID.push([3.0,4.1,4.0,6.9]);   // 题词「冷雨幽窗燈不紅」之白(計白當黑:后置字预留其位)
+  const inAvoid=(x,y)=>AVOID.some(b=>x>=b[0]&&x<=b[2]&&y>=b[1]&&y<=b[3]);
+  const GV = FATE==='yuan'?[...'花影香夢春雲絮']: FATE==='shang'?[...'寒霜葉影夜霧露']: [...'皴點染墨痕雲山水石'];
+  for(let i=0;i<240;i++){ const x=0.8+rnd()*14.4, y=1.0+rnd()*7.3;
+    const ch=GV[(rnd()*GV.length)|0], sz=0.19+rnd()*0.08, dr=0.10+rnd()*0.14, al=0.5+rnd()*0.25;
+    if(inAvoid(x,y)) continue;
+    mk(x,y,ch,sz, FATE==='shang'?'#646d64':'#878f85',{kind:'ground',a:al,drift:dr});
+  }
+  /* 畫:装裱目标 + 轴边字列 */
+  if(FATE==='hua'){
+    for(const it of items){ if(it.noMount) continue;
+      if(it.kind==='phrase'){ it.hx=8; it.hy=1.95+it.idx*0.78; it.hsz=0.62; }   // 金句转竖排卷心(下沉让出题签带)
+      else if(it.kind==='anchor'){ let hx=8+(it.x-8)*0.17+(rnd()-0.5)*0.5;
+        if(Math.abs(hx-8)<0.55) hx=8+((hx>=8)?0.7:-0.7);
+        it.hx=hx; it.hy=1.35+((it.y-0.8)/7.7)*6.3+(rnd()-0.5)*0.3; it.hsz=0.30; }
+      else { it.hx=8+(it.x-8)*0.16; it.hy=1.30+(it.y/9)*6.55; it.hsz=it.size*0.62; }   // 散字收窄,避让左缘题款位
+    }
+    let fi=0;                                       // 装裱:左右綾边+天杆地轴(随 mount 凝形)
+    for(const sx of [6.05,9.95]) for(let y=1.40;y<=8.05;y+=0.45){
+      const it=mk(sx,y,'綾緗'[fi++%2],0.2,'#c7a667',{kind:'frame',a:0.55}); it.noMount=true; }
+    for(const yy of [1.05,8.42]) for(let x=6.2;x<=9.8;x+=0.42){   // 天头让出 UI 带(顶轴行下移)
+      const it=mk(x,yy,'軸',0.19,'#c7a667',{kind:'frame',a:0.5}); it.noMount=true; }
+  }
+}
+
+/* ====== 量子态 ====== */
+let GPOOL=[];
+function randGlyphs(n){ let s=''; for(let i=0;i<n;i++) s+=GPOOL[(Math.random()*GPOOL.length)|0]; return s; }
+function initQuantum(){
+  GPOOL=[...new Set([].concat(...items.map(it=>[...it.text])).concat([..."01零一光華皎暉牡丹柳月山池絲波石苔雲"]))];
+  for(const it of items){
+    it.c=0; it.trgb=hex2rgb(it.color); it.tA=it.a;
+    it.ph1=Math.random()*TAU; it.ph2=Math.random()*TAU;
+    it.sp1=0.3+Math.random()*0.55; it.sp2=0.3+Math.random()*0.55;
+    it.jamp=0.12+Math.random()*0.18;
+    it.flickT=Math.random()*0.3; it.flickEvery=0.05+Math.random()*0.14;
+    it.cur=randGlyphs(it.text.length);
+    it.auto=false; it.autoRate=0; it._lit=false; it.fy=0;
+  }
+}
+
+/* ====== 夜绢底(照主作品) ====== */
+const MX=x=>ox+x*scale, MY=y=>oy+y*scale;
+function paper(g,w,h){
+  const bg=g.createLinearGradient(0,0,0,h); bg.addColorStop(0,TOKEN.night); bg.addColorStop(0.58,TOKEN.night); bg.addColorStop(1,TOKEN.ink);
+  g.fillStyle=bg; g.fillRect(0,0,w,h);
+  for(const [fx,fy,fr,al] of [[0.5,0.42,0.6,0.05],[0.18,0.72,0.42,0.035],[0.84,0.34,0.42,0.04]]){
+    const gr=g.createRadialGradient(w*fx,h*fy,0,w*fx,h*fy,Math.max(w,h)*fr); gr.addColorStop(0,`rgba(131,153,143,${al})`); gr.addColorStop(1,'rgba(131,153,143,0)'); g.fillStyle=gr; g.fillRect(0,0,w,h); }
+  let g2=20260612>>>0; const r2=()=>{g2=(g2*1664525+1013904223)>>>0;return g2/4294967296;};
+  const fibers=Math.max(10,Math.min(24,Math.round(h/72)));
+  for(let i=0;i<fibers;i++){ let x=-w*.04,y=r2()*h; g.beginPath(); g.moveTo(x,y);
+    const parts=5+((r2()*5)|0); for(let p=0;p<parts;p++){ const nx=w*(p+1)/parts+w*(r2()-.5)*.05,ny=y+(r2()-.5)*Math.max(12,h*.035);
+      g.quadraticCurveTo((x+nx)/2,(y+ny)/2+(r2()-.5)*Math.max(8,h*.025),nx,ny); x=nx;y=ny; }
+    g.globalAlpha=.018+r2()*.026; g.strokeStyle=r2()<.28?TOKEN.ivory:TOKEN.jade; g.lineWidth=.35+r2()*.75; g.stroke(); }
+  const grains=Math.max(90,Math.min(360,Math.floor(w*h/5600))); g.globalAlpha=1; g.fillStyle='rgba(237,231,216,.07)';
+  for(let i=0;i<grains;i++){ const d=.45+r2()*.9; g.fillRect(r2()*w,r2()*h,d,d); }
+  const v=g.createRadialGradient(w/2,h/2,Math.min(w,h)*.34,w/2,h/2,Math.max(w,h)*.74); v.addColorStop(0,'rgba(7,16,14,0)'); v.addColorStop(1,'rgba(7,16,14,.55)'); g.fillStyle=v; g.fillRect(0,0,w,h); g.globalAlpha=1;
+}
+let paperCv=null;
+function buildPaper(){ paperCv=document.createElement('canvas'); paperCv.width=W*DPR; paperCv.height=H*DPR;
+  const pc=paperCv.getContext('2d'); pc.setTransform(DPR,0,0,DPR,0,0); paper(pc,W,H); }
+
+/* ====== 声 ====== */
+const Sound={ ac:null, master:null, started:false, padG:null, amb:{nodes:[],timers:[]},
+  start(){ if(this.started) return; this.started=true;
+    try{
+      const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+      const ac=this.ac=new AC(); const m=this.master=ac.createGain(); m.gain.value=0; m.connect(ac.destination);
+      m.gain.linearRampToValueAtTime(0.6, ac.currentTime+2.0); this.setScene(FATE);
+    }catch(e){}
+  },
+  stopAmb(){ const a=this.amb; for(const tm of a.timers) clearInterval(tm); a.timers=[];
+    for(const n of a.nodes){ try{n.stop&&n.stop();}catch(e){} try{n.disconnect&&n.disconnect();}catch(e){} } a.nodes=[]; this.padG=null; },
+  stop(){ this.stopAmb(); if(this.ac){ try{ const p=this.ac.close(); if(p&&p.catch)p.catch(()=>{}); }catch(e){} } this.ac=null; this.started=false; },
+  noiseSrc(loop){ const ac=this.ac, buf=ac.createBuffer(1,(ac.sampleRate*1.5)|0,ac.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+    const src=ac.createBufferSource(); src.buffer=buf; src.loop=loop!==false; return src; },
+  setScene(f){ if(!this.ac) return; const ac=this.ac, t=ac.currentTime; this.stopAmb();
+    if(f==='yuan'){                                   // 圓世:撤去低暖 pad(低鸣刺耳·只许惊梦台用)——只留琶音磬+春絮,宁静
+      this.padG=null;
+    } else if(f==='shang'){                           // 远风慢涌
+      const src=this.noiseSrc(true), lp=ac.createBiquadFilter(), g=ac.createGain();
+      lp.type='lowpass'; lp.frequency.value=220; lp.Q.value=0.7;
+      const lfo=ac.createOscillator(), lg=ac.createGain(); lfo.frequency.value=0.05; lg.gain.value=0.018;
+      g.gain.value=0; g.gain.linearRampToValueAtTime(0.035,t+2.5);
+      lfo.connect(lg); lg.connect(g.gain);
+      src.connect(lp); lp.connect(g); g.connect(this.master); src.start(); lfo.start();
+      this.amb.nodes.push(src,lfo,g,lp,lg);
+    } else {                                          // 畫:近乎全静,偶发纸响
+      this.amb.timers.push(setInterval(()=>{ if(Math.random()<0.55) this.rustle(0.018); },6500));
+    }
+  },
+  padSwell(){ if(!this.ac||!this.padG) return; const t=this.ac.currentTime;
+    this.padG.gain.cancelScheduledValues(t); this.padG.gain.setValueAtTime(this.padG.gain.value,t);
+    this.padG.gain.linearRampToValueAtTime(0.048,t+3.5); },
+  bell(freq,vol){ const ac=this.ac; if(!ac) return; const t=ac.currentTime;
+    const o=ac.createOscillator(),g=ac.createGain(),o2=ac.createOscillator(),g2=ac.createGain();
+    o.type='sine';o.frequency.value=freq;o2.type='sine';o2.frequency.value=freq*2.01;g2.gain.value=0.3;
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+2.6);
+    o.connect(g);o2.connect(g2);g2.connect(g);g.connect(this.master); o.start(t);o2.start(t);o.stop(t+2.7);o2.stop(t+2.7); },
+  rustle(vol){ const ac=this.ac; if(!ac) return; const t=ac.currentTime;          // 纸响:一短一更短
+    for(const [dt0,v,fq] of [[0,vol||0.02,1700],[0.07,(vol||0.02)*0.55,2300]]){
+      const src=this.noiseSrc(false), bp=ac.createBiquadFilter(), g=ac.createGain();
+      bp.type='bandpass'; bp.frequency.value=fq+Math.random()*400; bp.Q.value=0.8;
+      g.gain.setValueAtTime(0,t+dt0); g.gain.linearRampToValueAtTime(v,t+dt0+0.006);
+      g.gain.exponentialRampToValueAtTime(0.0004,t+dt0+0.15);
+      src.connect(bp); bp.connect(g); g.connect(this.master); src.start(t+dt0); src.stop(t+dt0+0.2); } } };
+
+/* ====== 状态 ====== */
+let entered=false, ending=null, probeQuiet=false;
+let fateT=0, gateT=0, gateReady=false, gateA=0, gateScreen=null;
+let relayStart=false, phraseStart=false, phraseDone=false, phraseDoneT=0, bloomOn=false;
+let colT=0, mountT=0, mountDone=false, heroA=1, sanFlag=false, meiFlag=false, meiT=0;
+let wakeFlag=false, relayHinted=false, hint28=false, hint60=false, lastRustle=-9; // 圆世提示/殤世双兜底/纸响节流
+let relayOrder=[], phraseItems=[], relayTarget=null, relayWaitT=0;   // 圆世接力:当前候字须观众亲自观测
+let mouseX=-1e4, mouseY=-1e4, mouseOver=false, last=performance.now();
+const GATE={ yuan:{x:8,y:7.7,label:'遊'}, shang:{x:8,y:7.7,label:'夢'}, hua:{x:12.7,y:7.55,label:'卷'} };   // 单字出口(§2.3)
+function setHint(t,ttl){ const h=document.getElementById('hint'); h.textContent=t; h.classList.add('show');
+  clearTimeout(h._t); h._t=setTimeout(()=>h.classList.remove('show'),(ttl||9)*1000); }                     // 提示限时退场(默认9s)
+
+function loadFate(){
+  compose(); initQuantum();
+  fateT=0; gateReady=false; gateA=0; gateScreen=null; ending=null;
+  relayStart=phraseStart=phraseDone=bloomOn=false; phraseDoneT=0;
+  colT=0; mountT=0; mountDone=false; heroA=1; sanFlag=false; meiFlag=false; meiT=0;
+  wakeFlag=false; relayHinted=false; hint28=false; hint60=false; lastRustle=-9;
+  phraseItems=items.filter(it=>it.kind==='phrase').sort((a,b)=>a.idx-b.idx);
+  relayOrder=items.filter(it=>it.kind==='anchor').sort((a,b)=>b.x-a.x);   // 自東而西
+  const tong=relayOrder.findIndex(it=>it.text==='瞳');                    // 瞳必殿后:末磬=琶音最高音(點睛收官,与觀照校准互文)
+  if(tong>=0) relayOrder.push(relayOrder.splice(tong,1)[0]);
+  relayOrder.forEach((it,i)=>{ it.ri=i; });
+  relayTarget=null; relayWaitT=0;
+  document.getElementById('fateNote').textContent=FATE_NOTE[FATE];
+  setHint(FATE_HINT[FATE]);
+  if(Sound.started&&Sound.ac) Sound.setScene(FATE);
+}
+function setFate(f){ FATE=f;
+  try{ history.replaceState(null,'','?fate='+f+(PROBE?'&probe='+PROBE:'')+(DEV?'&dev=1':'')); }catch(e){}
+  loadFate(); }
+
+/* ====== 各世推进 ====== */
+function bloomStart(){ bloomOn=true; Sound.padSwell();        // 满园字粒化春絮
+  for(const it of items) if(it.kind==='ground'){
+    it.text=CATKIN[(Math.random()*CATKIN.length)|0]; it.cur=it.text;
+    it.trgb=[212,196,164]; it.tA=Math.max(it.tA,0.55); it.autoRate=0.10; }
+  setHint('滿園字粒化作春絮，緩緩上飄'); }
+function gateOpen(){ if(gateReady) return; gateReady=true;
+  if(FATE==='hua'){ Sound.rustle(0.025); Sound.bell(GONG,0.02); } else Sound.bell(GONG,0.08);
+  setHint({ yuan:'「遊」浮處，點之——再入園，循環即三生',                  // 出口提示随门开(§2.3)
+            shang:'「夢」浮處，點之出幕',
+            hua:'點「卷」，自畫中再啟' }[FATE]); }
+function updateFate(dt){
+  if(FATE==='yuan'){
+    if(!relayStart){                                             // 接力须观众先亲手唤醒一字；时间只提示，不代演
+      const seen=items.some(it=>it.kind==='anchor'&&it._lit);
+      if(seen){ relayStart=true; setHint('渡而來 —— 滿園記憶自東而西候着；觀測所至，記憶方醒'); }
+      else if(!wakeFlag&&fateT>2.5){ wakeFlag=true; setHint('先喚醒一字，滿園記憶方肯想起'); }
+    }
+    if(relayStart && !phraseStart){                              // 当前一忆呼吸相候，必须被观测才醒
+      const t=relayOrder.find(it=>it.c<0.97);
+      if(t){
+        if(relayTarget!==t){ if(relayTarget) relayTarget.beckon=false; relayTarget=t; relayWaitT=0; t.beckon=true; }
+        relayWaitT+=dt;
+        t.softCap=0; t.autoRate=0;
+        for(const o of relayOrder) if(o!==t) o.softCap=o._lit?0:0.55;   // 已醒者不回落，未轮到者只可微暖
+        if(relayWaitT>8&&!relayHinted){ relayHinted=true; setHint('有一字正在候你。移近那枚微微呼吸的字，讓它看真。'); }
+      } else { phraseStart=true;
+        if(relayTarget){ relayTarget.beckon=false; relayTarget=null; }
+        for(const o of relayOrder){ o.softCap=0; o.autoRate=0; } }
+    }
+    if(phraseStart && !phraseDone){
+      const t=phraseItems.find(it=>it.c<0.97);
+      if(t) t.auto=true; else { phraseDone=true; phraseDoneT=fateT; if(!probeQuiet) Sound.bell(GONG/2,0.1); }
+    }
+    if(relayStart) for(const it of items) if(it.kind==='fig') it.c=Math.min(it.cap,it.c+dt*0.22);
+    if(phraseDone && !bloomOn && fateT-phraseDoneT>1.0) bloomStart();
+    if(bloomOn && !gateReady && fateT-phraseDoneT>2.4) gateOpen();
+  } else if(FATE==='shang'){
+    heroA=1-0.78*clamp01((fateT-12)/55);                       // 独影渐淡
+    if(fateT>1) for(const it of items) if(it.kind==='fig') it.c=Math.min(it.cap,it.c+dt*0.18);
+    if(!sanFlag && !meiFlag && phraseItems.slice(4).some(it=>it.c>0.5)){
+      sanFlag=true; setHint('「三生路」三字，這一世再暖不到金 —— 右下，猶有一點梅'); }
+    if(!meiFlag&&!hint28&&fateT>28){ hint28=true; setHint('右下，猶有一點梅 —— 以觀測暖它'); }   // 28s 提示
+    if(!meiFlag&&!hint60&&fateT>60){ hint60=true; setHint('那一點梅，這一世唯一的暖處');          // 60s 兜底:梅呼吸相候
+      const m=items.find(it=>it.mei); if(m) m.beckon=true; }
+    if(meiFlag && !gateReady && fateT-meiT>1.2) gateOpen();
+  } else {
+    mountT=clamp01((fateT-1.2)/8.5);                           // 装裱进度(装裱即定影)
+    for(const it of items){
+      if(it.kind==='frame'){ it.c=Math.max(it.c, mountT*0.95); continue; }
+      if(it.noMount){ if(it.kind==='fig') it.c=Math.min(it.cap,it.c+dt*0.15); continue; }
+      if(it.kind==='phrase'){ const st=0.30+it.idx*0.07;       // 金句按序题画凝形
+        if(mountT>st) it.c=Math.max(it.c, clamp01((mountT-st)/0.12)); }
+      else if(it.kind==='anchor'){ const st=0.40+clamp01((it.hy-1)/8)*0.5;   // 锚字随入卷错峰点亮
+        if(mountT>st) it.c=Math.max(it.c, clamp01((mountT-st)/0.15)); }
+      else if(it.kind==='ground'){ const st=0.45+clamp01((it.hy-1)/8)*0.5;   // 散字低凝作纸面肌理
+        if(mountT>st) it.c=Math.max(it.c, 0.5*clamp01((mountT-st)/0.3)); }
+    }
+    if(mountT>=1 && !mountDone){ mountDone=true; if(!probeQuiet) Sound.rustle(0.03);
+      setHint('畫成 —— 柳夢梅在軸外看'); }
+    if(mountDone && !gateReady && fateT>1.2+8.5+1.0) gateOpen();
+  }
+}
+function onLit(it){ if(probeQuiet) return;
+  if(FATE==='yuan'){
+    if(it.kind==='anchor') Sound.bell(NOTES[Math.min(it.ri||0,NOTES.length-1)],0.075);   // 上行琶音:一字一磬
+    else if(it.kind==='phrase') Sound.bell(GONG*SEQ[it.idx],0.055);
+  } else if(FATE==='shang'){
+    if(it.mei){ meiFlag=true; meiT=fateT; Sound.bell(GONG*LV.yu,0.08);
+      setHint('一點梅暖 —— 殘夢可再，「夢」將浮'); }
+    else if(it.kind==='anchor'||it.kind==='phrase') Sound.bell(GONG/2,0.05);            // 单磬:只此低宫一音
+  } else { if(it.kind!=='frame'&&Math.random()<0.6&&gateT-lastRustle>0.18){             // 排除裱边+0.18s 节流防叠响
+      lastRustle=gateT; Sound.rustle(0.016); } }
+}
+
+/* ====== 绘制 ====== */
+function drawItems(dt){
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(const it of items){
+    let bx=it.x, by=it.y, szf=1, extraA=1;
+    if(FATE==='hua' && !it.noMount && it.kind!=='frame'){      // 缓缓压扁聚拢入卷
+      const st=((it.hy!=null?it.hy:it.y)-0.6)/8*0.5;
+      const p0=clamp01((mountT-st)/0.5), p=p0*p0*(3-2*p0);
+      bx=lerp(it.x,it.hx,p); by=lerp(it.y,it.hy,p); szf=lerp(it.size,it.hsz,p)/it.size;
+    }
+    if(FATE==='yuan' && it.kind==='ground' && bloomOn){        // 春絮上飘(回环)
+      it.fy+=dt*it.drift;
+      let yy=it.y-it.fy; if(yy<-0.4){ it.fy=it.y-9.4; yy=9.4; }
+      by=yy; bx=it.x+motionSin(gateT*0.4+it.ph1)*0.18;
+    }
+    if(FATE==='shang' && it.grp==='麗娘') extraA=heroA;
+    const hsx=MX(bx), hsy=MY(by);
+    let infl=0;
+    if(mouseOver && entered && !ending){
+      const dx=hsx-mouseX, dy=hsy-mouseY, d=Math.hypot(dx,dy);
+      if(d<BRUSH){ const t=1-d/BRUSH; infl=t*t*(3-2*t); } }
+    if(infl>it.c) it.c+=(infl-it.c)*(1-Math.pow(.88,dt*60));   // dt 归一·只升不降·扫过即留
+    if(it.auto) it.c+=dt*1.6;
+    if(it.autoRate) it.c+=dt*it.autoRate;
+    if(it.c>it.cap) it.c=it.cap;
+    if(it.softCap && it.c>it.softCap) it.c=it.softCap;         // 圆世接力:未轮到的记忆暖而不醒
+    const c=it.c;
+    if(!it._lit && c>=0.8){ it._lit=true; onLit(it); }
+    const atCap=it.cap<0.8&&c>=it.cap-0.001&&!it.everFlick;    // 贴顶:定格真字,不再闪变(殤之三生路可读);瞳永闪除外
+    if(!REDUCED_MOTION) it.flickT+=dt*(1+(1-c)*7);
+    if(!REDUCED_MOTION&&it.flickT>it.flickEvery){ it.flickT=0; if(c<0.8&&!atCap) it.cur=randGlyphs(it.text.length); }
+    const txt=(c>=0.8||atCap)?it.text:it.cur;
+    if(!REDUCED_MOTION){ it.ph1+=it.sp1*dt; it.ph2+=it.sp2*dt; }
+    const amp=REDUCED_MOTION?0:(1-c)*it.jamp;
+    const sx=MX(bx+Math.cos(it.ph1)*amp), sy=MY(by+Math.sin(it.ph2)*amp*0.8);
+    const fs=Math.max(6,(scale*it.size*szf*(0.82+0.18*c))|0);
+    ctx.font=`${fs}px ${SERIF}`;
+    const r=COLD[0]+(it.trgb[0]-COLD[0])*c, g=COLD[1]+(it.trgb[1]-COLD[1])*c, b=COLD[2]+(it.trgb[2]-COLD[2])*c;
+    let aa=(0.14+(it.tA-0.14)*c)*extraA;
+    if(it.beckon&&c<0.8) aa=Math.min(1, aa+0.16+0.16*motionSin(gateT*2.6));
+    if(it.cap<0.8 && c>it.cap-0.04) aa=Math.max(0.05, aa*(0.8+0.12*motionSin(gateT*1.3+it.ph1)));   // 封顶之字压暗慢呼吸
+    ctx.fillStyle=`rgba(${r|0},${g|0},${b|0},${aa.toFixed(3)})`;
+    if(c>0.25){ ctx.shadowColor='rgba(0,0,0,0.5)'; ctx.shadowBlur=fs*0.16*c; } else ctx.shadowBlur=0;
+    if(it.vert){ let y=sy-(txt.length-1)*fs/2; for(const ch of txt){ ctx.fillText(ch,sx,y); y+=fs; } }
+    else ctx.fillText(txt,sx,sy);
+  }
+  ctx.shadowBlur=0;
+}
+function drawColophon(dt){                                     // 款识:引号+落款(惊梦台同款,纯文字)
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  if(FATE==='hua'){
+    if(mountT<=0.85) return;
+    const ease=clamp01((mountT-0.85)/0.15);
+    const cx=MX(8), qfs=scale*0.55;
+    ctx.font=`${qfs|0}px ${SERIF}`; ctx.fillStyle=`rgba(224,193,120,${(0.5*ease).toFixed(3)})`;
+    ctx.fillText('﹁',cx,MY(1.38)); ctx.fillText('﹂',cx,MY(7.42));
+    const tfs=Math.max(11,scale*0.26), tx=MX(6.5), ty0=MY(5.55);                 // 左缘题款位
+    ctx.font=`${tfs|0}px ${SERIF}`; ctx.fillStyle=`rgba(224,193,120,${(0.55*ease).toFixed(3)})`;
+    [...'終·畫'].forEach((ch,i)=>ctx.fillText(ch,tx,ty0+i*tfs*1.18));            // 世相签,不复读金句
+    const e2=clamp01((mountT-0.93)/0.07);                                        // 钉世界线:款识落定后,画外一句(自拟)
+    if(e2>0){ const vfs=Math.max(11,scale*0.26), vx=MX(4.0), vy0=MY(3.0);
+      ctx.font=`${vfs|0}px ${SERIF}`; ctx.fillStyle=`rgba(224,193,120,${(0.5*e2).toFixed(3)})`;
+      [...'有一世，三聲無人應'].forEach((ch,i)=>ctx.fillText(ch,vx,vy0+i*vfs*1.18)); }   // 柳生轴外看处——這一世,喚不應
+    return;
+  }
+  const need=(FATE==='shang')?phraseItems.slice(0,4):phraseItems;
+  if(colT===0 && need.length && need.every(it=>it.c>=0.8)) colT=0.0001;
+  if(colT>0) colT+=dt; else return;
+  const ease=clamp01((colT-0.4)/1.0)*(FATE==='shang'?0.55:1);
+  if(ease<=0) return;
+  const fs=scale*0.95, sx=MX(PX0), ex=MX(PX0+6*PSP), y=MY(PY);
+  ctx.font=`${(fs*0.82)|0}px ${SERIF}`; ctx.fillStyle=`rgba(224,193,120,${(0.5*ease).toFixed(3)})`;
+  ctx.fillText('「',sx-fs*1.08,y-fs*0.22);                     // 上引号略抬
+  if(FATE==='shang'){                                          // 殤:只上引号不落款——话说一半
+    const e2=clamp01((colT-1.8)/1.8)*0.55;                     // 题词自引号下垂落:《牡丹亭·鬧殤》原句,冷玉不金
+    if(e2>0){ const vfs=Math.max(11,scale*0.30), vx=sx-fs*1.08, vy0=y+fs*0.85;
+      ctx.font=`${vfs|0}px ${SERIF}`; ctx.fillStyle=`rgba(143,176,158,${e2.toFixed(3)})`;
+      [...'冷雨幽窗燈不紅'].forEach((ch,i)=>ctx.fillText(ch,vx,vy0+i*vfs*1.18)); }
+    return; }
+  ctx.fillText('」',ex+fs*1.08,y+fs*0.30);                     // 下引号略沉
+  const tfs=Math.max(12,fs*0.30), tx=ex+fs*1.08, ty0=y+fs*0.95;                  // 两字短列,底端清出锚字「璧」
+  ctx.font=`${tfs|0}px ${SERIF}`; ctx.fillStyle=`rgba(224,193,120,${(0.6*ease).toFixed(3)})`;
+  [...'終·圓'].forEach((ch,i)=>ctx.fillText(ch,tx,ty0+i*tfs*1.18));              // 世相签,不复读金句
+}
+function drawGate(dt){                                         // 出口:暗底衬纸+金晕呼吸,2.6s 渐显
+  gateA=Math.min(1,gateA+dt/2.6);
+  const gd=GATE[FATE], R=Math.min(W,H)*0.078, pulse=0.5+0.5*motionSin(gateT*2.2);
+  const cx=MX(gd.x), cy=MY(gd.y);
+  ctx.save(); ctx.globalAlpha=gateA*(ending?Math.max(0,1-ending.t/1.1):1);   // 门随黑场渐隐,不闪灭
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  const dg=ctx.createRadialGradient(cx,cy,0,cx,cy,R*2.0);
+  dg.addColorStop(0,'rgba(6,9,8,0.62)'); dg.addColorStop(0.66,'rgba(6,9,8,0.36)'); dg.addColorStop(1,'rgba(6,9,8,0)');
+  ctx.fillStyle=dg; ctx.fillRect(cx-R*2,cy-R*2,R*4,R*4);
+  const fs=R*0.78, chars=[...gd.label];
+  ctx.font=`${fs|0}px ${SERIF}`;
+  ctx.shadowColor='rgba(224,193,120,0.85)'; ctx.shadowBlur=fs*0.3*(0.4+0.6*pulse);
+  ctx.fillStyle=`rgba(238,231,206,${(0.62+0.32*pulse).toFixed(3)})`;
+  chars.forEach((ch,i)=>ctx.fillText(ch, cx+(i-(chars.length-1)/2)*fs*1.06, cy));
+  ctx.shadowBlur=0; ctx.restore();
+  gateScreen={x:cx,y:cy,r:R*1.7};
+}
+function endAct(){ if(ending) return; ending={t:0};
+  if(FATE==='hua') Sound.rustle(0.025); else Sound.bell(GONG/2,0.07); }
+
+/* ====== 主循环 ====== */
+function frame(now){
+  const dt=Math.min(0.05,(now-last)/1000); last=now; gateT+=dt;
+  if(entered&&!ending) fateT+=dt;
+  ctx.setTransform(DPR,0,0,DPR,0,0); ctx.clearRect(0,0,W,H);
+  if(paperCv) ctx.drawImage(paperCv,0,0,W,H);
+  if(entered&&!ending) updateFate(dt);
+  drawItems(dt);
+  drawColophon(dt);
+  if(gateReady) drawGate(dt);
+  if(mouseOver&&entered&&!ending){                              // 自绘柔光圈+小金环(系统光标已藏)
+    const g=ctx.createRadialGradient(mouseX,mouseY,0,mouseX,mouseY,BRUSH*0.62);
+    g.addColorStop(0,'rgba(216,236,223,0.12)'); g.addColorStop(0.6,'rgba(216,236,223,0.04)'); g.addColorStop(1,'rgba(216,236,223,0)');
+    ctx.fillStyle=g; ctx.fillRect(mouseX-BRUSH,mouseY-BRUSH,BRUSH*2,BRUSH*2);
+    const near=gateReady&&gateScreen&&Math.hypot(mouseX-gateScreen.x,mouseY-gateScreen.y)<gateScreen.r;
+    ctx.strokeStyle=`rgba(224,193,120,${near?0.6:0.28})`; ctx.lineWidth=near?1.4:1;
+    ctx.beginPath(); ctx.arc(mouseX,mouseY,near?12:9,0,TAU); ctx.stroke();
+  }
+  if(ending){                                                   // 本幕終 → 淡出回开场
+    ending.t+=dt;
+    const a1=Math.min(1,ending.t/1.1);
+    ctx.fillStyle=`rgba(6,9,8,${(0.62*a1).toFixed(3)})`; ctx.fillRect(0,0,W,H);
+    const fs=Math.max(16,Math.min(W,H)*0.034);
+    ctx.font=`${fs|0}px ${SERIF}`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle=`rgba(239,233,214,${(0.9*a1).toFixed(3)})`;
+    const msg=[...'本幕終·三生路'], stp=fs*1.5, x0=W/2-stp*(msg.length-1)/2;
+    msg.forEach((ch,i)=>ctx.fillText(ch,x0+i*stp,H*0.48));
+    if(ending.t>2.6){ const a2=Math.min(1,(ending.t-2.6)/1.0);
+      ctx.fillStyle=`rgba(6,9,8,${a2.toFixed(3)})`; ctx.fillRect(0,0,W,H); }
+    if(ending.t>3.8 && !ending.went){ ending.went=true; location.href='../量子游园·丙·交互体验.html'; }   // 三世归一:回一園春,重來即再遊
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ====== 尺寸 / 输入 / 入园 ====== */
+function resizeLayout(){
+  W=window.innerWidth; H=window.innerHeight;
+  DPR=Math.max(.5,Math.min(window.devicePixelRatio||1,2,Math.sqrt(8000000/Math.max(1,W*H))));
+  cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  scale=Math.min(W/16,H/9)*0.95; ox=(W-16*scale)/2; oy=(H-9*scale)/2;
+  BRUSH=Math.min(W,H)*0.2; buildPaper();
+}
+window.addEventListener('resize', resizeLayout);
+cv.addEventListener('pointermove', e=>{ mouseX=e.clientX; mouseY=e.clientY; mouseOver=true; });
+cv.addEventListener('pointerleave', ()=>{ mouseOver=false; });
+function clearTouchPointer(e){ if(e.pointerType==='touch'){ mouseOver=false; mouseX=mouseY=-1e4; } }
+cv.addEventListener('pointerup',clearTouchPointer);
+cv.addEventListener('pointercancel',clearTouchPointer);
+cv.addEventListener('pointerdown', e=>{
+  mouseX=e.clientX; mouseY=e.clientY; mouseOver=true;            // 触点即观测(触屏轻点亦坍缩)
+  if(!entered||ending) return;
+  if(gateReady&&gateScreen&&Math.hypot(e.clientX-gateScreen.x,e.clientY-gateScreen.y)<gateScreen.r) endAct();
+});
+function enterAct(){ const el=document.getElementById('enter');
+  if(el.classList.contains('gone')) return;
+  el.classList.add('gone'); document.getElementById('keys').classList.add('show');
+  entered=true; Sound.start(); setTimeout(()=>Sound.bell(GONG/2,0.06),340); }   // 入幕一记低磬
+document.getElementById('enterBtn').addEventListener('click', enterAct);
+window.addEventListener('keydown', ev=>{
+  if(ev.repeat) return;
+  const gone=document.getElementById('enter').classList.contains('gone');
+  if(!gone&&(ev.code==='Space'||ev.key==='Enter')){ ev.preventDefault(); enterAct(); return; }
+  if((PROBE||DEV)&&(ev.key==='1'||ev.key==='2'||ev.key==='3')){ setFate(['yuan','shang','hua'][Number(ev.key)-1]); return; }
+  if(ev.key==='ArrowRight'&&entered&&gateReady&&!ending){ endAct(); return; }
+  if(ev.key==='r'||ev.key==='R'){ if(entered) loadFate(); }
+});
+if(!PROBE&&!DEV) document.getElementById('keysDev').style.display='none';   // 切世键位说明仅 probe/dev 露出
+
+/* ====== 启动 ====== */
+resizeLayout();
+loadFate();
+if(PROBE){                                                     // 调试探针(headless 截图核对用)
+  const _em=document.getElementById('enter');                  // headless 虚拟时间下 CSS 过渡走不完,直接藏
+  _em.style.transition='none'; _em.style.display='none';
+  _em.classList.add('gone');
+  document.getElementById('keys').classList.add('show');
+  entered=true; Sound.start();
+  if(PROBE==='lit'){
+    probeQuiet=true; fateT=30;
+    for(const it of items){ it.c=Math.min(it.cap,1); it._lit=true; }
+    if(FATE==='yuan'){ relayStart=phraseStart=phraseDone=true; phraseDoneT=20; bloomStart(); }
+    else if(FATE==='shang'){ meiFlag=true; meiT=20; sanFlag=true;
+      for(const it of items) if(it.cap<0.8) it.c=it.cap; }
+    else { mountT=1; mountDone=true; }
+    colT=2; gateReady=true; gateA=1; probeQuiet=false;
+  }
+}
+if(!PROBE&&Q.get('debug')!=='1'){ try{ if(sessionStorage.getItem('qg_journey_active')==='1'){
+  document.getElementById('enter').classList.add('journey'); setTimeout(enterAct,REDUCED_MOTION?220:900); } }catch(e){} }
+requestAnimationFrame(frame);
+
+/* ====== 全屏沉浸(2026-06-13 一葳):右上角可见入口「全屏」+ 入园自动 + F 键;装在 沉浸.html 外壳(iframe)里时,全屏整个外壳——跨幕换页不掉全屏 ====== */
+(function(){
+  var framed=false; try{ framed = (window.self!==window.top) && !!window.top.document; }catch(e){ framed=false; }
+  function fsDoc(){ try{ return framed?window.top.document:document; }catch(e){ return document; } }
+  function fsEl(){ try{ return framed?window.top.document.documentElement:document.documentElement; }catch(e){ return document.documentElement; } }
+  function isFS(){ try{ return !!fsDoc().fullscreenElement; }catch(e){ return false; } }
+  function canFS(){ try{ const doc=fsDoc(), el=fsEl(), pol=doc.permissionsPolicy||doc.featurePolicy; return doc.fullscreenEnabled===true && !!el.requestFullscreen && !(typeof navigator!=='undefined'&&navigator.webdriver) && !(pol&&pol.allowsFeature&&pol.allowsFeature('fullscreen')===false); }catch(e){ return false; } }
+  function reqFS(){ try{ if(!isFS()&&canFS()){ const p=fsEl().requestFullscreen(); if(p&&p.catch)p.catch(()=>{}); } }catch(_){} }
+  function exitFS(){ try{ if(isFS()){ const p=fsDoc().exitFullscreen(); if(p&&p.catch)p.catch(()=>{}); } }catch(_){} }
+  var btn=document.createElement('button'); btn.id='fsBtn'; btn.type='button'; btn.textContent='⛶'; btn.title='全屏'; btn.setAttribute('aria-label','全屏');
+  function toggle(e){ if(e){ e.stopPropagation(); e.preventDefault(); } isFS()?exitFS():reqFS(); }
+  btn.addEventListener('click', toggle);
+  function syncLabel(){ const active=isFS(); btn.title=active?'退出全屏':'全屏'; btn.setAttribute('aria-label',btn.title); btn.setAttribute('aria-pressed',String(active)); }
+  document.addEventListener('fullscreenchange', syncLabel);
+  var topDoc=null; try{ if(framed){ topDoc=window.top.document; topDoc.addEventListener('fullscreenchange', syncLabel); } }catch(e){ topDoc=null; }
+  function mount(){ (document.body||document.documentElement).appendChild(btn); }
+  if(document.body) mount(); else addEventListener('DOMContentLoaded', mount);
+  /* 入园那一下顺手全屏(展览触屏);失败也无妨,右上角按钮兜底 */
+  var auto=false; function autoFS(){ if(auto) return; auto=true; reqFS(); }
+  const enterEl=document.getElementById('enter'), enterBtn=document.getElementById('enterBtn');
+  if(enterBtn) enterBtn.addEventListener('pointerdown', function(){ autoFS(); }, {capture:true, once:true});
+  addEventListener('keydown', function(e){
+    if(e.key==='f'||e.key==='F'){ toggle(e); return; }
+    if(!auto && enterEl&&!enterEl.classList.contains('gone') && (e.code==='Space'||e.key==='Enter')) autoFS();
+  }, {capture:true});
+  addEventListener('pagehide',()=>{ document.removeEventListener('fullscreenchange',syncLabel); if(topDoc)try{topDoc.removeEventListener('fullscreenchange',syncLabel);}catch(e){} Sound.stop(); },{once:true});
+})();
+
+</script>
+</body>
+</html>
