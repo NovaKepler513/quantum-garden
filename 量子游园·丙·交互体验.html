@@ -521,6 +521,7 @@ function setHint(t,hold,priority){
   const now=performance.now(), p=priority==null?2:priority;
   if(now<NARRATIVE.lockUntil && p<NARRATIVE.priority) return;
   NARRATIVE.priority=p; NARRATIVE.lockUntil=now+(hold==null?4600:hold);
+  NARRATIVE.shown='__temporary';
   renderNarrative({label:'此刻',body:cleanHint(t)});
 }
 function setFixedNarrative(card){
@@ -671,7 +672,11 @@ const AUTUMN=[
 ];
 const DREAM_ALL=[...SPRING,...AUTUMN];
 const DREAM_COUNT_ZH=['零','一','二','三','四','五','六','七','八','九','十','十一','十二'];
-function readDreamSeen(){ try{ const a=JSON.parse(sessionStorage.getItem('qg_dream_seen')||'[]'); return new Set(Array.isArray(a)?a:[]); }catch(_){ return new Set(); } }
+function readDreamSeen(){ try{
+  const a=JSON.parse(sessionStorage.getItem('qg_dream_seen')||'[]');
+  const valid=new Set(DREAM_ALL.map(v=>v.id));
+  return new Set((Array.isArray(a)?a:[]).filter(id=>valid.has(id)).slice(0,DREAM_ALL.length));
+}catch(_){ return new Set(); } }
 let DREAM_SEEN=readDreamSeen();
 function pickDreamVerse(){
   let unseen=DREAM_ALL.filter(v=>!DREAM_SEEN.has(v.id));

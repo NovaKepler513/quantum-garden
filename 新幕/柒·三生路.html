@@ -13,7 +13,7 @@
     观者在前几幕走过的测量路径,决定其落在哪一个世界。同一句金句
     「牡丹亭上三生路」(《牡丹亭·標目》〔蝶戀花〕末句,原文核对)居中,
     惊梦台款识同款排版(引号+竖排世相落款「終·圓/終·畫」;殤只上引号不落款——话说一半);
-    四周环列前幕记忆锚字十五枚:月柳亭松桐山池(一園春七字)·璧(惊梦玉璧)·橋(纠缠)·
+    四周环列前幕记忆锚字十五枚:月柳亭松桐山池(一園春七字)·雨船(惊梦)·橋(纠缠)·
     廊(寻梦)·燭(离魂)·畫(拾画)·容(写真春容)·瞳(點睛之忆)·梅 —— 均冷玉起始,观之即显。
 
   ◆ 三世(URL ?fate=yuan|shang|hua,无参数默认 yuan;&dev=1/probe 下键 1/2/3 即时切换,展览态不许键改命)
@@ -167,7 +167,8 @@ const FATE_LORE={
 };
 const MEMORY_LORE={
   月:'從驚夢的春月，到離魂的中秋，再到幽媾的月下相見；同一輪月見證三種時間。',
-  璧:'驚夢中的玉璧曾把滿園亂字照成一句；它記得每次坍縮都只是一種可能。',
+  雨:'驚夢中的雨絲、春雨與冷雨把春園、尋夢和離魂接成一條水路；同一個字在不同時節改變了溫度。',
+  船:'滿屏亂字坍縮後，「船」曾成為一句夢詩的渡口；它記得觀看如何把看景變成親歷。',
   柳:'柳枝是麗娘尋夢的證物，也是柳夢梅尚未現身時，名字先進入園中的伏筆。',
   橋:'橋把人鬼、畫與真人的距離變成兩岸；它記得你曾先看見誰。',
   亭:'牡丹亭是夢中歡會與醒後尋夢共同指認的地點，讓情不再只是抽象念頭。',
@@ -230,12 +231,12 @@ function compose(){
     if(FATE==='shang'&&i>=4) it.cap=0.6;            // 殤:「三生路」迟迟不亮
   });
   /* 记忆锚字环(前幕十四忆,环列;容=写真春容,瞳=點睛之忆) */
-  [...'月璧柳橋亭廊松燭桐畫山容瞳池'].forEach((ch,i,arr)=>{
+  [...'月雨船柳橋亭廊松燭桐畫山容瞳池'].forEach((ch,i,arr)=>{
     const a=0.35+i/arr.length*TAU;
     const x=8+Math.cos(a)*6.1+(rnd()-0.5)*0.3, y=4.35+Math.sin(a)*3.15+(rnd()-0.5)*0.2;
     const col = FATE==='shang' ? '#8fb09e'          // 殤:亮了也仍是冷玉
               : FATE==='hua'   ? '#dbd6c3'
-              : (ch==='月'||ch==='璧'||ch==='瞳') ? '#e0c178' : '#efe9d6';
+              : (ch==='月'||ch==='雨'||ch==='瞳') ? '#e0c178' : '#efe9d6';
     const it=mk(x,y,ch,0.6,col,{kind:'anchor',a:1});
     if(ch==='瞳'){                                  // 瞳:圓世琶音末磬;殤世永闪——這一世點不了睛
       if(FATE==='shang'){ it.cap=0.5; it.everFlick=true; }
@@ -467,8 +468,11 @@ function updateFate(dt){
 }
 function onLit(it){ if(probeQuiet) return;
   if(FATE==='yuan'){
-    if(it.kind==='anchor'){ Sound.bell(NOTES[Math.min(it.ri||0,NOTES.length-1)],0.075);
-      if(MEMORY_LORE[it.text]) setLore('記憶 · '+it.text,MEMORY_LORE[it.text],'下一枚記憶正在候你。',7,'圓世 · 記憶接力'); }   // 上行琶音:一字一磬
+    if(it.kind==='anchor'){ const first=!relayStart; if(first) relayStart=true;
+      Sound.bell(NOTES[Math.min(it.ri||0,NOTES.length-1)],0.075);
+      if(MEMORY_LORE[it.text]) setLore('記憶 · '+it.text,
+        (first?'接力不會自動播放。':'')+MEMORY_LORE[it.text],
+        '讓它看至凝定，再移向下一枚候字。',7,'圓世 · 記憶接力'); }   // 上行琶音:一字一磬
     else if(it.kind==='phrase') Sound.bell(GONG*SEQ[it.idx],0.055);
   } else if(FATE==='shang'){
     if(it.mei){ meiFlag=true; meiT=fateT; Sound.bell(GONG*LV.yu,0.08);
@@ -558,7 +562,7 @@ function drawColophon(dt){                                     // 款识:引号+
       [...'冷雨幽窗燈不紅'].forEach((ch,i)=>ctx.fillText(ch,vx,vy0+i*vfs*1.18)); }
     return; }
   ctx.fillText('」',ex+fs*1.08,y+fs*0.30);                     // 下引号略沉
-  const tfs=Math.max(12,fs*0.30), tx=ex+fs*1.08, ty0=y+fs*0.95;                  // 两字短列,底端清出锚字「璧」
+  const tfs=Math.max(12,fs*0.30), tx=ex+fs*1.08, ty0=y+fs*0.95;                  // 两字短列,底端清出记忆锚字
   ctx.font=`${tfs|0}px ${SERIF}`; ctx.fillStyle=`rgba(224,193,120,${(0.6*ease).toFixed(3)})`;
   [...'終·圓'].forEach((ch,i)=>ctx.fillText(ch,tx,ty0+i*tfs*1.18));              // 世相签,不复读金句
 }

@@ -538,7 +538,7 @@ function checkPhase(dt,pct){
   } else if(PHASE==='dot'){ dotT+=dt;
     if(pupilInfl>0.35) triedT+=dt;                             // 点睛失败必须亲自撞见，时间不能替观众完成
     if(triedT>1){ PHASE='verse'; verseT=0; Sound.bell(GONG*LV.yu,0.07);
-      setLore('「三分春色描來易，一段傷心畫出難」','這句是裝置為此幕寫的判語，不冒充《牡丹亭》原文。它把不可克隆之牆落在麗娘身上：春容可描，傷心與生命不可搬運。','看畫面金句徐現；稍後麗娘會親自來題詩。'); }
+      setLore('「三分春色描來易，一段傷心畫出難」','這是《寫真》原句。裝置把「春色易描、傷心難畫」轉譯成不可克隆之牆：春容可描，傷心與生命不可搬運。','看畫面金句徐現；稍後麗娘會親自來題詩。'); }
     else if(dotT>7&&!window._dotNudged){ window._dotNudged=true; setHint('雙瞳仍在閃。請把筆停在她眼上，試著點睛。'); }
   } else if(PHASE==='verse'){ verseT+=dt;
     if(verseT>3.4){ PHASE='walk'; walkT=0; setLore('她為何要替自己寫真','《寫真》中，麗娘既無可寄畫的情人，又預感春容易逝；自畫不是自戀，而是把尚未相遇的自己寄給未來。','看她走到軸前，將預言題在畫上。'); }
