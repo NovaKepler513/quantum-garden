@@ -70,10 +70,18 @@
   #scene{position:fixed;inset:0;display:block;cursor:none;z-index:1;touch-action:none}
   .ui{position:fixed;inset:0;pointer-events:none;z-index:5;font-family:var(--serif)}
   .ui .act{position:absolute;top:18px;left:18px;font-size:13px;color:var(--gold);opacity:.72}
-  .ui .hint{position:absolute;left:18px;bottom:62px;max-width:min(72vw,720px);text-align:left;
-      font-size:clamp(12px,1.6vw,15px);color:var(--muted);
-      opacity:0;transition:opacity 1.6s;text-shadow:0 1px 14px rgba(7,16,14,.6)}
+  .ui .narrative{position:absolute;left:18px;bottom:54px;width:min(620px,calc(100vw - 150px));min-height:88px;padding-left:14px;
+      border-left:1px solid rgba(198,104,88,.62);text-align:left;text-shadow:0 1px 14px rgba(7,16,14,.75)}
+  .ui .narrative::after{content:"";position:absolute;z-index:-1;left:-18px;right:-30px;top:-20px;bottom:-20px;
+      background:linear-gradient(90deg,rgba(7,16,14,.9),rgba(7,16,14,.58) 74%,transparent)}
+  .narrative-label{display:block;margin-bottom:6px;font-family:var(--sans);font-size:11px;color:var(--cinnabar)}
+  .narrative-title{display:none;margin-bottom:5px;font-size:17px;line-height:1.45;color:var(--gold)}
+  .narrative-title.show{display:block}
+  .ui .hint{font-size:14px;line-height:1.7;color:var(--paper);
+      opacity:0;transition:opacity .28s;text-shadow:0 1px 14px rgba(7,16,14,.6)}
   .ui .hint.show{opacity:.8}
+  .narrative-action{display:none;margin-top:7px;font-family:var(--sans);font-size:11px;line-height:1.6;color:var(--muted)}
+  .narrative-action.show{display:block}.narrative-action::before{content:"→";margin-right:7px;color:var(--cinnabar)}
   .ui .foot{position:absolute;right:120px;top:14px;pointer-events:auto}
   .ui .keys{position:absolute;right:18px;bottom:18px;max-width:52vw;text-align:right;font-size:11px;
       color:var(--muted);opacity:0;transition:opacity 1.6s}
@@ -100,6 +108,7 @@
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation:none!important;transition-duration:.01ms!important;transition-delay:0s!important}
   }
+  @media (max-width:640px){.ui .narrative{left:16px;bottom:54px;width:calc(100vw - 32px)}}
 </style>
 </head>
 <body>
@@ -107,7 +116,12 @@
   <div class="ui">
     <div class="act">第陸幕 · 拾畫叫畫</div>
     <div class="foot"><button class="icon-button" id="replay" type="button" aria-label="重看本幕" title="重看本幕">↺</button></div>
-    <div class="hint" id="hint" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div class="narrative" role="status" aria-live="polite" aria-atomic="true">
+      <span class="narrative-label" id="hintLabel">此刻</span>
+      <div class="narrative-title" id="hintTitle"></div>
+      <div class="hint" id="hint"></div>
+      <div class="narrative-action" id="hintAction"></div>
+    </div>
     <div class="keys" id="keys">R 重看本幕</div>
   </div>
   <div id="enter">
@@ -339,18 +353,24 @@ let mouseX=-1e4, mouseY=-1e4, mouseOver=false, last=performance.now();
 let passX=0,passY=0,passR=0;
 let ackT=0, voiceT=0;                    // ackT:不应期被吞点击的微反馈 | voiceT:出声唤持续音累积
 let juanCur='卷', juanFlkT=0;            // 未显形之卷:与叠加态同语言(游移+闪变)
-function setHint(t){ const h=document.getElementById('hint'); h.textContent=t; h.classList.add('show'); }
+function writeNarrative(label,title,body,action){
+  const l=document.getElementById('hintLabel'),t=document.getElementById('hintTitle'),h=document.getElementById('hint'),a=document.getElementById('hintAction');
+  l.textContent=label||'此刻'; t.textContent=title||''; t.classList.toggle('show',!!title);
+  h.textContent=body||''; h.classList.add('show'); a.textContent=action||''; a.classList.toggle('show',!!action);
+}
+function setHint(t){ writeNarrative('此刻','',t,''); }
+function setLore(title,body,action,label){ writeNarrative(label||'戲中 · 拾畫／玩真',title,body,action); }
 function setKeys(t){ document.getElementById('keys').textContent=t; }   // 键位说明按 phase 切换,不再说假话
 
 function loadScene(){
   composeShihua(); initQuantum();
   phase='sweep'; juanOn=false; juanA=0; unrollT=0; calls=0; waves.length=0;
   warmCur=0.35; warmTgt=0.35; eyesOn=false; eyeT=0; eyeBell=false; awakeT=0;
-  gateReady=false; gateA=0; lastProg=-1; endSt=null; lastCall=-9;
+  gateReady=false; gateA=0; lastProg=0; endSt=null; lastCall=-9;
   ackT=0; voiceT=0; juanCur='卷'; juanFlkT=0;
   for(const P of PORT){ P.flk=0; }
   setKeys('R 重看本幕');
-  setHint('〔陸〕拾畫·叫畫 · 園角太湖石下，似有一角微露 —— 以指拂石，掃去苔色');
+  setLore('太湖石藏著三年前的春容','麗娘臨終囑咐把自畫像藏在太湖石下。柳夢梅路過梅花觀，正是在石邊拾到這幅尚未與他相識的畫。','以指或目光拂過太湖石，掃去苔色。');
   if(Sound.started&&!Sound.micStream) Sound.listen();
 }
 
@@ -484,9 +504,9 @@ function drawJuan(dt,rockFrac){
 function drawScroll(dt){
   if(phase==='sweep') return;
   if(phase==='unroll'){ const pu=unrollT; unrollT+=dt;
-    if(pu<1.3&&unrollT>=1.3) setHint('呀，一幅觀音喜相？');                    // 认画一拍(拾画原折:先认作观音)
+    if(pu<1.3&&unrollT>=1.3) setLore('他先把她認作觀音','《拾畫》讓柳夢梅先誤認神像，再逐步看出畫中是有情的人。錯認延長了「像」與「真人」之間的距離。','等畫軸完全展開。');                    // 认画一拍(拾画原折:先认作观音)
     if(unrollT>=2.6){ phase='call'; setKeys('空格 喚一聲　·　R 重看本幕');
-      setHint('觀音？嫦娥？—— 眉目宛然，卻少一雙瞳 · 喚三聲問她（出聲喚；或點畫像、空格）'); } }
+      setLore('眉目宛然，為何獨缺雙瞳','這是與《寫真》相連的同一幅畫：麗娘能留下春容，卻不能預先複製一次真正的對視。瞳要等另一個人來喚醒。','出聲、點畫像或按空格，依次喚三聲。'); } }
   const op=phase==='unroll'?smooth(Math.min(1,unrollT/2.6)):1;
   const edge=SC.top+(SC.bot-SC.top)*op;
   /* 暗底衬纸(同出口式样,横向软边) */
@@ -511,11 +531,11 @@ function drawScroll(dt){
   if(eyesOn){ eyeT+=dt;
     if(!eyeBell && eyeT>0.55){ eyeBell=true; Sound.bell(GONG*LV.qshang,0.05); }  // 瞳亮时,一记轻清商
     if(phase==='call' && eyeT>1.0){ phase='awake'; awakeT=0;
-      setHint('雙瞳亮了 —— 畫中人看見你了'); } }
+      setLore('第三聲讓畫中人回望','《幽媾》明說，柳夢梅高低呼喚「姐姐」「美人」，那聲音哀楚，動了麗娘心魂。瞳亮表示呼喚終於被另一端接收。','等畫軸下方的幽門顯形。'); } }
   if(phase==='awake'){ awakeT+=dt;
     if(!gateReady && awakeT>2.4){ gateReady=true; Sound.bell(GONG,0.09);
       setKeys('→ 前行　·　R 重看本幕');
-      setHint('軸下浮一「幽」字 —— 此去幽媾'); } }
+      setLore('「幽」通往人鬼相見','畫不再只是遺物，它成了魂能辨認的地址。下一幕把畫外的柳夢梅與畫中歸來的麗娘放到橋的兩端。','點「幽」前行，或按 →。'); } }
   const awEase=phase==='awake'?smooth(Math.min(1,awakeT/2)):0;
   const sc=1+0.05*awEase;                                  // 半身前浮:整像放大 5%
   const breathe=phase==='awake'?(1+0.07*motionSin(awakeT*0.9)):1;   // 减弱动效时冻结呼吸
@@ -591,16 +611,16 @@ function drawGate(dt){
 function checkSweep(st){
   if(!juanOn){
     if(st.rockFrac>=0.55){ juanOn=true; Sound.bell(GONG*LV.jue,0.07);            // 卷显一记(角)
-      setHint('苔色掃處，石中露出一角畫卷 —— 點「卷」，拾畫'); return; }
+      setLore('畫卷從石中露出','太湖石在前幕收畫，在此幕交畫；同一地點把麗娘的預感與柳夢梅的偶然相接。','點「卷」，把三年前的春容展開。'); return; }
     const pc=Math.round(st.rockFrac*100);
-    if(pc!==lastProg && pc>0){ lastProg=pc;                                      // pc>0 才接管:开场"園角太湖石下"的位置线索勿被一帧吃掉
+    if(Math.floor(pc/10)!==lastProg && pc>0){ lastProg=Math.floor(pc/10);        // 十分一报，避免连续进度吃掉剧情解说
       setHint('園角太湖石下 · 以指拂石，掃去苔色 —— '+['苔色未動','拂亮一成','拂亮二成','拂亮三成','拂亮四成','拂亮五成','將見其物'][Math.min(6,Math.floor(pc/10))]); }
   }
 }
 function startUnroll(){
   if(phase!=='sweep' || !juanOn) return;
   phase='unroll'; unrollT=0; Sound.bell(GONG,0.09);                              // 展卷一记(宫)
-  setHint('立軸自上而下，徐徐展開 ——');
+  setLore('拾畫不是得到一件物品','柳夢梅拾到的既是畫，也是麗娘留給未知之人的自我證詞。立軸展開時，他正在決定把它當神像、物件，還是一個人。','看立軸徐徐展開。');
 }
 function doCall(){
   if(phase!=='call' || calls>=3) return;
@@ -613,11 +633,11 @@ function doCall(){
     for(let i=rg[0];i<rg[1]&&i<hu.length;i++){ const it=hu[i];
       it.wake=gateT + Math.hypot(it.x-SC.cx, it.y-SC.pcy)/4.2 + (i-rg[0])*0.13;  // 同匣字再错半拍,如墨次第洇开
       it.wakeF=GONG*[LV.yu,LV.qgong,LV.qshang][calls-1]; } }
-  if(calls===1){ warmTgt=0.5;  setHint('第一聲「美人」—— 像色微明 · 再喚'); }
+  if(calls===1){ warmTgt=0.5;  setLore('第一聲「美人」','稱她為美人，仍是在稱呼一幅可觀看的像；畫色只微微回暖，尚未形成回應。','再喚一聲。'); }
   else if(calls===2){ warmTgt=0.62;
     for(const P of PORT){ if(P.kind!=='eye'&&P.kind!=='name'){ P.flk=0.32; P.fch=GPOOL[(Math.random()*GPOOL.length)|0]; } }  // 满纸字粒齐齐闪变一轮
-    setHint('第二聲「美人」—— 滿紙字粒俱顫 · 再喚'); }
-  else { warmTgt=1; setHint('第三聲「姐姐，姐姐」——'); }
+    setLore('第二聲「美人」','重複使呼喚從欣賞變成執念，滿紙字粒開始顫動，但「美人」仍不是她的關係位置。','最後一聲，換一種稱呼。'); }
+  else { warmTgt=1; setLore('第三聲「姐姐，姐姐」','《幽媾》中麗娘記得的正是這聲「姐姐」。稱呼從觀看對象轉成可以答話的人，畫與魂之間才真正接通。','等第三道聲紋抵達雙瞳。'); }
   if(calls===3) Sound.stopMic();
 }
 function tryCall(){                                                              // 点击/空格入口:不应期被吞也给最轻一档回应(金环一闪,不出声)
@@ -712,7 +732,7 @@ function enter(){ const e=document.getElementById('enter'); if(e.classList.conta
   const enterBtn=document.getElementById('enterBtn'); enterBtn.disabled=true; enterBtn.blur();
   document.getElementById('keys').classList.add('show');
   Sound.start(); setTimeout(()=>Sound.bell(GONG*LV.jue,0.055),340);   // 入幕一记磬(角)
-  setHint('〔陸〕拾畫·叫畫 · 園角太湖石下，似有一角微露 —— 以指拂石，掃去苔色'); }
+  setLore('太湖石藏著三年前的春容','麗娘臨終囑咐把自畫像藏在太湖石下。柳夢梅路過梅花觀，正是在石邊拾到這幅尚未與他相識的畫。','以指或目光拂過太湖石，掃去苔色。'); }
 document.getElementById('enterBtn').addEventListener('click', enter);
 document.getElementById('replay').addEventListener('click', e=>{ e.stopPropagation(); loadScene(); });
 window.addEventListener('keydown', ev=>{

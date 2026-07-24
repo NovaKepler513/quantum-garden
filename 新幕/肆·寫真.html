@@ -72,10 +72,18 @@
   #scene{position:fixed;inset:0;display:block;cursor:none;z-index:1;touch-action:none}
   .ui{position:fixed;inset:0;pointer-events:none;z-index:5;font-family:var(--serif)}
   .ui .seal{position:absolute;top:22px;left:22px;font-size:13px;color:var(--gold);opacity:.5}
-  .ui .hint{position:absolute;left:22px;bottom:18px;max-width:min(62vw,640px);text-align:left;
-      font-size:clamp(12px,1.6vw,15px);color:var(--jade);
-      opacity:0;transition:opacity 1.6s;text-shadow:0 1px 14px rgba(7,16,14,.6)}
+  .ui .narrative{position:absolute;left:22px;bottom:18px;width:min(620px,calc(100vw - 150px));min-height:88px;padding-left:14px;
+      border-left:1px solid rgba(198,104,88,.62);text-align:left;text-shadow:0 1px 14px rgba(7,16,14,.75)}
+  .ui .narrative::after{content:"";position:absolute;z-index:-1;left:-22px;right:-30px;top:-20px;bottom:-20px;
+      background:linear-gradient(90deg,rgba(7,16,14,.9),rgba(7,16,14,.58) 74%,transparent)}
+  .narrative-label{display:block;margin-bottom:6px;font-family:var(--sans);font-size:11px;color:var(--cinnabar)}
+  .narrative-title{display:none;margin-bottom:5px;font-size:17px;line-height:1.45;color:var(--gold)}
+  .narrative-title.show{display:block}
+  .ui .hint{font-size:14px;line-height:1.7;color:var(--ivory);
+      opacity:0;transition:opacity .28s;text-shadow:0 1px 14px rgba(7,16,14,.6)}
   .ui .hint.show{opacity:.8}
+  .narrative-action{display:none;margin-top:7px;font-family:var(--sans);font-size:11px;line-height:1.6;color:var(--jade)}
+  .narrative-action.show{display:block}.narrative-action::before{content:"→";margin-right:7px;color:var(--cinnabar)}
   .ui .foot{position:absolute;top:14px;right:120px;font-size:13px;
       opacity:0;transition:opacity 1.6s}
   .ui .foot.show{opacity:1}
@@ -106,7 +114,7 @@
       background:rgba(11,24,20,.45);transition:.25s;user-select:none}
   #fsBtn:hover{color:var(--gold);border-color:rgba(210,174,104,.65);opacity:.95}
   @keyframes entrymark{0%,100%{border-color:rgba(198,104,88,.38);color:rgba(237,231,216,.62)}50%{border-color:rgba(198,104,88,.92);color:var(--ivory)}}
-  @media (max-width:640px){.ui .hint{right:22px;bottom:66px;max-width:none}.ui .foot{top:64px;right:16px}}
+  @media (max-width:640px){.ui .narrative{left:16px;bottom:54px;width:calc(100vw - 32px)}.ui .foot{top:64px;right:16px}}
   @media (prefers-reduced-motion:reduce){#enter .blink{animation:none}.ui .hint,.ui .foot,.ui .keys,#enter,#fsBtn{transition:none}}
 </style>
 </head>
@@ -115,7 +123,12 @@
   <div class="ui">
     <div class="seal">第 肆 幕 · 寫 真 · 神 不 可 摹</div>
     <div class="foot"><button class="lnk" id="relook" type="button">↺ 重 看 本 幕</button></div>
-    <div class="hint" id="hint" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div class="narrative" role="status" aria-live="polite" aria-atomic="true">
+      <span class="narrative-label" id="hintLabel">此刻</span>
+      <div class="narrative-title" id="hintTitle"></div>
+      <div class="hint" id="hint"></div>
+      <div class="narrative-action" id="hintAction"></div>
+    </div>
     <div class="keys" id="keys">R 重看　·　→ 出幕</div>
   </div>
   <div id="enter">
@@ -348,8 +361,14 @@ const PROBE=+((location.hash.match(/probe(\d)/)||[0,0])[1]);
 const FEN=[...'一二三四五六七八九'];              // 进度十分制(回扣「三分春色」)
 const fen=p=>p>=100?'十分':(p<10?'未足一分':FEN[(p/10|0)-1]+'分');
 
-function setHint(t){ const h=document.getElementById('hint'); h.textContent=t; h.classList.add('show'); }
-function clearHint(){ document.getElementById('hint').classList.remove('show'); }
+function writeNarrative(label,title,body,action){
+  const l=document.getElementById('hintLabel'),t=document.getElementById('hintTitle'),h=document.getElementById('hint'),a=document.getElementById('hintAction');
+  l.textContent=label||'此刻'; t.textContent=title||''; t.classList.toggle('show',!!title);
+  h.textContent=body||''; h.classList.add('show'); a.textContent=action||''; a.classList.toggle('show',!!action);
+}
+function setHint(t){ writeNarrative('此刻','',t,''); }
+function setLore(title,body,action,label){ writeNarrative(label||'戲中 · 寫真',title,body,action); }
+function clearHint(){ document.getElementById('hint').classList.remove('show'); document.getElementById('hintTitle').classList.remove('show'); document.getElementById('hintAction').classList.remove('show'); }
 
 /* ====== 像散:画像字粒化瓣,飘落归石 ====== */
 function initPetals(){
@@ -513,16 +532,16 @@ function checkPhase(dt,pct){
   if(PROBE||!entered) return;                                  // 探针态冻结,专供截图;入幕前不漏提示
   if(PHASE==='trace'){
     if(pct>=100){ PHASE='dot'; dotT=0; triedT=0;
-      setHint('畫成了，只差點睛 —— 去描她的眼'); }             // 先引向瞳:墙要亲手去撞
-    else if(pct!==lastProg){ lastProg=pct;
+      setLore('為什麼偏偏不能點睛','麗娘能把輪廓留給後人，卻不能把「神」複製進畫。雙瞳因此故意拒絕凝定：像可以相似，觀看者與被看者的相遇不能拷貝。','把筆停在她眼上，親自試一次點睛。'); }             // 先引向瞳:墙要亲手去撞
+    else if(Math.floor(pct/20)!==lastProg){ lastProg=Math.floor(pct/20);
       setHint('〔肆〕寫真 · 以指為筆，描她在絹上的影 —— 已描'+fen(pct)); }
   } else if(PHASE==='dot'){ dotT+=dt;
     if(pupilInfl>0.35) triedT+=dt;                             // 点睛失败必须亲自撞见，时间不能替观众完成
     if(triedT>1){ PHASE='verse'; verseT=0; Sound.bell(GONG*LV.yu,0.07);
-      clearHint(); }                                           // 金句在画面上,提示条让位
+      setLore('「三分春色描來易，一段傷心畫出難」','這句是裝置為此幕寫的判語，不冒充《牡丹亭》原文。它把不可克隆之牆落在麗娘身上：春容可描，傷心與生命不可搬運。','看畫面金句徐現；稍後麗娘會親自來題詩。'); }
     else if(dotT>7&&!window._dotNudged){ window._dotNudged=true; setHint('雙瞳仍在閃。請把筆停在她眼上，試著點睛。'); }
   } else if(PHASE==='verse'){ verseT+=dt;
-    if(verseT>3.4){ PHASE='walk'; walkT=0; setHint('麗娘緩步行至軸前 —— 看她題詩畫上'); }
+    if(verseT>3.4){ PHASE='walk'; walkT=0; setLore('她為何要替自己寫真','《寫真》中，麗娘既無可寄畫的情人，又預感春容易逝；自畫不是自戀，而是把尚未相遇的自己寄給未來。','看她走到軸前，將預言題在畫上。'); }
   } else if(PHASE==='walk'||PHASE==='inscribe'){
     if(walkT<6.5){ walkT+=dt;                                  // 6.5s 行 3.9 单位=均速 0.6 合 GUIDE
       const p=Math.min(1,walkT/6.5), e=p*p*(3-2*p);
@@ -534,11 +553,11 @@ function checkPhase(dt,pct){
       while(insIdx<COLO_N && insT>=insIdx*0.62){
         Sound.bell(GONG*INS_NOTES[(insIdx/2)|0], 0.05); insIdx++; }
       if(insT>COLO_N*0.62+1.8){ PHASE='scatter'; scatT=0; initPetals(); Sound.wind();
-        setHint('題罷，像散 —— 描得再像，也不是她'); } }
+        setLore('「不在梅邊在柳邊」','題詩把「柳」與「梅」寫成尚未應驗的姓名之讖：未來拾畫的人恰叫柳夢梅。畫散去，預言卻留了下來。','像正化作字瓣歸向太湖石。'); } }
   } else if(PHASE==='scatter'){ scatT+=dt;
     if(!gateReady && (landedN>=petalN*0.92 || scatT>8.5)){
       gateReady=true; Sound.bell(GONG,0.08);
-      setHint('畫魂歸石 —— 石上浮一「藏」字：點之，藏畫於太湖石（→ 鍵亦可）'); }
+      setLore('畫為什麼要藏進太湖石','《鬧殤》中，麗娘臨終囑咐把春容盛入紫檀匣，藏在太湖石下；三年後柳夢梅正從此處拾得。','點石上的「藏」，把畫交給三年後；→ 鍵亦可。'); }
   } else if(PHASE==='end'){ endT+=dt;
     if(endT>5.2 && !window._went){ window._went=true; location.href='伍·離魂.html'; }   // 八幕链:藏畫既毕→離魂
   }
@@ -549,7 +568,7 @@ function resetAct(){
   PHASE='trace'; LN.ox=0; LN.oy=0; vA=0; verseT=0; walkT=0; insT=0; insIdx=0; scatT=0; endT=0;
   dotT=0; triedT=0; pupilInfl=0; pulseT=0; lastPct=0; window._dotNudged=false;
   gateReady=false; gateA=0; petalN=0; landedN=0; lastProg=0;
-  if(entered) setHint('〔肆〕寫真 · 以指為筆，描她在絹上的影');
+  if(entered) setLore('一幅寄給未來的春容','《寫真》中，麗娘對鏡自畫，想把正在消逝的自己留給一個尚不存在的知音。','以指為筆，掃過右側素絹上的字粒。');
 }
 function showEnter(){ entered=false; clearHint();
   const enterEl=document.getElementById('enter'), enterBtn=document.getElementById('enterBtn');
@@ -629,7 +648,7 @@ function enter(){ const el=document.getElementById('enter'); if(el.classList.con
   document.getElementById('keys').classList.add('show');
   document.querySelector('.foot').classList.add('show');       // 触屏观众的重看入口,随 keys 同现
   Sound.start();
-  setHint('〔肆〕寫真 · 以指為筆，描她在絹上的影'); lastProg=0; }
+  setLore('一幅寄給未來的春容','《寫真》中，麗娘對鏡自畫，想把正在消逝的自己留給一個尚不存在的知音。','以指為筆，掃過右側素絹上的字粒。'); lastProg=0; }
 document.getElementById('enterBtn').addEventListener('click', enter);
 document.getElementById('relook').addEventListener('click', e=>{ e.stopPropagation(); if(entered) resetAct(); });
 window.addEventListener('keydown', ev=>{

@@ -88,10 +88,18 @@
   #scene{position:fixed;inset:0;display:block;cursor:none;z-index:1;touch-action:none}
   .ui{position:fixed;inset:0;pointer-events:none;z-index:5;font-family:var(--serif)}
   .ui .seal{position:absolute;top:22px;left:22px;font-size:13px;color:var(--gold);opacity:.35}
-  .ui .hint{position:absolute;left:22px;bottom:18px;max-width:min(62vw,640px);text-align:left;
-      font-size:clamp(12px,1.6vw,15px);color:var(--jade);
-      opacity:0;transition:opacity 1.6s;text-shadow:0 1px 14px rgba(7,16,14,.6)}
+  .ui .narrative{position:absolute;left:22px;bottom:18px;width:min(620px,calc(100vw - 150px));min-height:88px;padding-left:14px;
+      border-left:1px solid rgba(198,104,88,.62);text-align:left;text-shadow:0 1px 14px rgba(7,16,14,.75)}
+  .ui .narrative::after{content:"";position:absolute;z-index:-1;left:-22px;right:-30px;top:-20px;bottom:-20px;
+      background:linear-gradient(90deg,rgba(7,16,14,.9),rgba(7,16,14,.58) 74%,transparent)}
+  .narrative-label{display:block;margin-bottom:6px;font-family:var(--sans);font-size:11px;color:var(--cinnabar)}
+  .narrative-title{display:none;margin-bottom:5px;font-size:17px;line-height:1.45;color:var(--gold)}
+  .narrative-title.show{display:block}
+  .ui .hint{font-size:14px;line-height:1.7;color:var(--ivory);
+      opacity:0;transition:opacity .28s;text-shadow:0 1px 14px rgba(7,16,14,.6)}
   .ui .hint.show{opacity:.8}
+  .narrative-action{display:none;margin-top:7px;font-family:var(--sans);font-size:11px;line-height:1.6;color:var(--jade)}
+  .narrative-action.show{display:block}.narrative-action::before{content:"→";margin-right:7px;color:var(--cinnabar)}
   .ui .keys{position:absolute;right:22px;bottom:18px;font-size:11px;
       color:var(--jade);opacity:0;transition:opacity 1.6s}
   .ui .keys.show{opacity:.5}
@@ -114,7 +122,7 @@
       background:rgba(11,24,20,.45);transition:.25s;user-select:none}
   #fsBtn:hover{color:var(--gold);border-color:rgba(210,174,104,.65);opacity:.95}
   @keyframes entrymark{0%,100%{border-color:rgba(198,104,88,.38);color:rgba(237,231,216,.62)}50%{border-color:rgba(198,104,88,.92);color:var(--ivory)}}
-  @media (max-width:640px){.ui .hint{right:22px;bottom:66px;max-width:none}}
+  @media (max-width:640px){.ui .narrative{left:16px;bottom:54px;width:calc(100vw - 32px)}}
   @media (prefers-reduced-motion:reduce){#enter .blink{animation:none}.ui .hint,.ui .keys,#enter,#fsBtn{transition:none}}
 </style>
 </head>
@@ -122,7 +130,12 @@
   <canvas id="scene"></canvas>
   <div class="ui">
     <div class="seal">第 伍 幕 · 離 魂</div>
-    <div class="hint" id="hint" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div class="narrative" role="status" aria-live="polite" aria-atomic="true">
+      <span class="narrative-label" id="hintLabel">此刻</span>
+      <div class="narrative-title" id="hintTitle"></div>
+      <div class="hint" id="hint"></div>
+      <div class="narrative-action" id="hintAction"></div>
+    </div>
     <div class="keys" id="keys">R 重新守燭</div>
   </div>
   <div id="enter">
@@ -281,11 +294,17 @@ let passX=0,passY=0,passR=0;
 const VERSE=[..."怎能勾月落重生燈再紅"];                  // 《鬧殤·尾聲》(旦)原文(维基文库核,见头注)
 const DENG=VERSE.indexOf('燈');
 let hintTmr=0;
+function writeNarrative(label,title,body,action){
+  const l=document.getElementById('hintLabel'),t=document.getElementById('hintTitle'),h=document.getElementById('hint'),a=document.getElementById('hintAction');
+  l.textContent=label||'此刻'; t.textContent=title||''; t.classList.toggle('show',!!title);
+  h.textContent=body||''; h.classList.add('show'); a.textContent=action||''; a.classList.toggle('show',!!action);
+}
 function setHint(t){ const h=document.getElementById('hint');               // 两拍换字:先隐 0.6s 再现,合全幕徐现节奏
-  if(!h.classList.contains('show')){ h.textContent=t; h.classList.add('show'); return; }
-  if(h.textContent===t) return;
+  if(!h.classList.contains('show')){ writeNarrative('此刻','',t,''); return; }
+  if(h.textContent===t&&!document.getElementById('hintTitle').textContent) return;
   clearTimeout(hintTmr); h.classList.remove('show');
-  hintTmr=setTimeout(()=>{ if(phase!=='idle'){ h.textContent=t; h.classList.add('show'); } },600); }
+  hintTmr=setTimeout(()=>{ if(phase!=='idle') writeNarrative('此刻','',t,''); },600); }
+function setLore(title,body,action,label){ clearTimeout(hintTmr); writeNarrative(label||'戲中 · 鬧殤',title,body,action); }
 function setKeys(t){ document.getElementById('keys').textContent=t; }
 const KEYS0='R 重新守燭', KEYS1='R 重新守燭　·　→ 點「燈」出幕';   // 键位分阶段:守烛时场上无「燈」
 const HINT0='中秋雨夜 —— 移指至燭焰上方，以一葉荷為它遮雨；你守著，它便亮著，一旦松手，風雨立時欺上，燈頃刻將盡';   // 动作与代价一次讲清;幕名交给 seal 与款识
@@ -365,7 +384,7 @@ const MIC={ on:false, requesting:false, raw:0, analyser:null, source:null, strea
       else this.hold=Math.max(0,this.hold-dt*1.2); } } };
 function gustBlow(k){ if(phase!=='guard') return; k=k==null?1:k;    // k=1 吹气 / 0.5 空格轻风
   gust=Math.max(gust,0.5+0.5*k); V=Math.max(0,V-0.06*k*(1-0.6*protectK)); Sound.gustWind(0.05*Math.max(0.5,k)); // 护焰=挡风
-  if(!blewOnce){ blewOnce=true; setHint('一口氣 —— 焰險些滅了；你也是這場風雨'); }   // 自拟
+  if(!blewOnce){ blewOnce=true; setLore('你也是這場風雨','原作以「風搖長命燈」寫麗娘病勢；在裝置裡，觀眾的氣息也會成為外界擾動。觀看不只救護，也可能傷害。','重新把荷葉移到焰尖上方。'); }   // 自拟
   if(V<=0) die(); }
 function gustSoft(){ if(phase!=='guard') return; gust=Math.max(gust,0.5); Sound.gustWind(0.02); } // 只晃不罚
 function ambientGust(){ if(phase!=='guard') return;                 // 自主风:守烛期的节拍器,也让"护焰=挡风"可感
@@ -381,7 +400,7 @@ function die(){ if(phase!=='guard') return;
   phase='dying'; dieT=0; fellDone=false; V=0;
   MIC.stop(); Sound.death();
   for(const it of items) if(it.fl) it.dead=true;          // 焰熄于一瞬
-  setHint('燭滅 —— 滿園字散，魂歸於夜'); }                  // 自拟
+  setLore('「冷雨幽窗燈不紅」','《鬧殤》讓中秋、冷雨、幽窗與熄燈同時落下。燭滅不是失敗懲罰，而是麗娘生命走到不可逆的一刻。','讓字與魂散盡，等月落後那一句再顯。'); }                  // 自拟
 function fallAndRise(){                                   // 字粒散落 + 麗娘化魂粒上升
   for(const it of items) if(!it.fl) startFall(it);
   const ln=items.filter(it=>it.grp==='麗娘');
@@ -400,7 +419,7 @@ function resetScene(){                                    // R:重新守烛(从�
   windT=12+Math.random()*8; verseHinted=false; setKeys(KEYS0);
   if(Sound.ac && running) Sound.alive();                  // 谢幕回遮罩(running=false)不再起雨,幕间归静
   if(running&&Sound.ac&&!MIC.on) MIC.request();
-  if(running) setHint(HINT0); }
+  if(running) setLore('長命燈只能延緩，不能回升','《鬧殤》以風雨和長命燈寫病中麗娘。此幕的生命值只降不升：陪伴有效，但不能把死亡改寫成可撤銷操作。',HINT0); }
 
 /* ====== 分级提示(V 单调下行,只会逐级触发;首级=守烛前段微事件,填空窗) ====== */
 function hints(){ let st=0; if(V<0.85) st=1; if(V<0.7) st=2; if(V<0.45) st=3; if(V<0.22) st=4;
@@ -624,7 +643,7 @@ function render(dt){
     protectK += (q-protectK)*Math.min(1,dt*5);            // 跟手紧:护几分即时可感
     SH.x=mouseX; SH.y=mouseY; SH.r=scale*(0.42+0.3*Math.min(1,protectK*1.1));  // 穹弧收小:一只手掌覆住焰,而非大半个天
     warmL += ((protecting?0.55*protectK:0)-warmL)*Math.min(1,dt*0.5);
-    if(protectK>0.5 && !protectedOnce){ protectedOnce=true; setHint('焰穩了些 —— 雨,被你分開了'); }  // 首次护焰回执:点明"你是伞"
+    if(protectK>0.5 && !protectedOnce){ protectedOnce=true; setLore('一葉荷替你把雨分開','荷葉是裝置新增的交互物，不冒充原作道具；它把「守著她」變成可見的手勢，也讓保護與徒勞同時成立。','焰穩了些，但仍在慢慢衰減。'); }  // 首次护焰回执:点明"你是伞"
     if(MOON) MOON.y=MOON.my0+(1-V)*1.6;                   // 月随生命西沉,烛灭恰落尽——金句"月落"观众自己接上
     if(!tiMing){ let s=0,n=0; for(const it of items) if(it.grp==='題詞'){s+=it.c;n++;}
       if(n&&s/n>0.6){ tiMing=true; for(const it of items) if(it.grp==='題詞') it.c=1; } } // 题词成组判明:扫半即整句立,不留锯齿
@@ -647,7 +666,7 @@ function render(dt){
     verseT+=dt; gateA=Math.min(1,Math.max(0,(verseT-1.0)/2.6));
     if(!verseHinted && gateA>0.1){ verseHinted=true;      // 静默—金句—提示,三拍分开;不复读全句
       setKeys(KEYS1);                                     // 燈显形了,键位说明才提它(勿"照做没反应")
-      setHint('句中「燈」字漸漸亮了 —— 點它出幕'); }
+      setLore('「怎能勾月落重生燈再紅」','《鬧殤·尾聲》中，這是一句不能回答的問話。裝置讓「燈」重新亮起，不是否認死亡，而是把未完成的願望交給下一幕的畫。','點句中「燈」字出幕。'); }
     if(verseT>90 && !ended) endScene();                   // 无人点燈 90s 自动谢幕归位,等下一位观众
   } else if(phase==='end'){
     verseT+=dt; endT+=dt;
@@ -692,7 +711,7 @@ function enter(silent){
   document.getElementById('keys').classList.add('show');
   if(!silent){ Sound.start(); Sound.alive(); if(!MIC.on) MIC.request(); setTimeout(()=>Sound.bell(GONG*LV.zhi,0.055),340); }   // 入幕一记磬(徵)
   if(!running || phase!=='guard'){ resetScene(); }
-  running=true; spaceCD=0.8; setHint(HINT0);              // 入园余波 0.8s 内忽略空格风(防"空格入园"顺手吹灭)
+  running=true; spaceCD=0.8; setLore('長命燈只能延緩，不能回升','《鬧殤》以風雨和長命燈寫病中麗娘。此幕的生命值只降不升：陪伴有效，但不能把死亡改寫成可撤銷操作。',HINT0);              // 入园余波 0.8s 内忽略空格风(防"空格入园"顺手吹灭)
 }
 document.getElementById('enterBtn').addEventListener('click', ()=>enter(false));
 window.addEventListener('keydown', ev=>{

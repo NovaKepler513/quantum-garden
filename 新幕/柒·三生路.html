@@ -78,10 +78,18 @@
   .ui{position:fixed;inset:0;pointer-events:none;z-index:5;font-family:var(--serif)}
   .ui .seal{position:absolute;top:22px;left:22px;font-size:13px;color:var(--gold);opacity:.5}
   .ui .fate{position:absolute;top:46px;left:22px;font-size:12px;color:var(--jade);opacity:.6}
-  .ui .hint{position:absolute;left:22px;bottom:18px;max-width:min(62vw,640px);text-align:left;
-      font-size:clamp(12px,1.6vw,15px);color:var(--jade);
-      opacity:0;transition:opacity 1.6s;text-shadow:0 1px 14px rgba(7,16,14,.6)}
+  .ui .narrative{position:absolute;left:22px;bottom:18px;width:min(620px,calc(100vw - 150px));min-height:88px;padding-left:14px;
+      border-left:1px solid rgba(198,104,88,.62);text-align:left;text-shadow:0 1px 14px rgba(7,16,14,.75)}
+  .ui .narrative::after{content:"";position:absolute;z-index:-1;left:-22px;right:-30px;top:-20px;bottom:-20px;
+      background:linear-gradient(90deg,rgba(7,16,14,.9),rgba(7,16,14,.58) 74%,transparent)}
+  .narrative-label{display:block;margin-bottom:6px;font-family:var(--sans);font-size:11px;color:var(--cinnabar)}
+  .narrative-title{display:none;margin-bottom:5px;font-size:17px;line-height:1.45;color:var(--gold)}
+  .narrative-title.show{display:block}
+  .ui .hint{font-size:14px;line-height:1.7;color:var(--ivory);
+      opacity:0;transition:opacity .28s;text-shadow:0 1px 14px rgba(7,16,14,.6)}
   .ui .hint.show{opacity:.8}
+  .narrative-action{display:none;margin-top:7px;font-family:var(--sans);font-size:11px;line-height:1.6;color:var(--jade)}
+  .narrative-action.show{display:block}.narrative-action::before{content:"→";margin-right:7px;color:var(--cinnabar)}
   .ui .keys{position:absolute;right:22px;bottom:18px;font-size:11px;color:var(--jade);opacity:0;transition:opacity 1.6s}
   .ui .keys.show{opacity:.5}
   #enter{position:fixed;inset:0;z-index:9;background:rgba(7,16,14,.94);padding:48px 24px;
@@ -102,7 +110,7 @@
       border:1px solid rgba(131,153,143,.35);border-radius:3px;background:rgba(11,24,20,.45);transition:.25s;user-select:none}
   #fsBtn:hover{color:var(--gold);border-color:rgba(210,174,104,.65);opacity:.95}
   @keyframes entrymark{0%,100%{border-color:rgba(198,104,88,.38);color:rgba(237,231,216,.62)}50%{border-color:rgba(198,104,88,.92);color:var(--ivory)}}
-  @media(max-width:640px){.ui .hint{right:22px;bottom:66px;max-width:none}}
+  @media(max-width:640px){.ui .narrative{left:16px;bottom:54px;width:calc(100vw - 32px)}}
   @media(prefers-reduced-motion:reduce){#enter .blink{animation:none}.ui .hint,.ui .keys,#enter,#fsBtn{transition:none}}
 </style>
 </head>
@@ -111,7 +119,12 @@
   <div class="ui">
     <div class="seal">第 捌 幕 · 三 生 路</div>
     <div class="fate" id="fateNote"></div>
-    <div class="hint" id="hint" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div class="narrative" role="status" aria-live="polite" aria-atomic="true">
+      <span class="narrative-label" id="hintLabel">此刻</span>
+      <div class="narrative-title" id="hintTitle"></div>
+      <div class="hint" id="hint"></div>
+      <div class="narrative-action" id="hintAction"></div>
+    </div>
     <div class="keys" id="keys"><span id="keysDev">1 / 2 / 3 切三世　·　</span>→ 出幕　·　R 重看本世</div>
   </div>
   <div id="enter">
@@ -147,6 +160,28 @@ const FATE_NOTE={ yuan:'終 幕 · 三 生 路 ｜ 圓 · 渡 而 來',
 const FATE_HINT={ yuan:'圓 · 渡而來 —— 先觀測一字；滿園記憶，將自東而西，次第想起',
                   shang:'殤 · 獨夢而來 —— 以觀測撫字；有些字，這一世再暖不起來',
                   hua:'畫 · 拾畫而來 —— 且看整園，被緩緩裝入一軸畫中' };
+const FATE_LORE={
+  yuan:{title:'圓世不是「最好結局」的影片',body:'你在橋上同時看見兩人並親手牽絲，才來到此世。回生仍要逐字重建共同記憶，不能由系統替你播放完成。',action:'先觀測任一記憶字，喚起接力。'},
+  shang:{title:'殤世保留的是單邊觀看',body:'橋上只先看真麗娘，關係沒有抵達另一端。這一世能留下她的夢，卻不能把「三生路」與雙瞳重新暖成生命。',action:'撫過冷字；右下仍藏著唯一可暖的「梅」。'},
+  hua:{title:'畫世把相逢定影成一件作品',body:'橋上只先看真柳夢梅，麗娘便主要以春容存在。整座園將被裝入立軸，而柳生留在畫外繼續觀看。',action:'看散字被逐層裝裱進畫。'}
+};
+const MEMORY_LORE={
+  月:'從驚夢的春月，到離魂的中秋，再到幽媾的月下相見；同一輪月見證三種時間。',
+  璧:'驚夢中的玉璧曾把滿園亂字照成一句；它記得每次坍縮都只是一種可能。',
+  柳:'柳枝是麗娘尋夢的證物，也是柳夢梅尚未現身時，名字先進入園中的伏筆。',
+  橋:'橋把人鬼、畫與真人的距離變成兩岸；它記得你曾先看見誰。',
+  亭:'牡丹亭是夢中歡會與醒後尋夢共同指認的地點，讓情不再只是抽象念頭。',
+  廊:'尋夢廊把重訪拉成時間；麗娘走得越深，越確知昨日不能被原樣複製。',
+  松:'松守著園中較慢的時間，見證春夢延長到中秋與三年之後。',
+  燭:'長命燈記得你的看護確實有用，也記得生命仍只降不升。',
+  桐:'桐葉把春園帶向秋聲，提醒盛放與凋零原在同一座園裡。',
+  畫:'春容既是麗娘留世的自證，也是柳夢梅得以認出她的媒介。',
+  山:'湖山石先是夢址，後成藏畫之處；一塊石頭收住了三年的時間。',
+  容:'「春容」保存可見的形，卻不能保存一次活的對視。',
+  瞳:'瞳是全作最後才肯完成的點睛：只有另一端真正回望，像才成為相遇。',
+  池:'池水把園景變成可流動的夢，也讓每個水字成為過幕的渡口。',
+  梅:'梅既在柳夢梅姓名之中，也在殤世成為尚可親手暖亮的一點餘情。'
+};
 
 /* ====== 律(三分损益,黄钟=宫=C5) ====== */
 const GONG=523.25;
@@ -332,8 +367,17 @@ let wakeFlag=false, relayHinted=false, hint28=false, hint60=false, lastRustle=-9
 let relayOrder=[], phraseItems=[], relayTarget=null, relayWaitT=0;   // 圆世接力:当前候字须观众亲自观测
 let mouseX=-1e4, mouseY=-1e4, mouseOver=false, last=performance.now();
 const GATE={ yuan:{x:8,y:7.7,label:'遊'}, shang:{x:8,y:7.7,label:'夢'}, hua:{x:12.7,y:7.55,label:'卷'} };   // 单字出口(§2.3)
-function setHint(t,ttl){ const h=document.getElementById('hint'); h.textContent=t; h.classList.add('show');
+function writeNarrative(label,title,body,action){
+  const l=document.getElementById('hintLabel'),t=document.getElementById('hintTitle'),h=document.getElementById('hint'),a=document.getElementById('hintAction');
+  l.textContent=label||'此刻'; t.textContent=title||''; t.classList.toggle('show',!!title);
+  h.textContent=body||''; h.classList.add('show'); a.textContent=action||''; a.classList.toggle('show',!!action);
+}
+function setHint(t,ttl){ const h=document.getElementById('hint'); writeNarrative('此刻','',t,'');
   clearTimeout(h._t); h._t=setTimeout(()=>h.classList.remove('show'),(ttl||9)*1000); }                     // 提示限时退场(默认9s)
+function setLore(title,body,action,ttl,label){ const h=document.getElementById('hint');
+  writeNarrative(label||'戲中 · 三生路',title,body,action);
+  clearTimeout(h._t); if(ttl) h._t=setTimeout(()=>{ h.classList.remove('show'); document.getElementById('hintTitle').classList.remove('show'); document.getElementById('hintAction').classList.remove('show'); },ttl*1000);
+}
 
 function loadFate(){
   compose(); initQuantum();
@@ -348,7 +392,7 @@ function loadFate(){
   relayOrder.forEach((it,i)=>{ it.ri=i; });
   relayTarget=null; relayWaitT=0;
   document.getElementById('fateNote').textContent=FATE_NOTE[FATE];
-  setHint(FATE_HINT[FATE]);
+  const lore=FATE_LORE[FATE]; setLore(lore.title,lore.body,lore.action,0,'此世 · '+({yuan:'圓',shang:'殤',hua:'畫'}[FATE]));
   if(Sound.started&&Sound.ac) Sound.setScene(FATE);
 }
 function setFate(f){ FATE=f;
@@ -360,17 +404,20 @@ function bloomStart(){ bloomOn=true; Sound.padSwell();        // 满园字粒化
   for(const it of items) if(it.kind==='ground'){
     it.text=CATKIN[(Math.random()*CATKIN.length)|0]; it.cur=it.text;
     it.trgb=[212,196,164]; it.tA=Math.max(it.tA,0.55); it.autoRate=0.10; }
-  setHint('滿園字粒化作春絮，緩緩上飄'); }
+  setLore('「牡丹亭上三生路」','這句出自《牡丹亭·標目》，原本便把全劇概括成一條由夢、畫、死而回生的路。此刻滿園記憶化絮，是完成，也是再入園的準備。','等「遊」字浮出。',0); }
 function gateOpen(){ if(gateReady) return; gateReady=true;
   if(FATE==='hua'){ Sound.rustle(0.025); Sound.bell(GONG,0.02); } else Sound.bell(GONG,0.08);
-  setHint({ yuan:'「遊」浮處，點之——再入園，循環即三生',                  // 出口提示随门开(§2.3)
-            shang:'「夢」浮處，點之出幕',
-            hua:'點「卷」，自畫中再啟' }[FATE]); }
+  const gateLore={
+    yuan:['「遊」把終點折回起點','回生不是封閉結局；再次入園後，同一批物象會因你的觀看順序而重新生成。','點「遊」，再入一園春。'],
+    shang:['殘夢仍可再夢','此世沒有完成相認，但「夢」保留了再次觀測的可能。循環不是抹去殤，而是承認另一條路仍存在。','點「夢」出幕，再回一園春。'],
+    hua:['畫卷成為下一次入口','人物被定影進畫，觀看仍未結束。卷起此世，再次展開時，園林會重新回到疊加。','點「卷」，自畫中再啟。']
+  }[FATE];
+  setLore(gateLore[0],gateLore[1],gateLore[2],0); }                    // 出口提示随门开(§2.3)
 function updateFate(dt){
   if(FATE==='yuan'){
     if(!relayStart){                                             // 接力须观众先亲手唤醒一字；时间只提示，不代演
       const seen=items.some(it=>it.kind==='anchor'&&it._lit);
-      if(seen){ relayStart=true; setHint('渡而來 —— 滿園記憶自東而西候着；觀測所至，記憶方醒'); }
+      if(seen){ relayStart=true; setLore('記憶不自動播放','圓世要求你把曾經看過的物象重新看真。接力自東向西，每一字都必須由一次新的觀測完成。','移向下一枚微微呼吸的字。',7); }
       else if(!wakeFlag&&fateT>2.5){ wakeFlag=true; setHint('先喚醒一字，滿園記憶方肯想起'); }
     }
     if(relayStart && !phraseStart){                              // 当前一忆呼吸相候，必须被观测才醒
@@ -396,7 +443,7 @@ function updateFate(dt){
     heroA=1-0.78*clamp01((fateT-12)/55);                       // 独影渐淡
     if(fateT>1) for(const it of items) if(it.kind==='fig') it.c=Math.min(it.cap,it.c+dt*0.18);
     if(!sanFlag && !meiFlag && phraseItems.slice(4).some(it=>it.c>0.5)){
-      sanFlag=true; setHint('「三生路」三字，這一世再暖不到金 —— 右下，猶有一點梅'); }
+      sanFlag=true; setLore('有些字，這一世再暖不起來','「三生路」與瞳被封在冷色，表示單邊凝視不能替代相認。右下的梅仍暖，是姓名與情意留下的最小殘量。','去右下找「梅」。',0); }
     if(!meiFlag&&!hint28&&fateT>28){ hint28=true; setHint('右下，猶有一點梅 —— 以觀測暖它'); }   // 28s 提示
     if(!meiFlag&&!hint60&&fateT>60){ hint60=true; setHint('那一點梅，這一世唯一的暖處');          // 60s 兜底:梅呼吸相候
       const m=items.find(it=>it.mei); if(m) m.beckon=true; }
@@ -414,17 +461,18 @@ function updateFate(dt){
         if(mountT>st) it.c=Math.max(it.c, 0.5*clamp01((mountT-st)/0.3)); }
     }
     if(mountT>=1 && !mountDone){ mountDone=true; if(!probeQuiet) Sound.rustle(0.03);
-      setHint('畫成 —— 柳夢梅在軸外看'); }
+      setLore('畫成，而觀看者留在畫外','畫世把園、金句與麗娘的記憶都壓入紙面；柳夢梅沒有入卷，因為他仍是使畫成為相遇媒介的觀看者。','等「卷」字出現。',0); }
     if(mountDone && !gateReady && fateT>1.2+8.5+1.0) gateOpen();
   }
 }
 function onLit(it){ if(probeQuiet) return;
   if(FATE==='yuan'){
-    if(it.kind==='anchor') Sound.bell(NOTES[Math.min(it.ri||0,NOTES.length-1)],0.075);   // 上行琶音:一字一磬
+    if(it.kind==='anchor'){ Sound.bell(NOTES[Math.min(it.ri||0,NOTES.length-1)],0.075);
+      if(MEMORY_LORE[it.text]) setLore('記憶 · '+it.text,MEMORY_LORE[it.text],'下一枚記憶正在候你。',7,'圓世 · 記憶接力'); }   // 上行琶音:一字一磬
     else if(it.kind==='phrase') Sound.bell(GONG*SEQ[it.idx],0.055);
   } else if(FATE==='shang'){
     if(it.mei){ meiFlag=true; meiT=fateT; Sound.bell(GONG*LV.yu,0.08);
-      setHint('一點梅暖 —— 殘夢可再，「夢」將浮'); }
+      setLore('一點梅暖','梅把柳夢梅的名字留在麗娘的殘夢裡。它不能補回未完成的相認，卻足以讓此世保存一次再夢的入口。','等「夢」字浮出。',0); }
     else if(it.kind==='anchor'||it.kind==='phrase') Sound.bell(GONG/2,0.05);            // 单磬:只此低宫一音
   } else { if(it.kind!=='frame'&&Math.random()<0.6&&gateT-lastRustle>0.18){             // 排除裱边+0.18s 节流防叠响
       lastRustle=gateT; Sound.rustle(0.016); } }
