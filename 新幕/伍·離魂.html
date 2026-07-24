@@ -95,25 +95,25 @@
   .ui .keys{position:absolute;right:22px;bottom:18px;font-size:11px;
       color:var(--jade);opacity:0;transition:opacity 1.6s}
   .ui .keys.show{opacity:.5}
-  #enter{position:fixed;inset:0;z-index:9;background:rgba(7,16,14,.94);
+  #enter{position:fixed;inset:0;z-index:9;background:rgba(7,16,14,.94);padding:48px 24px;
       display:flex;flex-direction:column;align-items:center;justify-content:center;
-      font-family:var(--serif);transition:opacity 1.6s}
+      font-family:var(--serif);transition:opacity .7s ease}
   #enter.gone{opacity:0;pointer-events:none}
-  #enter .big{font-size:clamp(28px,6vw,52px);color:var(--ivory);text-shadow:0 2px 30px rgba(7,16,14,.7)}
-  #enter .sub{margin-top:22px;font-size:clamp(13px,1.8vw,16px);color:var(--jade)}
-  #enter .story{margin-top:18px;max-width:min(88vw,560px);font-size:clamp(12px,1.5vw,15px);line-height:1.9;color:var(--jade);opacity:.82;text-align:center}
-  #enter .blink{min-width:44px;min-height:44px;margin-top:38px;padding:0 16px;font-size:14px;color:var(--gold);opacity:.85;
-      border:1px solid rgba(210,174,104,.45);border-radius:3px;background:rgba(11,24,20,.5);cursor:pointer;
-      animation:blink 2.6s ease-in-out infinite}
+  #enter .eyebrow{margin-bottom:20px;font-family:var(--sans);font-size:11px;color:var(--cinnabar)}
+  #enter .sub{margin-bottom:14px;font-size:13px;color:var(--gold)}
+  #enter .big{font-size:clamp(36px,6vw,64px);color:var(--ivory);text-shadow:0 2px 30px rgba(7,16,14,.7)}
+  #enter .story{margin-top:24px;max-width:min(88vw,640px);font-size:clamp(14px,1.6vw,16px);line-height:1.9;color:var(--ivory);opacity:.92;text-align:center}
+  #enter .legend{margin-top:16px;max-width:min(88vw,560px);font-size:13px;line-height:1.8;color:var(--jade);opacity:.88;text-align:center}
+  #enter .blink{min-width:44px;min-height:48px;margin-top:40px;padding:0 24px;font-family:var(--sans);font-size:13px;color:var(--ivory);
+      border:0;border-top:1px solid rgba(198,104,88,.65);border-bottom:1px solid rgba(198,104,88,.65);
+      border-radius:0;background:transparent;cursor:pointer;animation:entrymark 2.4s ease-in-out infinite}
   #enter .blink:focus-visible,#fsBtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-  #enter .mic{margin-top:16px;font-size:12px;color:var(--jade);opacity:.55}
-  #enter.journey .sub,#enter.journey .story,#enter.journey .blink,#enter.journey .mic{display:none}
-  #enter.journey .big::before{content:'第 伍 幕';display:block;margin-bottom:14px;font-size:13px;color:var(--gold)}
+  #enter.journey .blink{display:none}
   #fsBtn{position:fixed;top:14px;right:16px;z-index:50;width:44px;height:44px;color:var(--jade);
       opacity:.55;cursor:pointer;border:1px solid rgba(131,153,143,.35);border-radius:3px;
       background:rgba(11,24,20,.45);transition:.25s;user-select:none}
   #fsBtn:hover{color:var(--gold);border-color:rgba(210,174,104,.65);opacity:.95}
-  @keyframes blink{0%,100%{opacity:.25}50%{opacity:.9}}
+  @keyframes entrymark{0%,100%{border-color:rgba(198,104,88,.38);color:rgba(237,231,216,.62)}50%{border-color:rgba(198,104,88,.92);color:var(--ivory)}}
   @media (max-width:640px){.ui .hint{right:22px;bottom:66px;max-width:none}}
   @media (prefers-reduced-motion:reduce){#enter .blink{animation:none}.ui .hint,.ui .keys,#enter,#fsBtn{transition:none}}
 </style>
@@ -126,11 +126,12 @@
     <div class="keys" id="keys">R 重新守燭</div>
   </div>
   <div id="enter">
+    <div class="eyebrow">量 子 游 園 · 《牡丹亭》 × 量子观测</div>
+    <div class="sub">第 伍 幕</div>
     <div class="big">離 魂</div>
-    <div class="sub">中秋雨夜 —— 替她守住這一點燭火</div>
     <div class="story">中秋雨夜，燈將盡，人將逝 —— 她終是為情而死</div>
-    <button class="blink" id="enterBtn" type="button">輕 觸 入 園</button>
-    <div class="mic">（可允許麥克風 —— 但小心你的呼吸）</div>
+    <div class="legend">移指至燭焰上方，以荷守火；麥克風可選</div>
+    <button class="blink" id="enterBtn" type="button">進 入 此 幕</button>
   </div>
 <script>
 "use strict";
@@ -598,12 +599,7 @@ function drawEnd(){                                       // 谢幕:暗下,一�
     ctx.fillText('本 幕 終 —— 離 魂', W/2, H*0.47); }
   if(endT>4.2){                                           // 八幕链:此燈既滅,且去拾畫(重守一回仍走 R)
     if(!window._went){ window._went=true; location.href='陸·拾畫叫畫.html'; } return;
-    phase='idle'; running=false; resetScene(); phase='idle';
-    document.getElementById('enter').classList.remove('gone');
-    clearTimeout(hintTmr); document.getElementById('hint').classList.remove('show');
-    document.getElementById('keys').classList.remove('show');                       // 键位说明随幕收,两次开场等价
-    document.querySelector('#enter .sub').textContent='她已離魂 —— 願再守一回麼';   // 再来与初见有别,自拟
-    document.querySelector('#enter .blink').textContent='再 守 一 回'; }
+  }
 }
 
 /* ====== 主渲染(probe 可直接调用以推进状态) ====== */
@@ -691,6 +687,8 @@ cv.addEventListener('pointerdown', e=>{
 function enter(silent){
   const e=document.getElementById('enter');
   if(!e.classList.contains('gone')) e.classList.add('gone');
+  e.setAttribute('aria-hidden','true');
+  const enterBtn=document.getElementById('enterBtn'); enterBtn.disabled=true; enterBtn.blur();
   document.getElementById('keys').classList.add('show');
   if(!silent){ Sound.start(); Sound.alive(); if(!MIC.on) MIC.request(); setTimeout(()=>Sound.bell(GONG*LV.zhi,0.055),340); }   // 入幕一记磬(徵)
   if(!running || phase!=='guard'){ resetScene(); }
@@ -711,7 +709,7 @@ window.addEventListener('keydown', ev=>{
 resizeLayout();
 compose(); initQuantum();
 try{ if(!location.hash&&new URLSearchParams(location.search).get('debug')!=='1'&&sessionStorage.getItem('qg_journey_active')==='1'){
-  document.getElementById('enter').classList.add('journey'); setTimeout(()=>enter(false),REDUCED_MOTION?220:900); } }catch(e){}
+  document.getElementById('enter').classList.add('journey'); setTimeout(()=>enter(false),REDUCED_MOTION?240:2200); } }catch(e){}
 requestAnimationFrame(frame);
 
 /* ====== 自检探针(#probe=guard|low|verse;静音,正常游玩无感) ====== */

@@ -82,18 +82,21 @@
       border-radius:3px;background:rgba(11,24,20,.42);color:var(--muted);cursor:pointer;opacity:.72;transition:.25s}
   .icon-button:hover{color:var(--gold);border-color:rgba(210,174,104,.65);opacity:1}
   .icon-button:focus-visible,#enterBtn:focus-visible{outline:2px solid var(--cinnabar);outline-offset:2px}
-  #enter{position:fixed;inset:0;z-index:9;background:rgba(11,24,20,0.9);   /* 0.9:遮罩下只剩人影悬念,不与标题抢视线 */
+  #enter{position:fixed;inset:0;z-index:9;background:rgba(7,16,14,.94);padding:48px 24px;
       display:flex;flex-direction:column;align-items:center;justify-content:center;
-      font-family:var(--serif);transition:opacity 1.6s}
+      font-family:var(--serif);transition:opacity .7s ease}
   #enter.gone{opacity:0;pointer-events:none}
-  #enter .big{font-size:clamp(28px,6vw,52px);color:var(--paper);text-shadow:0 2px 30px rgba(7,16,14,.7)}
-  #enter .sub{margin-top:22px;font-size:clamp(13px,1.8vw,16px);color:var(--muted)}
-  #enter .story{margin-top:18px;max-width:min(88vw,560px);font-size:clamp(12px,1.5vw,15px);line-height:1.9;color:var(--muted);opacity:.82;text-align:center}
-  #enterBtn{min-width:44px;min-height:44px;margin-top:28px;padding:10px 16px;border:1px solid rgba(210,174,104,.42);
-      border-radius:3px;background:rgba(7,16,14,.34);font-family:var(--serif);font-size:14px;color:var(--gold);opacity:.85;
-      cursor:pointer;animation:blink 2.6s ease-in-out infinite}
-  #enter.journey #enterBtn{animation:none;opacity:.72}
-  @keyframes blink{0%,100%{opacity:.25}50%{opacity:.9}}
+  #enter .eyebrow{margin-bottom:20px;font-family:var(--sans);font-size:11px;color:var(--cinnabar)}
+  #enter .sub{margin-bottom:14px;font-size:13px;color:var(--gold)}
+  #enter .big{font-size:clamp(36px,6vw,64px);color:var(--paper);text-shadow:0 2px 30px rgba(7,16,14,.7)}
+  #enter .story{margin-top:24px;max-width:min(88vw,640px);font-size:clamp(14px,1.6vw,16px);line-height:1.9;color:var(--paper);opacity:.92;text-align:center}
+  #enter .legend{margin-top:16px;max-width:min(88vw,560px);font-size:13px;line-height:1.8;color:var(--muted);opacity:.88;text-align:center}
+  #enterBtn{min-width:44px;min-height:48px;margin-top:40px;padding:0 24px;border:0;
+      border-top:1px solid rgba(198,104,88,.65);border-bottom:1px solid rgba(198,104,88,.65);
+      border-radius:0;background:transparent;font-family:var(--sans);font-size:13px;color:var(--paper);
+      cursor:pointer;animation:entrymark 2.4s ease-in-out infinite}
+  #enter.journey #enterBtn{display:none}
+  @keyframes entrymark{0%,100%{border-color:rgba(198,104,88,.38);color:rgba(237,231,216,.62)}50%{border-color:rgba(198,104,88,.92);color:var(--paper)}}
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation:none!important;transition-duration:.01ms!important;transition-delay:0s!important}
   }
@@ -108,10 +111,12 @@
     <div class="keys" id="keys">R 重看本幕</div>
   </div>
   <div id="enter">
+    <div class="eyebrow">量 子 游 園 · 《牡丹亭》 × 量子观测</div>
+    <div class="sub">第 陸 幕</div>
     <div class="big">拾 畫 · 叫 畫</div>
-    <div class="sub">第陸幕 · 石下有卷，喚之則醒</div>
     <div class="story">三年後，書生柳夢梅赴考路過，拾得她的畫像，對畫日日呼喚</div>
-    <button id="enterBtn" type="button">輕觸入園</button>
+    <div class="legend">三次呼喚，讓畫中人醒來</div>
+    <button id="enterBtn" type="button">進 入 此 幕</button>
   </div>
 <script>
 "use strict";
@@ -736,8 +741,8 @@ resizeLayout();
 loadScene();
 requestAnimationFrame(frame);
 let journeyActive=false; try{ journeyActive=new URLSearchParams(location.search).get('debug')!=='1'&&sessionStorage.getItem('qg_journey_active')==='1'; }catch(e){}
-if(journeyActive){ const report=document.getElementById('enter'); report.classList.add('journey');
-  document.getElementById('enterBtn').textContent='即將入幕'; setTimeout(enter,900); }
+if(journeyActive){ document.getElementById('enter').classList.add('journey');
+  setTimeout(enter,REDUCED_MOTION?240:2200); }
 window.addEventListener('pagehide',()=>Sound.stop(),{once:true});
 
 /* ====== 全屏沉浸(2026-06-13 一葳):右上角可见入口「全屏」+ 入园自动 + F 键;装在 沉浸.html 外壳(iframe)里时,全屏整个外壳——跨幕换页不掉全屏 ====== */

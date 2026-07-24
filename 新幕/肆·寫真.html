@@ -88,23 +88,24 @@
   .ui .foot.show .lnk{pointer-events:auto}
   .ui .foot .lnk:hover{color:var(--gold);border-color:var(--gold)}
   .ui .foot .lnk:focus-visible,#enter .blink:focus-visible,#fsBtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-  #enter{position:fixed;inset:0;z-index:9;background:rgba(7,16,14,.97);
+  #enter{position:fixed;inset:0;z-index:9;background:rgba(7,16,14,.94);padding:48px 24px;
       display:flex;flex-direction:column;align-items:center;justify-content:center;
-      font-family:var(--serif);transition:opacity 1.6s}
+      font-family:var(--serif);transition:opacity .7s ease}
   #enter.gone{opacity:0;pointer-events:none}
-  #enter .big{font-size:clamp(28px,6vw,52px);color:var(--ivory);text-shadow:0 2px 30px rgba(7,16,14,.7)}
-  #enter .sub{margin-top:22px;font-size:clamp(13px,1.8vw,16px);color:var(--jade)}
-  #enter .story{margin-top:18px;max-width:min(88vw,560px);font-size:clamp(12px,1.5vw,15px);line-height:1.9;color:var(--jade);opacity:.82;text-align:center}
-  #enter .blink{min-width:44px;min-height:44px;margin-top:38px;padding:0 16px;font-size:14px;color:var(--gold);opacity:.85;
-      border:1px solid rgba(210,174,104,.45);border-radius:3px;background:rgba(11,24,20,.5);cursor:pointer;
-      animation:blink 2.6s ease-in-out infinite}
-  #enter.journey .sub,#enter.journey .story,#enter.journey .blink{display:none}
-  #enter.journey .big::before{content:'第 肆 幕';display:block;margin-bottom:14px;font-size:13px;color:var(--gold)}
+  #enter .eyebrow{margin-bottom:20px;font-family:var(--sans);font-size:11px;color:var(--cinnabar)}
+  #enter .sub{margin-bottom:14px;font-size:13px;color:var(--gold)}
+  #enter .big{font-size:clamp(36px,6vw,64px);color:var(--ivory);text-shadow:0 2px 30px rgba(7,16,14,.7)}
+  #enter .story{margin-top:24px;max-width:min(88vw,640px);font-size:clamp(14px,1.6vw,16px);line-height:1.9;color:var(--ivory);opacity:.92;text-align:center}
+  #enter .legend{margin-top:16px;max-width:min(88vw,560px);font-size:13px;line-height:1.8;color:var(--jade);opacity:.88;text-align:center}
+  #enter .blink{min-width:44px;min-height:48px;margin-top:40px;padding:0 24px;font-family:var(--sans);font-size:13px;color:var(--ivory);
+      border:0;border-top:1px solid rgba(198,104,88,.65);border-bottom:1px solid rgba(198,104,88,.65);
+      border-radius:0;background:transparent;cursor:pointer;animation:entrymark 2.4s ease-in-out infinite}
+  #enter.journey .blink{display:none}
   #fsBtn{position:fixed;top:14px;right:16px;z-index:50;width:44px;height:44px;color:var(--jade);
       opacity:.55;cursor:pointer;border:1px solid rgba(131,153,143,.35);border-radius:3px;
       background:rgba(11,24,20,.45);transition:.25s;user-select:none}
   #fsBtn:hover{color:var(--gold);border-color:rgba(210,174,104,.65);opacity:.95}
-  @keyframes blink{0%,100%{opacity:.25}50%{opacity:.9}}
+  @keyframes entrymark{0%,100%{border-color:rgba(198,104,88,.38);color:rgba(237,231,216,.62)}50%{border-color:rgba(198,104,88,.92);color:var(--ivory)}}
   @media (max-width:640px){.ui .hint{right:22px;bottom:66px;max-width:none}.ui .foot{top:64px;right:16px}}
   @media (prefers-reduced-motion:reduce){#enter .blink{animation:none}.ui .hint,.ui .foot,.ui .keys,#enter,#fsBtn{transition:none}}
 </style>
@@ -118,10 +119,12 @@
     <div class="keys" id="keys">R 重看　·　→ 出幕</div>
   </div>
   <div id="enter">
+    <div class="eyebrow">量 子 游 園 · 《牡丹亭》 × 量子观测</div>
+    <div class="sub">第 肆 幕</div>
     <div class="big">寫 真</div>
-    <div class="sub">她的神，拷不走 —— 以指為筆，描她在絹上的影</div>
     <div class="story">相思成疾，杜麗娘對鏡自畫一幅春容，把自己留在畫裡</div>
-    <button class="blink" id="enterBtn" type="button">輕 觸 入 幕</button>
+    <div class="legend">以指為筆，描出她在絹上的影</div>
+    <button class="blink" id="enterBtn" type="button">進 入 此 幕</button>
   </div>
 <script>
 "use strict";
@@ -549,7 +552,9 @@ function resetAct(){
   if(entered) setHint('〔肆〕寫真 · 以指為筆，描她在絹上的影');
 }
 function showEnter(){ entered=false; clearHint();
-  document.getElementById('enter').classList.remove('gone');
+  const enterEl=document.getElementById('enter'), enterBtn=document.getElementById('enterBtn');
+  enterEl.classList.remove('gone'); enterEl.removeAttribute('aria-hidden');
+  enterBtn.disabled=false;
   document.getElementById('keys').classList.remove('show');
   document.querySelector('.foot').classList.remove('show'); }
 
@@ -618,7 +623,9 @@ cv.addEventListener('pointerdown', e=>{
   pulseT=0.3;                                                  // 0.3s 描笔脉冲:点一下亦晕开一小片
 });
 function enter(){ const el=document.getElementById('enter'); if(el.classList.contains('gone')) return;
-  el.classList.add('gone'); entered=true;
+  el.classList.add('gone'); el.setAttribute('aria-hidden','true');
+  const enterBtn=document.getElementById('enterBtn'); enterBtn.disabled=true; enterBtn.blur();
+  entered=true;
   document.getElementById('keys').classList.add('show');
   document.querySelector('.foot').classList.add('show');       // 触屏观众的重看入口,随 keys 同现
   Sound.start();
@@ -661,7 +668,7 @@ function autoEnterJourney(){
   if(PROBE||new URLSearchParams(location.search).get('debug')==='1') return;
   try{ if(sessionStorage.getItem('qg_journey_active')!=='1') return; }catch(_){ return; }
   document.getElementById('enter').classList.add('journey');
-  setTimeout(enter,REDUCED_MOTION?220:900);
+  setTimeout(enter,REDUCED_MOTION?240:2200);
 }
 
 /* ====== 启动 ====== */
