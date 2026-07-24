@@ -129,7 +129,9 @@
   #curcur.on{opacity:1}
   #fsBtn{visibility:hidden}
   body.in #fsBtn{visibility:visible}
-  body.gaze-calibrating .act-mark,body.gaze-calibrating .toolrail,body.gaze-calibrating .keys{visibility:hidden!important}
+  body.gaze-calibrating .act-mark,body.gaze-calibrating .keys{visibility:hidden!important}
+  body.gaze-calibrating .toolrail{visibility:visible!important}
+  body.gaze-calibrating .toolrail .tool:not(#gaze),body.gaze-calibrating #redreamgap{display:none!important}
   body.gaze-calibrating .prompt{left:50%;bottom:18px;width:min(720px,calc(100vw - 32px));transform:translateX(-50%);text-align:center;border-left:0;padding-left:0}
 
   @media (max-width:720px){
@@ -1270,7 +1272,7 @@ function initPrelude(){
   p.querySelectorAll('[data-input-mode]').forEach(b=>b.addEventListener('click',()=>chooseInputMode(b.dataset.inputMode)));
   document.getElementById('gazeFallback').addEventListener('click',cancelGazePrelude);
 }
-const GAZE={on:false, loading:false, ready:false, needsCalib:false, resumeSaved:false, sx:0, sy:0, spd:0, dwell:0, fx:null, fy:null,lastSample:0};
+const GAZE={on:false, loading:false, ready:false, needsCalib:false, resumeSaved:false, reopenSaved:false, sx:0, sy:0, spd:0, dwell:0, fx:null, fy:null,lastSample:0};
 const CALIB_PTS=[[0.08,0.08],[0.5,0.08],[0.92,0.08],[0.08,0.5],[0.92,0.5],[0.08,0.92],[0.5,0.84],[0.92,0.92],[0.5,0.5]];  // 外八方先行,中宫「瞳」收官;下中点抬至0.84让开提示条(字不与引导语相叠)
 function fsDocSafe(){ try{ return (window.self!==window.top&&window.top.document)?window.top.document:document; }catch(e){ return document; } }
 function fsElSafe(){ try{ return (window.self!==window.top&&window.top.document)?window.top.document.documentElement:document.documentElement; }catch(e){ return document.documentElement; } }
@@ -1294,10 +1296,23 @@ function setGazeControl(active){
   b.setAttribute('aria-label',active?'停止目光观照':'开启目光观照');
   b.title=active?'停止目光观照':'目光观照';
 }
+function endGazeSession(){
+  try{ webgazer.removeMouseEventListeners(); }catch(e){}
+  try{ webgazer.end(); }catch(e){}
+  try{ const v=document.getElementById('webgazerVideoFeed');
+    if(v&&v.srcObject) v.srcObject.getTracks().forEach(track=>track.stop()); }catch(e){}
+}
 function gazeToggle(resumeSaved){
   GAZE.fsResume = isAnyFullscreen();                       // 记下当前是否全屏:摄像头授权框会踢出全屏,授权后第一次手势(校准敲击)把它接回来
-  if(GAZE.on){ GAZE.on=false; try{webgazer.pause();}catch(e){}
-    rememberInputMode('pointer'); setGazeControl(false); setHint('觀照已歇 —— 仍以鼠標游園'); return; }
+  if(GAZE.on){ const wasCalibrating=GAZE.calibrating;
+    GAZE.on=false; GAZE.ready=false; GAZE.resumeSaved=false;
+    GAZE.reopenSaved=!!GAZE.warp&&!GAZE.needsCalib&&!wasCalibrating;
+    if(wasCalibrating){ GAZE.calibrating=false; GAZE.needsCalib=true; document.body.classList.remove('gaze-calibrating'); }
+    endGazeSession();
+    rememberInputMode('pointer'); setGazeControl(false);
+    if(wasCalibrating&&INTRO.awaitingGaze) finishGazePrelude(false);
+    else setHint(wasCalibrating?'校準已止 —— 已關閉攝像頭，改用指針游園':'觀照已歇 —— 攝像頭已關閉，仍以鼠標游園');
+    return; }
   if(GAZE.ready){ try{webgazer.resume();}catch(e){} GAZE.on=true;
     rememberInputMode('gaze'); setGazeControl(true); if(GAZE.needsCalib){ GAZE.needsCalib=false; gazeCalib(); }
     else setHint('觀照已開 —— 目之所至，字之所現'); return; }
@@ -1305,7 +1320,7 @@ function gazeToggle(resumeSaved){
   if(typeof navigator==='undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){            // file:// 等环境拿不到摄像头
     setHint('此打開方式拿不到攝像頭 —— 請雙擊文件夾裡的「啟動.command」，從 localhost 打開本頁再試');
     finishGazePrelude(false); return; }
-  GAZE.loading=true; GAZE.resumeSaved=!!resumeSaved;
+  GAZE.loading=true; GAZE.resumeSaved=!!resumeSaved||GAZE.reopenSaved; GAZE.reopenSaved=false;
   setHint('正在請出觀照之目……（請允許使用攝像頭；影像只在本機，不外傳）');
   if(typeof webgazer!=='undefined'){ gazeStart(); return; }
   const s=document.createElement('script'); s.src='webgazer.js';
@@ -1359,7 +1374,7 @@ async function gazeStart(){
       hidePrelude();
       GAZE.resumeSaved=false;
       gazeCalib();
-    }else if(GAZE.resumeSaved && GAZE.warp){
+    }else if(GAZE.resumeSaved && GAZE.warp && !GAZE.needsCalib){
       GAZE.resumeSaved=false;
       try{ webgazer.removeMouseEventListeners(); }catch(e){}
       setHint('目光觀照已接續 —— 九字校準仍在，目光司掃視，點擊仍用手');
@@ -1419,7 +1434,7 @@ function finishCalib(){
   }
   GAZE.warp=warp; try{ localStorage.setItem('qg_gaze_warp',JSON.stringify(warp)); }catch(e){}   // 持久化归一化九锚:刷新/resize 不丢
   try{ webgazer.removeMouseEventListeners(); }catch(e){}   // 关键:校准后绝不再用点击训练——本作目光司扫视/点击归手,点击位置≠注视点,在线训练会越点越歪(后幕乱飞之根因);模型校准后冻结
-  GAZE.calibrating=false; GAZE.on=true; GAZE.ready=true; document.body.classList.remove('gaze-calibrating');
+  GAZE.calibrating=false; GAZE.on=true; GAZE.ready=true; GAZE.needsCalib=false; document.body.classList.remove('gaze-calibrating');
   setGazeControl(true);
   setHint('九字看真，點睛已成 —— 觀照開：目光司掃視（看哪亮哪），點擊仍用手');
   finishGazePrelude(true);
@@ -1664,7 +1679,7 @@ requestAnimationFrame(frame);
   }, {capture:true});
   addEventListener('pagehide',function(){ document.removeEventListener('fullscreenchange',syncLabel);
     try{ if(topFsDoc) topFsDoc.removeEventListener('fullscreenchange',syncLabel); }catch(e){}
-    try{ MIC.stop(); }catch(e){} },{once:true});
+    try{ MIC.stop(); }catch(e){} try{ endGazeSession(); }catch(e){} },{once:true});
 })();
 
 </script>

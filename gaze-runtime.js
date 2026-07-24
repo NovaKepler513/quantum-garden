@@ -68,6 +68,14 @@
     releaseObservation();
     point.classList.remove("on");
   }
+  function endCamera() {
+    safe(() => webgazer.removeMouseEventListeners());
+    safe(() => webgazer.end());
+    try {
+      const video = document.getElementById("webgazerVideoFeed");
+      if (video && video.srcObject) video.srcObject.getTracks().forEach(track => track.stop());
+    } catch (_) {}
+  }
   function applyWarp(x, y) {
     if (!state.warp || state.warp.length < 7) return [x, y];
     const nx = x / Math.max(1, innerWidth), ny = y / Math.max(1, innerHeight);
@@ -190,10 +198,11 @@
   }
   function stop() {
     if (!state.active) return;
-    try { webgazer.pause(); } catch (_) {}
+    state.ready = false;
+    endCamera();
     remember("pointer");
     sync(false);
-    hint("目光觀照已停 —— 仍可用指針繼續");
+    hint("目光觀照已停 —— 攝像頭已關閉，仍可用指針繼續");
   }
 
   button.addEventListener("click", event => {
@@ -208,10 +217,6 @@
   addEventListener("pagehide", () => {
     clearInterval(staleTimer);
     clearSyntheticPointer();
-    try {
-      const video = document.getElementById("webgazerVideoFeed");
-      if (video && video.srcObject) video.srcObject.getTracks().forEach(track => track.stop());
-      if (typeof webgazer !== "undefined") webgazer.pause();
-    } catch (_) {}
+    if (typeof webgazer !== "undefined") endCamera();
   }, { once: true });
 })();
