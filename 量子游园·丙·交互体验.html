@@ -61,7 +61,7 @@
 
   /* 预备幕只在完整旅程首次出现；测试直入与回环续游不重复询问。 */
   #prelude{display:none;position:fixed;inset:0;z-index:12;align-items:center;justify-content:center;flex-direction:column;
-    padding:48px 24px;background:rgba(7,16,14,.97);font-family:var(--serif);text-align:center;transition:opacity .7s ease,visibility .7s ease}
+    padding:48px 24px;background:var(--night);font-family:var(--serif);text-align:center;transition:opacity .7s ease,visibility .7s ease}
   .qg-prelude #prelude{display:flex}
   #prelude::before{content:"";position:absolute;inset:24px;border:1px solid rgba(131,153,143,.14);pointer-events:none}
   #prelude.gone{opacity:0;visibility:hidden;pointer-events:none}
