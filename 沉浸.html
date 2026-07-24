@@ -70,6 +70,7 @@ if(scene==='8'){
   targetUrl.searchParams.set('fate',['yuan','shang','hua'].includes(fate)?fate:'yuan');
 }
 if(params.get('setup')==='1') targetUrl.searchParams.set('setup','1');
+if(params.get('prelude')==='1') targetUrl.searchParams.set('prelude','1');
 const stage=document.getElementById('stage'), veil=document.getElementById('loadVeil'), fail=document.getElementById('loadFail');
 let loadTimer=setTimeout(()=>fail.classList.add('show'),12000);
 stage.addEventListener('load',()=>{ clearTimeout(loadTimer); veil.classList.add('done'); fail.classList.remove('show'); },{once:true});

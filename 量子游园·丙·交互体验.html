@@ -6,6 +6,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="data:,">
 <title>量子游园 · 观之即显</title>
+<script>
+  (()=>{ const q=new URLSearchParams(location.search);
+    let show=q.get('prelude')==='1'||(!q.has('act')&&q.get('debug')!=='1'&&q.get('setup')!=='1');
+    try{ if(q.get('prelude')!=='1'&&sessionStorage.getItem('qg_journey_active')==='1') show=false; }catch(_){}
+    if(show) document.documentElement.classList.add('qg-prelude');
+  })();
+</script>
 <style>
   :root{
     --serif:"Songti SC","STSong","SimSun",serif;
@@ -52,13 +59,40 @@
     color:var(--mist);opacity:0;transition:opacity .22s ease}
   .keys.show{opacity:.76}
 
-  /* 入口是作品封面，不再是加载屏+说明页两道门。 */
+  /* 预备幕只在完整旅程首次出现；测试直入与回环续游不重复询问。 */
+  #prelude{display:none;position:fixed;inset:0;z-index:12;align-items:center;justify-content:center;flex-direction:column;
+    padding:48px 24px;background:rgba(7,16,14,.97);font-family:var(--serif);text-align:center;transition:opacity .7s ease,visibility .7s ease}
+  .qg-prelude #prelude{display:flex}
+  #prelude::before{content:"";position:absolute;inset:24px;border:1px solid rgba(131,153,143,.14);pointer-events:none}
+  #prelude.gone{opacity:0;visibility:hidden;pointer-events:none}
+  #prelude .eyebrow{margin-bottom:18px;font-family:var(--sans);font-size:11px;color:var(--cinnabar)}
+  #prelude .big{font-size:clamp(38px,6vw,68px);line-height:1.15;color:var(--bone);text-shadow:0 2px 34px rgba(0,0,0,.82)}
+  #prelude .story{margin-top:22px;max-width:720px;font-size:16px;line-height:1.9;color:var(--bone);opacity:.9}
+  #prelude .question{margin-top:28px;font-family:var(--sans);font-size:12px;color:var(--gold)}
+  .mode-options{display:grid;grid-template-columns:1fr 1fr;width:min(780px,calc(100vw - 48px));margin-top:14px;
+    border-top:1px solid rgba(198,104,88,.52);border-bottom:1px solid rgba(198,104,88,.52)}
+  .mode-option{min-width:0;min-height:116px;padding:18px 24px;border:0;border-radius:0;background:transparent;color:var(--bone);
+    display:grid;grid-template-columns:40px 1fr;align-items:center;column-gap:14px;text-align:left;cursor:pointer;transition:background-color .18s ease,color .18s ease,opacity .18s ease}
+  .mode-option+.mode-option{border-left:1px solid rgba(131,153,143,.24)}
+  .mode-option:hover,.mode-option:focus-visible{background:rgba(131,153,143,.09);color:#fff}
+  .mode-option .icon{grid-row:1 / span 2;font-size:24px;color:var(--cinnabar);text-align:center}
+  .mode-option .name{align-self:end;font-size:18px;color:var(--bone)}
+  .mode-option .detail{align-self:start;margin-top:7px;font-family:var(--sans);font-size:12px;line-height:1.65;color:var(--mist)}
+  #prelude .note{margin-top:16px;font-family:var(--sans);font-size:11px;line-height:1.6;color:var(--mist)}
+  #prelude .waiting{display:none;margin-top:28px;font-family:var(--sans);font-size:12px;line-height:1.8;color:var(--gold)}
+  #prelude .waiting button{display:block;margin:14px auto 0;min-height:40px;padding:0 18px;border:0;border-top:1px solid rgba(198,104,88,.6);
+    border-bottom:1px solid rgba(198,104,88,.6);border-radius:0;background:transparent;color:var(--bone);cursor:pointer}
+  #prelude.is-waiting .mode-options,#prelude.is-waiting .question,#prelude.is-waiting .note{display:none}
+  #prelude.is-waiting .waiting{display:block}
+
+  /* 第一幕报幕在预备幕选择之后出现。 */
   #loading{display:none}
   #enter{position:fixed;inset:0;z-index:9;background:rgba(7,16,14,.94);display:flex;flex-direction:column;
     align-items:center;justify-content:center;padding:48px 24px;font-family:var(--serif);cursor:none;transition:opacity .7s ease}
   #enter::before{content:"";position:absolute;inset:24px;border:1px solid rgba(131,153,143,.12);pointer-events:none}
   #enter:focus-visible{outline:1px solid var(--cinnabar);outline-offset:-8px}
   #enter.gone{opacity:0;pointer-events:none}
+  #enter.mode-report{pointer-events:none}
   #enter .eyebrow{margin-bottom:20px;font-family:var(--sans);font-size:11px;letter-spacing:0;color:var(--cinnabar)}
   #enter .sub{margin-bottom:14px;font-size:13px;line-height:1.5;color:var(--gold);opacity:0;transition:opacity .6s ease}
   #enter .big{font-size:clamp(36px,6vw,64px);line-height:1.15;letter-spacing:0;color:var(--bone);
@@ -99,6 +133,13 @@
   body.gaze-calibrating .prompt{left:50%;bottom:18px;width:min(720px,calc(100vw - 32px));transform:translateX(-50%);text-align:center;border-left:0;padding-left:0}
 
   @media (max-width:720px){
+    #prelude{padding:36px 20px}
+    #prelude::before{inset:12px}
+    #prelude .story{font-size:14px;max-width:340px}
+    #prelude .question{margin-top:20px}
+    .mode-options{grid-template-columns:1fr;width:min(420px,calc(100vw - 40px))}
+    .mode-option{min-height:88px;padding:12px 16px}
+    .mode-option+.mode-option{border-left:0;border-top:1px solid rgba(131,153,143,.24)}
     #enter{padding:40px 20px}
     #enter::before{inset:12px}
     #enter .eyebrow{margin-bottom:16px}
@@ -115,6 +156,18 @@
     #actcard .acn{font-size:40px}
     #actcard .acs{font-size:14px;max-width:320px;padding:0 16px}
     #actcard .aci{font-size:12px;max-width:320px}
+  }
+  @media (max-height:620px) and (orientation:landscape){
+    #prelude{justify-content:flex-start;padding:18px 24px;overflow-y:auto}
+    #prelude::before{inset:8px}
+    #prelude .eyebrow{margin-bottom:8px}
+    #prelude .big{font-size:34px}
+    #prelude .story{margin-top:10px;font-size:13px;line-height:1.55}
+    #prelude .question{margin-top:10px}
+    .mode-options{margin-top:8px}
+    .mode-option{min-height:78px;padding:10px 18px}
+    #prelude .note{margin-top:8px}
+    #prelude .waiting{margin-top:16px}
   }
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
@@ -134,7 +187,7 @@
     <div class="toolrail" aria-label="作品工具">
       <button class="tool" id="redream" type="button" style="display:none" aria-label="再梦一回" title="再梦一回"><span class="glyph" aria-hidden="true">↻</span></button>
       <span id="redreamgap" style="display:none"></span>
-      <button class="tool tool-gaze" id="gaze" type="button" aria-label="开启眼神观照" title="眼神观照"><span class="glyph" aria-hidden="true">目</span><span class="tool-label">眼神觀照</span></button>
+      <button class="tool tool-gaze" id="gaze" type="button" aria-label="开启目光观照" title="目光观照"><span class="glyph" aria-hidden="true">目</span><span class="tool-label">目光觀照</span></button>
       <button class="tool" id="reenter" type="button" aria-label="重入园林" title="重入园林"><span class="glyph" aria-hidden="true">↺</span></button>
     </div>
     <div class="prompt">
@@ -144,6 +197,28 @@
     <div class="keys" id="keys">空格 · → · R</div>
   </div>
   <div id="curcur"></div>
+  <section id="prelude" aria-labelledby="preludeTitle">
+    <div class="eyebrow">量 子 游 園 · 預 備 幕</div>
+    <div class="big" id="preludeTitle">觀 之 · 即 現</div>
+    <p class="story">園林尚未定形。你看向哪裡，哪裡才從疊加中顯現；指尖、目光與氣息，將一路改寫這場夢。</p>
+    <div class="question">選擇本次游園方式</div>
+    <div class="mode-options" role="group" aria-label="选择游园方式">
+      <button class="mode-option" type="button" data-input-mode="pointer">
+        <span class="icon" aria-hidden="true">↖</span>
+        <span class="name">指 針 觀 遊</span>
+        <span class="detail">鼠標或觸控掃過字粒；過門與精細動作仍由手完成</span>
+      </button>
+      <button class="mode-option" type="button" data-input-mode="gaze">
+        <span class="icon" aria-hidden="true">目</span>
+        <span class="name">目 光 觀 照</span>
+        <span class="detail">看向字粒使它顯現；先完成約二十至三十秒九字校準</span>
+      </button>
+    </div>
+    <div class="note">途中可用右上「目」隨時開關；關閉後立即回到指針</div>
+    <div class="waiting" role="status">正在請出觀照之目<br>請允許攝像頭；影像只在本機運算，不會上傳
+      <button type="button" id="gazeFallback">改 用 指 針</button>
+    </div>
+  </section>
   <div id="loading">
     <div class="ld-title" id="ldTitle"></div>
     <div class="ld-sub" id="ldSub">观 之 · 即 现</div>
@@ -426,7 +501,7 @@ function updateActMark(i){
   if(no) no.textContent=MU[i]||'';
   if(name) name.textContent=STATIONS[i].name;
   setActPhase(STATIONS[i].mode==='blow'?'氣息待發':'觀測中');
-  const gaze=document.getElementById('gaze'); if(gaze) gaze.style.display=i===1?'none':'';  // 驚夢以氣為主，目光工具暫歇
+  const gaze=document.getElementById('gaze'); if(gaze) gaze.style.display='';  // 全程保留开关；驚夢臺虽不取目光增益，观众仍可随时停用摄像头
 }
 const OPEN_HINT=[                                     // 各站任务引导(开场)
   '先看真麗娘與春香。二人魂醒後，會替你巡園。',
@@ -1125,6 +1200,7 @@ document.getElementById('reenter').addEventListener('click', e=>{ e.stopPropagat
 document.getElementById('redream').addEventListener('click', e=>{ e.stopPropagation(); reDream(); });      // 再夢一回:回叠加
 window.addEventListener('keydown', ev=>{
   if(ev.repeat) return;
+  if(INTRO.active||INTRO.reporting) return;             // 预备幕与方式确认报幕均不得被 Enter/Space 绕过
   const entered=document.getElementById('enter').classList.contains('gone');
   if(ev.key==='Enter' && !entered){ ev.preventDefault(); enter(); return; }
   if(GAZE.calibrating && ev.code==='Space'){ ev.preventDefault(); calibClick(); return; }   // 校准期空格=敲一下(眼不必离字)
@@ -1134,8 +1210,67 @@ window.addEventListener('keydown', ev=>{
   if(ev.key==='r'||ev.key==='R'){ loadStation(cur); }   // 重看本景
 });
 
-/* ====== 眼神觀照(WebGazer·全程本机,不外传) ====== */
-const GAZE={on:false, loading:false, ready:false, needsCalib:false, sx:0, sy:0, spd:0, dwell:0, fx:null, fy:null,lastSample:0};
+/* ====== 目光觀照(WebGazer·全程本机,不外传) ====== */
+const INTRO={active:false, choosing:false, awaitingGaze:false, cancelledGaze:false, reported:false, reporting:false};
+function rememberInputMode(mode){ try{ sessionStorage.setItem('qg_input_mode',mode); }catch(_){} }
+function hidePrelude(){
+  const p=document.getElementById('prelude'); if(!p) return;
+  p.classList.add('gone'); p.setAttribute('aria-hidden','true');
+  document.documentElement.classList.remove('qg-prelude');
+  INTRO.active=false;
+}
+function reportFirstAct(){
+  if(INTRO.reported) return;
+  INTRO.reported=true;
+  if(document.body.classList.contains('in')){ showActCard(0); return; }   // 目光校准已进入画布，用幕间层报第一幕
+  const e=document.getElementById('enter');
+  INTRO.reporting=true;
+  e.classList.add('journey','mode-report');
+  e.removeAttribute('aria-hidden');
+  e.setAttribute('role','status');
+  e.removeAttribute('tabindex');
+  e.setAttribute('aria-label','第 壹 幕 一園春，即將自動進入');
+  Sound.start();                                                        // 仍在方式选择的用户手势内解锁声场
+  setTimeout(()=>{ INTRO.reporting=false; e.classList.remove('mode-report'); enter(); },REDUCED?240:2200);
+}
+function finishGazePrelude(ok){
+  if(!INTRO.awaitingGaze) return;
+  INTRO.awaitingGaze=false;
+  if(!ok) rememberInputMode('pointer');
+  hidePrelude();
+  reportFirstAct();
+}
+function cancelGazePrelude(){
+  if(!INTRO.awaitingGaze) return;
+  INTRO.awaitingGaze=false;
+  INTRO.cancelledGaze=true;
+  rememberInputMode('pointer');
+  setGazeControl(false);
+  hidePrelude();
+  reportFirstAct();
+}
+function chooseInputMode(mode){
+  if(INTRO.choosing) return;
+  INTRO.choosing=true;
+  rememberInputMode(mode);
+  requestAnyFullscreen();                         // 方式选择本身就是首个真实手势
+  if(mode==='gaze'){
+    INTRO.awaitingGaze=true;
+    const p=document.getElementById('prelude'); if(p) p.classList.add('is-waiting');
+    enter(); gazeToggle();                        // 先启声场，再以校准景替代第一幕；校准完成后才正式报幕
+  }else{
+    hidePrelude();
+    reportFirstAct();
+  }
+}
+function initPrelude(){
+  const p=document.getElementById('prelude'); if(!p||!document.documentElement.classList.contains('qg-prelude')) return;
+  INTRO.active=true;
+  const enterEl=document.getElementById('enter'); enterEl.setAttribute('aria-hidden','true'); enterEl.tabIndex=-1;
+  p.querySelectorAll('[data-input-mode]').forEach(b=>b.addEventListener('click',()=>chooseInputMode(b.dataset.inputMode)));
+  document.getElementById('gazeFallback').addEventListener('click',cancelGazePrelude);
+}
+const GAZE={on:false, loading:false, ready:false, needsCalib:false, resumeSaved:false, sx:0, sy:0, spd:0, dwell:0, fx:null, fy:null,lastSample:0};
 const CALIB_PTS=[[0.08,0.08],[0.5,0.08],[0.92,0.08],[0.08,0.5],[0.92,0.5],[0.08,0.92],[0.5,0.84],[0.92,0.92],[0.5,0.5]];  // 外八方先行,中宫「瞳」收官;下中点抬至0.84让开提示条(字不与引导语相叠)
 function fsDocSafe(){ try{ return (window.self!==window.top&&window.top.document)?window.top.document:document; }catch(e){ return document; } }
 function fsElSafe(){ try{ return (window.self!==window.top&&window.top.document)?window.top.document.documentElement:document.documentElement; }catch(e){ return document.documentElement; } }
@@ -1156,29 +1291,32 @@ function requestAnyFullscreen(){ try{ if(!isAnyFullscreen()&&canRequestFullscree
 function setGazeControl(active){
   const b=document.getElementById('gaze'); if(!b) return;
   b.dataset.active=active?'true':'false';
-  b.setAttribute('aria-label',active?'停止眼神观照':'开启眼神观照');
-  b.title=active?'停止眼神观照':'眼神观照';
+  b.setAttribute('aria-label',active?'停止目光观照':'开启目光观照');
+  b.title=active?'停止目光观照':'目光观照';
 }
-function gazeToggle(){
+function gazeToggle(resumeSaved){
   GAZE.fsResume = isAnyFullscreen();                       // 记下当前是否全屏:摄像头授权框会踢出全屏,授权后第一次手势(校准敲击)把它接回来
   if(GAZE.on){ GAZE.on=false; try{webgazer.pause();}catch(e){}
-    setGazeControl(false); setHint('觀照已歇 —— 仍以鼠标游园'); return; }
+    rememberInputMode('pointer'); setGazeControl(false); setHint('觀照已歇 —— 仍以鼠標游園'); return; }
   if(GAZE.ready){ try{webgazer.resume();}catch(e){} GAZE.on=true;
-    setGazeControl(true); if(GAZE.needsCalib){ GAZE.needsCalib=false; gazeCalib(); }
-    else setHint('觀照已開 —— 目之所至,字之所現'); return; }
+    rememberInputMode('gaze'); setGazeControl(true); if(GAZE.needsCalib){ GAZE.needsCalib=false; gazeCalib(); }
+    else setHint('觀照已開 —— 目之所至，字之所現'); return; }
   if(GAZE.loading) return;
   if(typeof navigator==='undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){            // file:// 等环境拿不到摄像头
-    setHint('此打开方式拿不到摄像头 —— 请双击文件夹里的「启动.command」,从 localhost 打开本页再试'); return; }
-  GAZE.loading=true;
-  setHint('正在請出觀照之目…(请允许使用摄像头;影像只在本机,不外传)');
+    setHint('此打開方式拿不到攝像頭 —— 請雙擊文件夾裡的「啟動.command」，從 localhost 打開本頁再試');
+    finishGazePrelude(false); return; }
+  GAZE.loading=true; GAZE.resumeSaved=!!resumeSaved;
+  setHint('正在請出觀照之目……（請允許使用攝像頭；影像只在本機，不外傳）');
   if(typeof webgazer!=='undefined'){ gazeStart(); return; }
   const s=document.createElement('script'); s.src='webgazer.js';
-  s.onload=()=>{ gazeStart(); };
-  s.onerror=()=>{ GAZE.loading=false; setHint('未找到 webgazer.js —— 请确认它与本页同在一个文件夹'); };
+  s.onload=()=>{ if(INTRO.cancelledGaze){ GAZE.loading=false; return; } gazeStart(); };
+  s.onerror=()=>{ GAZE.loading=false; if(INTRO.cancelledGaze) return;
+    setHint('未找到 webgazer.js —— 請確認它與本頁同在一個文件夾'); finishGazePrelude(false); };
   document.body.appendChild(s);
 }
 async function gazeStart(){
   const safe=f=>{ try{ f(); }catch(e){} };                // 装饰性调用各自兜异常(begin 前摸 video 元素会 TypeError)
+  if(INTRO.cancelledGaze){ GAZE.loading=false; return; }
   try{
     if(webgazer.params){ webgazer.params.showVideoPreview=false; webgazer.params.showVideo=false;
       webgazer.params.showFaceOverlay=false; webgazer.params.showFaceFeedbackBox=false; webgazer.params.showGazeDot=false;
@@ -1206,17 +1344,34 @@ async function gazeStart(){
       GAZE.spd=(GAZE.spd||0)*0.7+step*0.3;                       // 眼动速度估计:据此判"在凝视"还是"在扫视"(扫视不点亮,见 drawItems)
     });
     await webgazer.begin();
+    if(INTRO.cancelledGaze){
+      GAZE.loading=false; GAZE.on=false; GAZE.ready=false; GAZE.resumeSaved=false;
+      safe(()=>webgazer.end()); setGazeControl(false); return;
+    }
     safe(()=>webgazer.showVideoPreview(false)); safe(()=>webgazer.showVideo(false));
     safe(()=>webgazer.showFaceOverlay(false));  safe(()=>webgazer.showFaceFeedbackBox(false));
     safe(()=>webgazer.showPredictionPoints(false));
     GAZE.loading=false; GAZE.on=true; GAZE.ready=true;    // 先跟随后精校:目光点立现,校准是"把它调准"而非先干27击
     try{ const w=JSON.parse(localStorage.getItem('qg_gaze_warp')||'null');           // 上次校准的九锚修正:刷新不丢
       if(Array.isArray(w)&&w.length>=7&&w.every(q=>q&&q.unit==='norm')) GAZE.warp=w; }catch(e){}
-    setGazeControl(true);
-    gazeCalib();
-  }catch(e){ const why=(e&&e.name==='NotAllowedError')?'摄像头权限被拒(地址栏右侧可重新允许)':
-      (e&&e.name==='NotFoundError')?'未找到摄像头设备':('启动失败:'+(e&&(e.name+' '+(e.message||'')).slice(0,90)||e));
-    GAZE.loading=false; setHint('觀照未成 —— '+why+';仍以鼠标游园'); console.error('[gaze]',e); }
+    rememberInputMode('gaze'); setGazeControl(true);
+    if(INTRO.awaitingGaze){
+      hidePrelude();
+      GAZE.resumeSaved=false;
+      gazeCalib();
+    }else if(GAZE.resumeSaved && GAZE.warp){
+      GAZE.resumeSaved=false;
+      try{ webgazer.removeMouseEventListeners(); }catch(e){}
+      setHint('目光觀照已接續 —— 九字校準仍在，目光司掃視，點擊仍用手');
+    }else{
+      GAZE.resumeSaved=false;
+      gazeCalib();
+    }
+  }catch(e){ if(INTRO.cancelledGaze){ GAZE.loading=false; GAZE.on=false; GAZE.ready=false; GAZE.resumeSaved=false; setGazeControl(false); return; }
+    const why=(e&&e.name==='NotAllowedError')?'攝像頭權限被拒（可在地址欄右側重新允許）':
+      (e&&e.name==='NotFoundError')?'未找到攝像頭設備':('啟動失敗：'+(e&&(e.name+' '+(e.message||'')).slice(0,90)||e));
+    GAZE.loading=false; GAZE.on=false; GAZE.resumeSaved=false; setGazeControl(false); setHint('觀照未成 —— '+why+'；仍以鼠標游園');
+    finishGazePrelude(false); console.error('[gaze]',e); }
 }
 const CALIB_PER=3;
 const CALIB_CH=[...'柳月亭松桐山池燭瞳'];               // 九字小景:外八方+中宫;最后一枚=瞳(點睛)
@@ -1226,7 +1381,7 @@ function gazeCalib(){ GAZE.calibrating=true;            // 校准独立成景,�
   document.body.classList.add('gaze-calibrating');
   CSCENE.i=0; CSCENE.hits=0; CSCENE.ACC={}; CSCENE.done=[]; CSCENE.flash=0; CSCENE.glyph=CALIB_CH[0]; CSCENE.gt=0;
   try{ webgazer.removeMouseEventListeners(); }catch(e){}         // 校准期掐掉库的"点哪看哪"默认训练——眼在字上手在别处,真实落点必须由我们喂
-  setHint('觀照校準 · 九字小景 —— 只管看那枚字;左鍵或空格隨處敲三下即可,不必去找鼠標'); }
+  setHint('觀照校準 · 九字小景 —— 只管看那枚字；左鍵或空格隨處敲三下即可，不必去找鼠標'); }
 function calibClick(){                                  // 看字敲击:眼睛锁定那枚字,手随处确认——样本永远喂字的位置,与鼠标无关
   if(GAZE.fsResume && !isAnyFullscreen()){               // 授权框踢出了全屏:借这次敲击(用户手势)把外壳全屏接回来
     requestAnyFullscreen(); GAZE.fsResume=false;
@@ -1244,12 +1399,12 @@ function calibClick(){                                  // 看字敲击:眼睛�
   if(GAZE.rx||GAZE.ry){ const a=CSCENE.ACC[CSCENE.i]=CSCENE.ACC[CSCENE.i]||{sx:0,sy:0,n:0}; a.sx+=GAZE.rx; a.sy+=GAZE.ry; a.n++; }
   CSCENE.hits++;
   if(CSCENE.hits<CALIB_PER){ Sound.bell(CALIB_NOTE[CSCENE.i],0.028);
-    setHint('第'+HN[CSCENE.i+1]+'處 —— 看定它,再敲'+HN[CALIB_PER-CSCENE.hits]+'下,它就看真了'); return; }
+    setHint('第'+HN[CSCENE.i+1]+'處 —— 看定它，再敲'+HN[CALIB_PER-CSCENE.hits]+'下，它就看真了'); return; }
   Sound.bell(CALIB_NOTE[CSCENE.i],0.09); CSCENE.flash=1;          // 看真:坍缩定格,本音一记
   CSCENE.done.push({ch:CALIB_CH[CSCENE.i], x:p[0], y:p[1]});
   CSCENE.hits=0; CSCENE.i++;
   if(CSCENE.i>=CALIB_PTS.length){ finishCalib(); return; }
-  setHint(CSCENE.i===CALIB_PTS.length-1 ? '最後一枚,在正中 —— 「瞳」:點睛' : '第'+HN[CSCENE.i+1]+'處 —— 眼看下一枚字,隨處敲三下');
+  setHint(CSCENE.i===CALIB_PTS.length-1 ? '最後一枚，在正中 —— 「瞳」：點睛' : '第'+HN[CSCENE.i+1]+'處 —— 眼看下一枚字，隨處敲三下');
 }
 function finishCalib(){
   const warp=[];
@@ -1259,13 +1414,15 @@ function finishCalib(){
   if(warp.length<7){                                      // 没看见足够原始预测时不谎报成功，保留粗跟随并明确降级
     GAZE.calibrating=false; GAZE.on=true; GAZE.ready=true; GAZE.needsCalib=true; GAZE.warp=null; document.body.classList.remove('gaze-calibrating');
     try{ localStorage.removeItem('qg_gaze_warp'); webgazer.removeMouseEventListeners(); }catch(e){}
-    setGazeControl(true); setHint('精校未成 —— 仍可粗略觀照；調整光線與坐姿後，先停「目」再開即可重校'); return;
+    setGazeControl(true); setHint('精校未成 —— 仍可粗略觀照；調整光線與坐姿後，先停「目」再開即可重校');
+    finishGazePrelude(true); return;
   }
   GAZE.warp=warp; try{ localStorage.setItem('qg_gaze_warp',JSON.stringify(warp)); }catch(e){}   // 持久化归一化九锚:刷新/resize 不丢
   try{ webgazer.removeMouseEventListeners(); }catch(e){}   // 关键:校准后绝不再用点击训练——本作目光司扫视/点击归手,点击位置≠注视点,在线训练会越点越歪(后幕乱飞之根因);模型校准后冻结
   GAZE.calibrating=false; GAZE.on=true; GAZE.ready=true; document.body.classList.remove('gaze-calibrating');
   setGazeControl(true);
-  setHint('九字看真,點睛已成 —— 觀照開:目光司掃視(看哪亮哪),點擊仍用手');
+  setHint('九字看真，點睛已成 —— 觀照開：目光司掃視（看哪亮哪），點擊仍用手');
+  finishGazePrelude(true);
 }
 function drawCalibScene(dt){
   ctx.textAlign='center'; ctx.textBaseline='middle';
@@ -1338,7 +1495,7 @@ if(new URLSearchParams(location.search).get('setup')==='1'){ (async()=>{
   d.innerHTML='<div style="width:560px;max-width:92vw;border:1px solid rgba(126,159,144,.4);padding:28px 30px">'
     +'<div id="suTitle" style="text-align:center;font-size:18px;letter-spacing:0;color:#e0c178">樂 器 檢 查 · 佈 展 配 置</div>'
     +'<div style="font-size:11px;color:#9fb4aa;text-align:center;margin:8px 0 18px;letter-spacing:0">只供布展者使用；设备测试由你逐项开启，不会在载入时自动索权。</div>'
-    +'<label for="suCam" style="display:block;font-size:13px;margin:10px 0 4px">攝像頭（眼神觀照 · 须拍到观众的脸）</label>'
+    +'<label for="suCam" style="display:block;font-size:13px;margin:10px 0 4px">攝像頭（目光觀照 · 须拍到观众的脸）</label>'
     +'<select id="suCam" style="width:100%;background:#101714;color:#cfe6d8;border:1px solid rgba(126,159,144,.4);padding:6px"></select>'
     +'<video id="suVid" muted playsinline style="width:100%;height:150px;object-fit:cover;margin-top:8px;background:#000;border:1px solid rgba(126,159,144,.25)"></video>'
     +'<button id="suPreview" type="button" style="margin-top:8px;min-height:44px;padding:0 12px;background:#101714;color:#cfe6d8;border:1px solid rgba(126,159,144,.45);cursor:pointer">開啟攝像頭預覽</button>'
@@ -1388,8 +1545,9 @@ if(new URLSearchParams(location.search).get('setup')==='1'){ (async()=>{
 /* ====== 启动(支持 ?act=N 直入某幕:拾畫「幽」→ ?act=3 入糾纏橋) ====== */
 resizeLayout();
 { const _params=new URLSearchParams(location.search), _act=Math.min(STATIONS.length-1, Math.max(0, parseInt(_params.get('act'))||0));
-  const _direct=_params.has('act'), _debug=_params.get('debug')==='1';
-  try{ window.__resumeJourney=!_debug&&sessionStorage.getItem('qg_journey_active')==='1'; }catch(_){ window.__resumeJourney=false; }
+  const _direct=_params.has('act'), _debug=_params.get('debug')==='1', _prelude=_params.get('prelude')==='1', _setup=_params.get('setup')==='1';
+  try{ window.__resumeJourney=!_debug&&!_prelude&&sessionStorage.getItem('qg_journey_active')==='1'; }catch(_){ window.__resumeJourney=false; }
+  let _resumeGaze=false; try{ _resumeGaze=!_debug&&!_prelude&&!_setup&&sessionStorage.getItem('qg_input_mode')==='gaze'; }catch(_){}
   const _st=STATIONS[_act];
   document.querySelector('#enter .sub').textContent='第 '+MU[_act]+' 幕';
   document.querySelector('#enter .big').textContent=[..._st.name].join(' ');
@@ -1409,7 +1567,9 @@ resizeLayout();
     _enterEl.setAttribute('aria-label','第 '+MU[_act]+' 幕 '+_st.name+'，即將自動進入');
     document.getElementById('loading').style.display='none';
   }
-  loadStation(_act); }
+  loadStation(_act);
+  initPrelude();
+  if(_resumeGaze) setTimeout(()=>gazeToggle(true),window.__resumeJourney?(REDUCED?360:2400):260); }
 requestAnimationFrame(frame);
 
 /* ====== 载入序 + 缓缓浮现 + 自定义光标 + 序声(2026-06-14 一葳) ====== */
