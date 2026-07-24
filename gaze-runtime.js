@@ -2,9 +2,10 @@
   "use strict";
 
   const MODE_KEY = "qg_input_mode";
+  const DEBUG_MODE = new URLSearchParams(location.search).get("debug") === "1";
   const state = {
     loading: false, ready: false, active: false, observing: false,
-    sx: 0, sy: 0, lastSample: 0, spd: 0, dwell: 0, fx: null, fy: null, warp: null
+    sx: 0, sy: 0, lastSample: 0, spd: 0, dwell: 0, fx: null, fy: null, warp: null, runId: 0
   };
   const canvas = document.querySelector("canvas");
   if (!canvas) return;
@@ -20,6 +21,10 @@
     #qgGazePoint{position:fixed;left:0;top:0;z-index:49;pointer-events:none;opacity:0;transform:translate(-50%,-50%);
       color:#d2ae68;font:18px "Songti SC","STSong",serif;text-shadow:0 0 14px rgba(210,174,104,.55);transition:opacity .12s ease}
     #qgGazePoint.on{opacity:.82}
+    #qgGazeStatus{position:fixed;top:64px;right:16px;z-index:51;max-width:min(360px,calc(100vw - 32px));padding:8px 10px;
+      border-left:1px solid rgba(198,104,88,.65);background:rgba(7,16,14,.88);color:#ede7d8;pointer-events:none;opacity:0;
+      font:12px/1.65 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;transition:opacity .18s ease}
+    #qgGazeStatus.show{opacity:.92}
     #webgazerVideoContainer,#webgazerVideoFeed,#webgazerFaceOverlay,#webgazerFaceFeedbackBox,#webgazerGazeDot{display:none!important}
   `;
   document.head.appendChild(style);
@@ -31,7 +36,12 @@
   const point = document.createElement("div");
   point.id = "qgGazePoint";
   point.setAttribute("aria-hidden", "true");
-  document.body.append(button, point);
+  const status = document.createElement("div");
+  status.id = "qgGazeStatus";
+  status.setAttribute("role", "status");
+  status.setAttribute("aria-live", "polite");
+  status.setAttribute("aria-atomic", "true");
+  document.body.append(button, point, status);
 
   function remember(mode) {
     try { sessionStorage.setItem(MODE_KEY, mode); } catch (_) {}
@@ -40,12 +50,10 @@
     try { return sessionStorage.getItem(MODE_KEY) === "gaze"; } catch (_) { return false; }
   }
   function hint(text) {
-    const el = document.getElementById("hint");
-    if (!el) return;
-    el.textContent = text;
-    el.classList.add("show");
-    clearTimeout(el._qgGazeTimer);
-    el._qgGazeTimer = setTimeout(() => el.classList.remove("show"), 7000);
+    status.textContent = text;
+    status.classList.add("show");
+    clearTimeout(status._qgGazeTimer);
+    status._qgGazeTimer = setTimeout(() => status.classList.remove("show"), 7000);
   }
   function sync(active) {
     state.active = active;
@@ -54,6 +62,12 @@
     button.setAttribute("aria-label", active ? "停止目光观照" : "开启目光观照");
     button.title = active ? "停止目光观照" : "开启目光观照";
     if (!active) clearSyntheticPointer();
+  }
+  function syncLoading() {
+    button.dataset.active = "false";
+    button.setAttribute("aria-pressed", "false");
+    button.setAttribute("aria-label", "取消目光启动，改用指针");
+    button.title = "取消目光启动";
   }
   function releaseObservation() {
     if (!state.observing) return;
@@ -69,12 +83,12 @@
     point.classList.remove("on");
   }
   function endCamera() {
-    safe(() => webgazer.removeMouseEventListeners());
-    safe(() => webgazer.end());
     try {
       const video = document.getElementById("webgazerVideoFeed");
       if (video && video.srcObject) video.srcObject.getTracks().forEach(track => track.stop());
     } catch (_) {}
+    safe(() => webgazer.removeMouseEventListeners());
+    safe(() => webgazer.end());
   }
   function applyWarp(x, y) {
     if (!state.warp || state.warp.length < 7) return [x, y];
@@ -123,11 +137,13 @@
       remember("pointer"); sync(false); hint("此環境無法啟用攝像頭，已回到指針觀遊");
       return;
     }
+    const runId = ++state.runId;
     state.loading = true;
-    button.disabled = true;
-    hint("正在重新接續目光觀照…");
+    syncLoading();
+    hint("正在接續目光觀照；如不想等待，再按一次「目」即可改用指針");
     try {
-      await loadLibrary();
+      await withTimeout(loadLibrary(), 12000, "目光脚本载入超时");
+      if (runId !== state.runId) return;
       webgazer.params.showVideoPreview = false;
       webgazer.params.showVideo = false;
       webgazer.params.showFaceOverlay = false;
@@ -173,7 +189,12 @@
           releaseObservation();
         }
       });
-      await webgazer.begin();
+      const beginning = webgazer.begin();
+      Promise.resolve(beginning).then(() => {
+        if (runId !== state.runId) endCamera();
+      }).catch(() => {});
+      await withTimeout(beginning, 12000, "摄像头启动超时");
+      if (runId !== state.runId) { endCamera(); return; }
       safe(() => webgazer.showVideoPreview(false));
       safe(() => webgazer.showVideo(false));
       safe(() => webgazer.showFaceOverlay(false));
@@ -185,16 +206,42 @@
       sync(true);
       hint(state.warp
         ? "目光觀照已接續 —— 看定字粒使它顯現，精細動作仍用手"
-        : "目光觀照已開 —— 目前為粗略跟隨；回到預備幕完成九字校準可提升精度");
+        : "目光觀照已開 —— 目前為粗略跟隨；下次游園可在預備幕選目光完成精校");
     } catch (error) {
+      if (runId !== state.runId) return;
+      endCamera();
       remember("pointer");
       sync(false);
-      hint("目光未能接續，已回到指針觀遊");
+      hint(error && error.name === "TimeoutError"
+        ? "目光啟動等待過久，攝像頭已關閉；請繼續用指針觀遊"
+        : "目光未能接續，攝像頭已關閉；請繼續用指針觀遊");
       console.error("[gaze-runtime]", error);
     } finally {
-      state.loading = false;
-      button.disabled = false;
+      if (runId === state.runId) {
+        state.loading = false;
+        if (!state.active) sync(false);
+      }
     }
+  }
+  function withTimeout(promise, milliseconds, message) {
+    let timer = 0;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => {
+        const error = new Error(message);
+        error.name = "TimeoutError";
+        reject(error);
+      }, milliseconds);
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+  }
+  function cancelStart() {
+    if (!state.loading) return;
+    state.runId++;
+    state.loading = false;
+    endCamera();
+    remember("pointer");
+    sync(false);
+    hint("目光啟動已取消，攝像頭已關閉；請繼續用指針觀遊");
   }
   function stop() {
     if (!state.active) return;
@@ -207,15 +254,22 @@
 
   button.addEventListener("click", event => {
     event.stopPropagation();
-    state.active ? stop() : start();
+    if (state.loading) cancelStart();
+    else state.active ? stop() : start();
   });
   sync(false);
   const staleTimer = setInterval(() => {
     if (state.active && state.lastSample && performance.now() - state.lastSample >= 650) clearSyntheticPointer();
   }, 250);
-  if (preferred()) setTimeout(start, 260);
+  if (preferred() && !DEBUG_MODE) setTimeout(start, 260);
   addEventListener("pagehide", () => {
     clearInterval(staleTimer);
+    clearSyntheticPointer();
+    if (typeof webgazer !== "undefined") endCamera();
+  }, { once: true });
+  addEventListener("qg:journey-exit", () => {
+    state.runId++;
+    state.loading = false;
     clearSyntheticPointer();
     if (typeof webgazer !== "undefined") endCamera();
   }, { once: true });

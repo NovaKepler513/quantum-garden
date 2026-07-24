@@ -122,7 +122,7 @@
   <canvas id="scene"></canvas>
   <div class="ui">
     <div class="seal">第 伍 幕 · 離 魂</div>
-    <div class="hint" id="hint"></div>
+    <div class="hint" id="hint" role="status" aria-live="polite" aria-atomic="true"></div>
     <div class="keys" id="keys">R 重新守燭</div>
   </div>
   <div id="enter">
@@ -353,7 +353,7 @@ const MIC={ on:false, requesting:false, raw:0, analyser:null, source:null, strea
     const ac=Sound.ac, src=ac.createMediaStreamSource(stream), an=ac.createAnalyser();
     an.fftSize=1024; an.smoothingTimeConstant=0.6; src.connect(an); this.stream=stream; this.source=src; this.analyser=an; this.buf=new Float32Array(an.fftSize); this.on=true;
     stream.getTracks().forEach(t=>t.addEventListener('ended',()=>this.stop(),{once:true}));
-  }catch(e){ this.stop(); }finally{ this.requesting=false; } },
+  }catch(e){ this.stop(); setHint('麥克風未啟用 —— 仍可移指守焰；按空格可喚一陣風'); }finally{ this.requesting=false; } },
   stop(){ const stream=this.stream; this.stream=null; if(stream) stream.getTracks().forEach(t=>t.stop()); if(this.source)try{this.source.disconnect();}catch(e){} if(this.analyser)try{this.analyser.disconnect();}catch(e){}
     this.on=false; this.source=null; this.analyser=null; this.buf=null; this.hold=0; },
   read(){ if(!this.analyser) return 0; this.analyser.getFloatTimeDomainData(this.buf);
@@ -765,6 +765,7 @@ requestAnimationFrame(frame);
 })();
 
 </script>
-<script src="../gaze-runtime.js"></script>
+<script src="../gaze-runtime.js?v=20260724d"></script>
+<script src="../journey-controls.js?v=20260724b"></script>
 </body>
 </html>

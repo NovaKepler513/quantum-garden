@@ -73,7 +73,12 @@ if(params.get('setup')==='1') targetUrl.searchParams.set('setup','1');
 if(params.get('prelude')==='1') targetUrl.searchParams.set('prelude','1');
 const stage=document.getElementById('stage'), veil=document.getElementById('loadVeil'), fail=document.getElementById('loadFail');
 let loadTimer=setTimeout(()=>fail.classList.add('show'),12000);
-stage.addEventListener('load',()=>{ clearTimeout(loadTimer); veil.classList.add('done'); fail.classList.remove('show'); },{once:true});
+stage.addEventListener('load',()=>{
+  let ready=false;
+  try{ ready=!!(stage.contentDocument&&stage.contentDocument.querySelector('canvas')); }catch(_){}
+  if(!ready){ clearTimeout(loadTimer); fail.classList.add('show'); return; }
+  clearTimeout(loadTimer); veil.classList.add('done'); fail.classList.remove('show');
+});
 stage.addEventListener('error',()=>{ clearTimeout(loadTimer); fail.classList.add('show'); });
 document.getElementById('retry').addEventListener('click',()=>{ fail.classList.remove('show'); veil.classList.remove('done');
   loadTimer=setTimeout(()=>fail.classList.add('show'),12000); stage.src=stage.src; });

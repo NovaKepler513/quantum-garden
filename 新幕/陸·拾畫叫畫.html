@@ -107,7 +107,7 @@
   <div class="ui">
     <div class="act">第陸幕 · 拾畫叫畫</div>
     <div class="foot"><button class="icon-button" id="replay" type="button" aria-label="重看本幕" title="重看本幕">↺</button></div>
-    <div class="hint" id="hint"></div>
+    <div class="hint" id="hint" role="status" aria-live="polite" aria-atomic="true"></div>
     <div class="keys" id="keys">R 重看本幕</div>
   </div>
   <div id="enter">
@@ -381,7 +381,7 @@ const Sound={ ac:null, master:null, started:false, timers:[], mic:null, micBuf:n
       const ended=()=>{ if(this.micStream!==ms) return; this.stopMic(false);
         if(phase==='call') setHint('麥克風已離線 —— 可點畫像或按空格繼續喚'); };
       ms.getTracks().forEach(t=>t.addEventListener('ended',ended,{once:true}));
-    }).catch(()=>{ this.stopMic(false); }).finally(()=>{ this.micRequesting=false; }); },
+    }).catch(()=>{ this.stopMic(false); if(phase==='call') setHint('麥克風未啟用 —— 可點畫像或按空格繼續喚'); }).finally(()=>{ this.micRequesting=false; }); },
   stopMic(stopTracks=true){ const stream=this.micStream;
     this.micStream=null;
     try{ if(this.micSource) this.micSource.disconnect(); }catch(e){}
@@ -670,8 +670,9 @@ function frame(now){
       ctx.fillText('此 去 幽 媾', W/2, H/2+fs*0.9);
       ctx.font=`${fs*0.42|0}px ${SERIF}`; ctx.fillStyle=`rgba(210,174,104,${(ta*0.5).toFixed(3)})`;
       ctx.fillText('只有愛，完成測量', W/2, H/2+fs*1.9); }                       // 题旨随观众离场,不在入场剧透
-    if(endSt.t>3.4 && !endSt.veiled){ endSt.veiled=true;                         // 遮罩提前唤回:1.6s 淡入在黑纱(0.94)底下完成——门缓缓显形,永不闪现
-      document.getElementById('enter').classList.remove('gone'); }
+    if(endSt.t>3.4){                                                             // 旧幕题字退尽后只留纯黑帘；下一页自己报柒幕，禁止回显旧「第陸幕」
+      const va=Math.min(1,(endSt.t-3.4)/0.5);
+      ctx.fillStyle=`rgba(6,9,8,${va.toFixed(3)})`; ctx.fillRect(0,0,W,H); }
     if(endSt.t>4.5 && !endSt.went){ endSt.went=true; location.href='../量子游园·丙·交互体验.html?act=3'; }   // 八幕链:幽→糾纏橋(主作品第四幕)
   }
   requestAnimationFrame(frame);
@@ -787,6 +788,7 @@ window.addEventListener('pagehide',()=>Sound.stop(),{once:true});
 })();
 
 </script>
-<script src="../gaze-runtime.js"></script>
+<script src="../gaze-runtime.js?v=20260724d"></script>
+<script src="../journey-controls.js?v=20260724b"></script>
 </body>
 </html>
