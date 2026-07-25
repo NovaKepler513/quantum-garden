@@ -40,7 +40,12 @@
   .act-mark .phase{grid-column:2;font-family:var(--sans);font-size:11px;letter-spacing:0;color:var(--mist)}
   .act-mark::after{content:"";position:absolute;left:0;top:34px;width:1px;height:24px;background:rgba(198,104,88,.72)}
   .prompt{position:absolute;left:32px;bottom:32px;width:min(620px,calc(100vw - 160px));min-height:92px;padding:0 20px 2px 16px;
-    border-left:1px solid rgba(198,104,88,.72);text-shadow:0 1px 18px rgba(0,0,0,.86)}
+    border-left:1px solid rgba(198,104,88,.72);text-shadow:0 1px 18px rgba(0,0,0,.86);opacity:1;
+    transition:opacity .34s ease}
+  .prompt.changing{opacity:.16}
+  .prompt .label,.prompt .hint-title,.prompt .hint,.prompt .hint-action{
+    transform:translateY(0);transition:transform .42s cubic-bezier(.22,.61,.36,1),opacity .34s ease}
+  .prompt.changing .label,.prompt.changing .hint-title,.prompt.changing .hint,.prompt.changing .hint-action{transform:translateY(5px)}
   .prompt::after{content:"";position:absolute;z-index:-1;left:-32px;right:-28px;top:-24px;bottom:-24px;
     background:linear-gradient(90deg,rgba(7,16,14,.92),rgba(7,16,14,.66) 72%,rgba(7,16,14,0));pointer-events:none}
   .prompt .label{display:block;margin-bottom:7px;font-family:var(--sans);font-size:11px;letter-spacing:0;color:var(--cinnabar)}
@@ -51,6 +56,8 @@
   .hint-action{display:none;margin-top:8px;font-family:var(--sans);font-size:11px;line-height:1.6;color:var(--mist)}
   .hint-action.show{display:block}
   .hint-action::before{content:"→";margin-right:7px;color:var(--cinnabar)}
+  .hint-action.exit-reminder{animation:exitReminder 8s ease-in-out infinite}
+  @keyframes exitReminder{0%,68%,100%{opacity:.42}78%,88%{opacity:.94}}
   .toolrail{position:absolute;top:24px;right:24px;display:flex;gap:4px;pointer-events:auto}
   .tool{position:relative;width:44px;height:44px;border:0;border-radius:0;background:transparent;color:var(--mist);
     display:grid;place-items:center;cursor:pointer;opacity:.76;transition:color .14s ease,opacity .14s ease,background-color .14s ease}
@@ -494,6 +501,7 @@ const COLD=[131,153,143];                 // 未观测的冷玉灰
 function initQuantum(){
   for(const it of items){
     it.c=0; it.trgb=hex2rgb(it.color); it.tA=it.a;
+    it.guideTo=null; it.guideDelay=0;
     it.ph1=Math.random()*TAU; it.ph2=Math.random()*TAU;
     it.sp1=0.3+Math.random()*0.55; it.sp2=0.3+Math.random()*0.55;
     it.jamp=0.12+Math.random()*0.18;       // 叠加时游移幅度(虚拟单位)
@@ -513,17 +521,28 @@ const STATIONS=[                                       // 幕序依《牡丹亭�
 let cur=0, mode='reveal', gateReady=false, gateA=0, gateT=0, trans=null;
 let wallsDone=false, dwell=0, lastProg=-1;
 let mouseX=-1e4, mouseY=-1e4, mouseOver=false, last=performance.now();
-const NARRATIVE={priority:0,lockUntil:0,fixedCard:null,fallbackCard:null,pending:null,pendingT:0,shown:null};
+let mouseSpeed=0, mouseMoveAt=0, mouseMoveX=0, mouseMoveY=0;
+const NARRATIVE={priority:0,lockUntil:0,fixedCard:null,fallbackCard:null,pending:null,pendingT:0,shown:null,awayT:0,swapSeq:0};
 function cleanHint(t){ return String(t||'').replace(/^〔[^〕]+〕[^·—]+\s*(?:·|——?)\s*/,''); }
 function renderNarrative(card){
+  const panel=document.querySelector('.prompt');
   const label=document.getElementById('hintLabel'), title=document.getElementById('hintTitle');
   const body=document.getElementById('hint'), action=document.getElementById('hintAction');
-  if(!body) return;
-  const c=card||{};
-  label.textContent=c.label||'此刻';
-  title.textContent=c.title||''; title.classList.toggle('show',!!c.title);
-  body.textContent=c.body||''; body.title=[c.title,c.body,c.action].filter(Boolean).join(' · '); body.classList.add('show');
-  action.textContent=c.action||''; action.classList.toggle('show',!!c.action);
+  if(!body||!panel) return;
+  const c=card||{}, seq=++NARRATIVE.swapSeq;
+  clearTimeout(panel._swapTimer);
+  const apply=()=>{
+    if(seq!==NARRATIVE.swapSeq) return;
+    label.textContent=c.label||'此刻';
+    title.textContent=c.title||''; title.classList.toggle('show',!!c.title);
+    body.textContent=c.body||''; body.title=[c.title,c.body,c.action].filter(Boolean).join(' · '); body.classList.add('show');
+    action.textContent=c.action||''; action.classList.toggle('show',!!c.action);
+    action.classList.toggle('exit-reminder',!!c.reminder);
+    requestAnimationFrame(()=>panel.classList.remove('changing'));
+  };
+  if(REDUCED||!panel.dataset.ready){ panel.dataset.ready='1'; apply(); return; }
+  panel.classList.add('changing');
+  panel._swapTimer=setTimeout(apply,150);
 }
 function setHint(t,hold,priority){
   const now=performance.now(), p=priority==null?2:priority;
@@ -545,7 +564,7 @@ function setFallbackNarrative(card,hold){
   NARRATIVE.fallbackCard=card; NARRATIVE.priority=0; NARRATIVE.lockUntil=performance.now()+(hold||0); NARRATIVE.shown='__fallback';
   renderNarrative(card);
 }
-function releaseFixedNarrative(){ NARRATIVE.fixedCard=null; NARRATIVE.fallbackCard=null; NARRATIVE.shown=null; NARRATIVE.pending=null; NARRATIVE.pendingT=0; }
+function releaseFixedNarrative(){ NARRATIVE.fixedCard=null; NARRATIVE.fallbackCard=null; NARRATIVE.shown=null; NARRATIVE.pending=null; NARRATIVE.pendingT=0; NARRATIVE.awayT=0; }
 function actOneBothAwake(){ return !!(WANDER['麗娘']&&WANDER['麗娘'].on&&WANDER['春香']&&WANDER['春香'].on); }
 function actOneWakeCard(){
   const l=!!(WANDER['麗娘']&&WANDER['麗娘'].on), c=!!(WANDER['春香']&&WANDER['春香'].on);
@@ -571,9 +590,11 @@ const ACT_LORE={
     willowline:{label:'園中 · 枝葉絲條',title:'一樹垂楊，要細看才看得盡',body:'枝有伸屈，葉有向背，絲條又各自隨風。春香看的是滿樹青翠，麗娘卻連一根細線的顫動也不肯錯過；同一樹柳，在兩雙眼裡自有兩種看法。'},
     pavilion:{label:'園中 · 牡丹亭',title:'花木深處，恰好有亭可坐',body:'一路看花行來，亭子正在花木與池水之間。倚欄片刻，近處花枝，遠處柳色，滿園景物從這裡慢慢排開。'},
     pavilionpart:{label:'園中 · 亭之構件',title:'簷下有陰，欄外有春',body:'柱、欄、簷、階原是尋常木石，到了春日也各有明暗。春香扶欄探看，麗娘循階緩步；人的身影一入亭中，簷影與欄外春色便有了照應。'},
-    peony:{label:'園中 · 牡丹',title:'百花都開了，牡丹偏還早',body:'春香說園中花事已盛，唯有牡丹尚未趕上。未開並非無春意：緊合的花苞把顏色藏在裡頭，反教人多等一眼，也多添一分惦記。'},
+    peony:{label:'曲中 · 牡丹',title:'「牡丹雖好，他春歸怎占的先」',body:'春香先說「是花都放了，那牡丹還早」，麗娘便接出這一句。牡丹尚未開遍，反襯眼前群芳已盛，也讓她更覺得春光易過，等不得人。'},
     peonyrail:{label:'園中 · 芍藥',title:'芍藥臨欄，花枝與人正相近',body:'芍藥長在欄邊，低頭便可細看。花瓣柔而有層次，春香愛它熱鬧，麗娘見它正當好時節，心裡便添了一點說不明的憐惜。'},
-    flowers:{label:'園中 · 群芳',title:'原來姹紫嫣紅，竟開遍了',body:'杜鵑、海棠、薔薇、荼蘼各有顏色，卻一向開在少人留意的斷井頹垣旁。滿眼花色之外，更教麗娘吃驚的是：這樣好的春光，從前竟與自己全不相干。'},
+    dujuan:{label:'曲中 · 杜鵑',title:'「遍青山啼紅了杜鵑」',body:'杜鵑既是花色，也帶著啼聲。麗娘說一個「啼紅」，山色、鳥聲與傷春的心緒便疊在一起；眼前看見的是紅花，耳邊聽見的卻像是春將歸去。'},
+    tumi:{label:'曲中 · 荼蘼',title:'「荼蘼外煙絲醉軟」',body:'荼蘼開在春深處，花外晴絲被暖風牽得柔軟。這一句不只寫花，也寫空氣的質地：麗娘所見的春色，正在風裡慢慢鬆開。'},
+    flowers:{label:'曲中 · 群芳',title:'「原來姹紫嫣紅開遍」',body:'《遊園》以這一句總寫百花，並沒有把海棠、薔薇、蘭、菊逐一點名。裝置讓它們同在日光下顯形，是把「開遍」化成可遊可看的滿園花色。'},
     sun:{label:'園中 · 春日',title:'曉來天氣正好，春光已到庭院',body:'麗娘清晨起身，早茶過後隨春香入園。日光落在花木與池館上，晴絲在院中輕輕搖動；她第一次看見，原來深閨之外的春天這樣明亮。'},
     pond:{label:'園中 · 池水',title:'水邊又見一重春色',body:'柳影、花枝、亭台都落進池裡。風來，倒影被波紋揉開；風定，又一點點合起來。麗娘臨水看得久，春香卻去追萍下的魚。'},
     fish:{label:'園中 · 魚',title:'魚尾一擺，池水便醒了',body:'魚從萍藻下穿過，只留幾圈細紋。春香追著看魚，麗娘看水光被攪碎又復原；一動一靜之間，園子的幽處也有了生氣。'},
@@ -607,7 +628,8 @@ function loreKeyForItem(it,act){
     if(t==='柳') return 'willow'; if(/[枝條葉絲絛幹皮瘤根]/.test(t)) return 'willowline';
     if(t==='亭') return 'pavilion'; if(/^(寶頂|簷|甍|瓦|柱|枋|欄|楯|階|基)$/.test(t)) return 'pavilionpart';
     if(t==='牡丹') return 'peony'; if(t==='芍藥') return 'peonyrail';
-    if(/^(海棠|薔薇|杜鵑|荼蘼|蘭|菊)$/.test(t)) return 'flowers';
+    if(t==='杜鵑') return 'dujuan'; if(t==='荼蘼') return 'tumi';
+    if(/^(海棠|薔薇|蘭|菊)$/.test(t)) return 'flowers';
     if(t==='池'||/^[漣漪波粼萍藻]$/.test(t)) return 'pond'; if(t==='魚') return 'fish';
     if(t==='山'||t==='假山'||/^[石巖峰巒苔蘚磴罅竅]$/.test(t)) return 'rock';
     if(/^[牆甎]$/.test(t)) return 'wall'; if(/^[雲霞煙靄絮]$/.test(t)) return 'cloudrain';
@@ -631,7 +653,11 @@ function showLore(key,force,action,hold){
   const now=performance.now();
   if(!force && (NARRATIVE.fixedCard||now<NARRATIVE.lockUntil||NARRATIVE.shown===key)) return;
   NARRATIVE.priority=force?3:0; NARRATIVE.lockUntil=force?now+(hold==null?8200:hold):0; NARRATIVE.shown=key;
-  renderNarrative(action?Object.assign({},card,{action}):card);
+  const quietExit=cur===0&&gateReady&&!action;
+  renderNarrative((action||quietExit)?Object.assign({},card,{
+    action:action||'若已看遍，東牆缺處有一徑可行。',
+    reminder:quietExit
+  }):card);
 }
 function updateLoreFocus(key,dt){
   const now=performance.now();
@@ -643,21 +669,21 @@ function updateLoreFocus(key,dt){
     if(NARRATIVE.shown!=='__wake'){ NARRATIVE.shown='__wake'; renderNarrative(card); }
     return;
   }
-  if(cur===0&&GUIDE.on&&!GUIDE.done&&!gateReady){ NARRATIVE.pending=null; NARRATIVE.pendingT=0; return; }
+  if(cur===0&&GUIDE.on&&!GUIDE.done&&!gateReady){ NARRATIVE.pending=null; NARRATIVE.pendingT=0; NARRATIVE.awayT=0; return; }
   NARRATIVE.priority=0;
   if(!key){
     const leftLore=NARRATIVE.shown && !String(NARRATIVE.shown).startsWith('__');
-    NARRATIVE.pending=null; NARRATIVE.pendingT=0;
-    if(leftLore) NARRATIVE.shown=null;                            // 离开物象即准许同一解说再次触发
-    if(NARRATIVE.fallbackCard&&NARRATIVE.shown!=='__fallback'){
-      NARRATIVE.shown='__fallback'; renderNarrative(NARRATIVE.fallbackCard); // 门已显时立刻恢复前行提示
+    NARRATIVE.pending=null; NARRATIVE.pendingT=0; NARRATIVE.awayT+=dt;
+    if(leftLore&&NARRATIVE.awayT<3.2) return;                       // 离开景物后留一段读完的时间
+    if(leftLore) NARRATIVE.shown=null;                              // 读完后准许同一景物再次触发
+    if(NARRATIVE.fallbackCard&&NARRATIVE.shown!=='__fallback'&&NARRATIVE.awayT>=3.2){
+      NARRATIVE.shown='__fallback'; renderNarrative(NARRATIVE.fallbackCard);
     }
     return;
   }
+  NARRATIVE.awayT=0;
+  if(mouseOver&&mouseSpeed>260){ NARRATIVE.pending=key; NARRATIVE.pendingT=0; return; } // 快速扫园时不连跳字幕
   if(NARRATIVE.pending!==key){
-    if(NARRATIVE.fallbackCard&&NARRATIVE.shown&&!String(NARRATIVE.shown).startsWith('__')){
-      NARRATIVE.shown='__fallback'; renderNarrative(NARRATIVE.fallbackCard); // 从一物移向另一物时也先报「徑」
-    }
     NARRATIVE.pending=key; NARRATIVE.pendingT=0; return;
   }
   NARRATIVE.pendingT+=dt;
@@ -1013,9 +1039,14 @@ function wanderWake(k){ const w=WANDER[k]; if(!w||w.on) return; w.on=true; w.eas
   }
 }
 function revealGuideArea(target,cfg){
-  for(const it of items){
+  for(let i=0;i<items.length;i++){ const it=items[i];
     if(it===target||it.anc||it.grp==='麗娘'||it.grp==='春香') continue;
-    if(Math.hypot(it.x-target.x,it.y-target.y)<cfg.r) it.c=Math.max(it.c,cfg.full?1:0.88);
+    const d=Math.hypot(it.x-target.x,it.y-target.y);
+    if(d>=cfg.r) continue;
+    const to=cfg.full?1:0.88;
+    if(REDUCED){ it.c=Math.max(it.c,to); continue; }
+    it.guideTo=Math.max(it.guideTo||0,to);
+    it.guideDelay=Math.min(1.15,d/cfg.r*0.86+(i%5)*0.055);
   }
 }
 function guideTarget(){
@@ -1059,7 +1090,7 @@ function guideTick(dt){                                // 固定戏路:日→柳
     if(GUIDE.timer>=3.9){ GUIDE.phase='focus'; GUIDE.timer=0; }
   }else if(GUIDE.phase==='focus'){
     t.c=Math.min(1,t.c+dt*0.18);
-    if(t.c>=0.97){ t.c=1; revealGuideArea(t,cfg); GUIDE.phase='pause'; GUIDE.timer=0; }
+    if(t.c>=0.97){ t.c=1; GUIDE.phase='pause'; GUIDE.timer=0; }
   }else if(GUIDE.phase==='pause'&&GUIDE.timer>=2.6) finishGuideStop();
   GUIDE.x=Math.min(14.2,Math.max(1.8,GUIDE.x)); GUIDE.y=Math.min(7.4,Math.max(2.0,GUIDE.y));
 }
@@ -1158,6 +1189,13 @@ function drawItems(dt){
         if(okM||okG) BR.threadObserved=true;
         if(infl>0 && !okM&&!okG) infl=0;             // 手或目,谁近谁牵
       }
+    }
+    if(cur===0&&it.guideTo!=null){
+      if(it.guideDelay>0) it.guideDelay=Math.max(0,it.guideDelay-dt);
+      else if(it.c<it.guideTo){
+        it.c+=(it.guideTo-it.c)*(1-Math.exp(-dt*1.65));
+        if(it.guideTo-it.c<0.006){ it.c=it.guideTo; it.guideTo=null; }
+      }else it.guideTo=null;
     }
     if(infl>it.c) it.c += (infl-it.c)*(1-Math.pow(0.88, dt*60));   // 只升不降·扫过即留(dt 归一:60/120Hz 同手感)
     if(it.grp==='夢中人') it.c=Math.min(it.c,0.5);   // 寻它不得:永不凝形;只可加金边/透明度,不抬凝定度
@@ -1269,7 +1307,8 @@ function gateOpen(){ if(gateReady) return; gateReady=true; Sound.bell(GONG,0.1);
     label:'此刻 · 徑已顯',
     title:'東牆缺處，一徑可行',
     body:'池邊回望，春色已隨她們的腳步一一看真。',
-    action:'循右側朱字「徑」出園。'
+    action:'循右側朱字「徑」出園。',
+    reminder:true
   },900);
   else if(cur===2) showLore('dreamman',true,PASS[cur].hint);
   else setHint('〔'+MU[cur]+'〕'+STATIONS[cur].name+' —— '+PASS[cur].hint,8000,4); }
@@ -1310,6 +1349,7 @@ function checkGoal(st,dt){
 }
 function frame(now){
   const dt=Math.min(0.05,(now-last)/1000); last=now; gateT+=dt;
+  mouseSpeed*=Math.pow(0.012,dt);
   ctx.setTransform(DPR,0,0,DPR,0,0); ctx.clearRect(0,0,W,H);
   if(paperCv) ctx.drawImage(paperCv,0,0,W,H);
   if(GAZE.calibrating){ drawCalibScene(dt); requestAnimationFrame(frame); return; }   // 校准独立成景,幕暂歇
@@ -1444,7 +1484,15 @@ function resizeLayout(){
   }
 }
 window.addEventListener('resize', resizeLayout);
-cv.addEventListener('pointermove', e=>{ mouseX=e.clientX; mouseY=e.clientY; mouseOver=true; });
+cv.addEventListener('pointermove', e=>{
+  const now=performance.now();
+  if(mouseMoveAt){
+    const d=Math.hypot(e.clientX-mouseMoveX,e.clientY-mouseMoveY), ms=Math.max(8,now-mouseMoveAt);
+    mouseSpeed=mouseSpeed*0.35+d/ms*1000*0.65;
+  }
+  mouseMoveAt=now; mouseMoveX=e.clientX; mouseMoveY=e.clientY;
+  mouseX=e.clientX; mouseY=e.clientY; mouseOver=true;
+});
 cv.addEventListener('pointerleave', ()=>{ mouseOver=false; });
 cv.addEventListener('pointerup', e=>{ if(e.pointerType==='touch'){ mouseOver=false; mouseX=mouseY=-1e4; } });
 cv.addEventListener('pointercancel', e=>{ if(e.pointerType==='touch'){ mouseOver=false; mouseX=mouseY=-1e4; } });
