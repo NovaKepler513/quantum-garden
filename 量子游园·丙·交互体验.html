@@ -505,7 +505,7 @@ const STATIONS=[                                       // 幕序依《牡丹亭�
 let cur=0, mode='reveal', gateReady=false, gateA=0, gateT=0, trans=null;
 let wallsDone=false, dwell=0, lastProg=-1;
 let mouseX=-1e4, mouseY=-1e4, mouseOver=false, last=performance.now();
-const NARRATIVE={priority:0,lockUntil:0,fixedCard:null,pending:null,pendingT:0,shown:null};
+const NARRATIVE={priority:0,lockUntil:0,fixedCard:null,fallbackCard:null,pending:null,pendingT:0,shown:null};
 function cleanHint(t){ return String(t||'').replace(/^〔[^〕]+〕[^·—]+\s*(?:·|——?)\s*/,''); }
 function renderNarrative(card){
   const label=document.getElementById('hintLabel'), title=document.getElementById('hintTitle');
@@ -528,26 +528,30 @@ function setFixedNarrative(card){
   NARRATIVE.fixedCard=card; NARRATIVE.priority=3; NARRATIVE.lockUntil=0; NARRATIVE.shown='__fixed';
   renderNarrative(card);
 }
-function releaseFixedNarrative(){ NARRATIVE.fixedCard=null; NARRATIVE.shown=null; NARRATIVE.pending=null; NARRATIVE.pendingT=0; }
+function setFallbackNarrative(card,hold){
+  NARRATIVE.fallbackCard=card; NARRATIVE.priority=0; NARRATIVE.lockUntil=performance.now()+(hold||0); NARRATIVE.shown='__fallback';
+  renderNarrative(card);
+}
+function releaseFixedNarrative(){ NARRATIVE.fixedCard=null; NARRATIVE.fallbackCard=null; NARRATIVE.shown=null; NARRATIVE.pending=null; NARRATIVE.pendingT=0; }
 const ACT_LORE={
   0:{
-    liyang:{label:'戲中 · 杜麗娘',title:'第一次看見自己的春天',body:'《驚夢》從她整妝、照鏡寫起。園林讓深閨中的麗娘第一次把「愛好是天然」投向自己，也把被遮住的欲望投向春色。'},
-    chunxiang:{label:'戲中 · 春香',title:'領路人，也是試探者',body:'春香帶麗娘出閨入園，又用俏皮話替她試探禁令。沒有這位貼身丫鬟，春色仍會被鎖在牆外。'},
-    willow:{label:'園中 · 柳',title:'柳枝先記住了夢',body:'《尋夢》中，麗娘要折柳枝問天，又記得夢中書生曾請她題柳。柳既是垂楊，也是柳夢梅尚未現身的姓名伏筆。'},
-    willowline:{label:'園中 · 枝葉絲條',title:'「一絲絲垂楊線」',body:'枝、葉、條、絲把樹拆成可流動的線。《尋夢》正以垂楊線重認舊地；在這裡，線也是夢將人物牽到一起的前奏。'},
-    pavilion:{label:'園中 · 牡丹亭',title:'亭不是舞臺，是記憶坐標',body:'夢醒後，麗娘按「湖山石邊」「牡丹亭畔」「芍藥芽兒淺」逐處尋回。亭、欄、柱、階共同把一場無形的夢釘在真實園址上。'},
-    pavilionpart:{label:'園中 · 亭之構件',title:'柱、欄、簷、階都能作證',body:'《尋夢》不是泛泛重遊，而是逐一核對雕欄、亭畔與石邊。建築構件因此像證物：它們證明昨日之夢確有一處發生。'},
-    peony:{label:'園中 · 牡丹',title:'百花開遍，牡丹偏「還早」',body:'《驚夢》中春香說花都放了，牡丹卻還早。這個遲到的中心，反而把整部戲的欲望留在未完成、將開未開的狀態。'},
-    peonyrail:{label:'園中 · 芍藥',title:'夢中歡會落在芍藥闌邊',body:'芍藥不是陪襯花名。麗娘醒後反覆尋的，正是牡丹亭畔與芍藥闌邊；抽象的情欲由此獲得了具體地點。'},
-    flowers:{label:'園中 · 群芳',title:'春色既盛，也無人看見',body:'「姹紫嫣紅開遍」緊接著便是「都付與斷井頹垣」。花越盛，越顯出深閨中人被隔絕於春天之外。'},
-    moon:{label:'園中 · 月',title:'月把夢、畫與回生串成一線',body:'月在後文會化作蟾宮、秋月與月落：它照著麗娘寫真、離魂，也照著柳夢梅對畫呼喚，是跨越生死的同一束冷光。'},
-    pond:{label:'園中 · 池水',title:'水讓靜園開始流動',body:'《驚夢》把池館、雨絲、煙波、畫船連在一起。水不是背景，它把封閉園林改寫成可流轉、可渡越的夢境。'},
-    fish:{label:'園中 · 魚',title:'水下的另一種觀看',body:'魚把池水從平面變成有深度的空間。它也暗合麗娘初見春色時那種被驚動的感官：園中萬物都像先於人醒來。'},
-    rock:{label:'園中 · 湖山石',title:'一塊石頭收住後半部戲',body:'麗娘在《尋夢》沿湖山石辨認夢址；離世前又囑咐把春容藏在太湖石下。石從園景變成畫像、記憶與回生的容器。'},
-    wall:{label:'園中 · 園牆',title:'牆把春色變成禁地',body:'「姹紫嫣紅」與「斷井頹垣」同時出現。牆既圈出園，也標出禮法的邊界；麗娘每向園內一步，都是一次越界。'},
-    cloudrain:{label:'園中 · 雲雨煙霞',title:'春光不是景片，而是運動',body:'「朝飛暮卷、雨絲風片、煙波畫船」把園林寫成連續變化。你掃過的字也因此不肯靜止，直到被觀看才暫時定形。'},
-    costume:{label:'戲中 · 妝束',title:'先照見自己，才走進園林',body:'《驚夢》開場先寫雲髻、羅衣、花鈿與菱花鏡。這不是服飾清單，而是麗娘第一次完整觀看自身的儀式。'},
-    trees:{label:'園中 · 松桐',title:'常青與落葉守著不同時間',body:'松與桐把園林拉出春日之外：一者常青，一者知秋。它們預告這場春夢會延伸到中秋離魂與三年後的重逢。'}
+    liyang:{label:'戲中 · 杜麗娘',title:'她在春色裡，也看見了自己',body:'麗娘久居深閨，今日才知道牆外竟有這樣一座園子。花木照眼，她那句「不到園林，怎知春色如許」，既是驚春，也像忽然認出了自己的年華。'},
+    chunxiang:{label:'戲中 · 春香',title:'是春香，把她領到春天跟前',body:'春香一路報花名、說笑話，腳步比小姐輕快。她眼裡先是好玩的園子；有她在旁，麗娘才肯把閨門裡收著的心思，悄悄向春風放開一些。'},
+    willow:{label:'園中 · 柳',title:'柳絲低垂，風一來便有了情態',body:'園中的柳不以濃色取勝，只憑一段柔軟。細條拂風，時聚時散；春香從樹下走得輕快，麗娘卻像被這一樹細密的動靜牽慢了腳步。'},
+    willowline:{label:'園中 · 枝葉絲條',title:'一樹垂楊，要細看才看得盡',body:'枝有伸屈，葉有向背，絲條又各自隨風。春香看的是滿樹青翠，麗娘卻連一根細線的顫動也不肯錯過；同一樹柳，在兩雙眼裡自有兩種看法。'},
+    pavilion:{label:'園中 · 牡丹亭',title:'花木深處，恰有一亭可歇眼',body:'亭子立在園中，不與百花爭豔，只替遊園的人留出一處歇眼之地。從亭下望出去，花影、池光、柳色都有了遠近，滿園春色也因此顯得更深。'},
+    pavilionpart:{label:'園中 · 亭之構件',title:'簷下有陰，欄外有春',body:'柱、欄、簷、階原是尋常木石，到了春日也各有明暗。春香扶欄探看，麗娘循階緩步；人的身影一入亭中，簷影與欄外春色便有了照應。'},
+    peony:{label:'園中 · 牡丹',title:'百花都開了，牡丹偏還早',body:'春香說園中花事已盛，唯有牡丹尚未趕上。未開並非無春意：緊合的花苞把顏色藏在裡頭，反教人多等一眼，也多添一分惦記。'},
+    peonyrail:{label:'園中 · 芍藥',title:'芍藥臨欄，花枝與人正相近',body:'芍藥長在欄邊，低頭便可細看。花瓣柔而有層次，春香愛它熱鬧，麗娘見它正當好時節，心裡便添了一點說不明的憐惜。'},
+    flowers:{label:'園中 · 群芳',title:'原來姹紫嫣紅，竟開遍了',body:'杜鵑、海棠、薔薇、荼蘼各有顏色，卻一向開在少人留意的斷井頹垣旁。滿眼花色之外，更教麗娘吃驚的是：這樣好的春光，從前竟與自己全不相干。'},
+    moon:{label:'裝置 · 月',title:'原作未寫的一輪清光',body:'《遊園》明寫的是晴絲、花木、雲霞與煙波，並未寫麗娘與春香在園中看月。這一輪清光是裝置替夜園添下的：讓滿屏濃色稍稍歇一歇，也提醒我們，眼前是一種重寫，而非原文插圖。'},
+    pond:{label:'園中 · 池水',title:'池面把花木又照了一遍',body:'岸上是柳色花影，水中便有一重倒影。風來時，整座園子在池面輕輕散開；風歇了，亭台枝葉又慢慢合攏，教人分不清哪一層春色更真。'},
+    fish:{label:'園中 · 魚',title:'魚尾一擺，池水便醒了',body:'魚從萍藻下穿過，只留幾圈細紋。春香追著看魚，麗娘看水光被攪碎又復原；一動一靜之間，園子的幽處也有了生氣。'},
+    rock:{label:'園中 · 湖山石',title:'石不開花，也自有春痕',body:'湖山石沉默地立在花木之間，罅隙裡卻生著苔，石根旁也沾了濕潤的青色。麗娘初次細看園子，連這些不起眼的深淺，都覺得新鮮。'},
+    wall:{label:'園中 · 園牆',title:'春色偏開到斷井頹垣旁',body:'牆垣已有些舊了，花卻照樣沿著牆根盛開。「都付與斷井頹垣」一句裡藏著惋惜：這一片好春光，長久無人認真看它。'},
+    cloudrain:{label:'園中 · 雲雨煙霞',title:'朝飛暮卷，天光也在遊園',body:'雲霞時聚時開，雨絲與風片從花間穿過，遠處煙波上還像有畫船。麗娘所見的不只花木：天色、水氣、風聲都一同入園，春光便有了層層遠近。'},
+    costume:{label:'戲中 · 妝束',title:'只是去看園子，她卻梳妝得格外鄭重',body:'雲髻理好，羅衣整齊，花鈿在鏡前微微一照。今日並非赴宴見客，麗娘仍仔細收拾自己，像是隱約知道：這一回出閨，眼前會有些不同。'},
+    trees:{label:'園中 · 松桐',title:'松色沉，桐影輕',body:'松針把園子壓出幾筆深綠，桐葉則接住高處的風。兩樹一靜一動，襯得近旁花枝愈發明麗；春香聽葉響，麗娘看影子慢慢移過石階。'}
   },
   2:{
     liyang:{label:'戲中 · 尋夢',title:'她獨自回到昨日的路',body:'《尋夢》讓麗娘甩開春香，按湖山石、牡丹亭、芍藥闌逐一追認。她找的不是景，而是夢曾在現實留下的證據。'},
@@ -604,8 +608,21 @@ function updateLoreFocus(key,dt){
   if(now<NARRATIVE.lockUntil) return;
   if(NARRATIVE.fixedCard){ if(NARRATIVE.shown!=='__fixed'){ NARRATIVE.shown='__fixed'; renderNarrative(NARRATIVE.fixedCard); } return; }
   NARRATIVE.priority=0;
-  if(!key){ NARRATIVE.pending=null; NARRATIVE.pendingT=0; return; }
-  if(NARRATIVE.pending!==key){ NARRATIVE.pending=key; NARRATIVE.pendingT=0; return; }
+  if(!key){
+    const leftLore=NARRATIVE.shown && !String(NARRATIVE.shown).startsWith('__');
+    NARRATIVE.pending=null; NARRATIVE.pendingT=0;
+    if(leftLore) NARRATIVE.shown=null;                            // 离开物象即准许同一解说再次触发
+    if(NARRATIVE.fallbackCard&&NARRATIVE.shown!=='__fallback'){
+      NARRATIVE.shown='__fallback'; renderNarrative(NARRATIVE.fallbackCard); // 门已显时立刻恢复前行提示
+    }
+    return;
+  }
+  if(NARRATIVE.pending!==key){
+    if(NARRATIVE.fallbackCard&&NARRATIVE.shown&&!String(NARRATIVE.shown).startsWith('__')){
+      NARRATIVE.shown='__fallback'; renderNarrative(NARRATIVE.fallbackCard); // 从一物移向另一物时也先报「徑」
+    }
+    NARRATIVE.pending=key; NARRATIVE.pendingT=0; return;
+  }
   NARRATIVE.pendingT+=dt;
   if(NARRATIVE.pendingT>=0.42) showLore(key,false);
 }
@@ -1152,7 +1169,13 @@ function drawPassage(){
 }
 /* ====== 按站开门:叙事完成度,非看够比例 ====== */
 function gateOpen(){ if(gateReady) return; gateReady=true; Sound.bell(GONG,0.1); setActPhase('門已顯');   // 开门一记(宫)
-  if(cur===2) showLore('dreamman',true,PASS[cur].hint);
+  if(cur===0) setFallbackNarrative({
+    label:'此刻 · 徑已顯',
+    title:'東牆缺處，一徑可行',
+    body:'園中仍可流連；若要向前，循右側朱字「徑」出園。',
+    action:'停在任一物象上仍可重讀解說；移開後，前行提示便會回來。'
+  },900);
+  else if(cur===2) showLore('dreamman',true,PASS[cur].hint);
   else setHint('〔'+MU[cur]+'〕'+STATIONS[cur].name+' —— '+PASS[cur].hint,8000,4); }
 function checkGoal(st,dt){
   if(cur===0){                                        // 一园春:七大锚字尽亮
