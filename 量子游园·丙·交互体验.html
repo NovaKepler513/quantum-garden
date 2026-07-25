@@ -274,7 +274,6 @@ const T1=1.0,T2=0.78,T3=0.56,T4=0.42,T5=0.33,T6=0.26,T7=0.21,T8=0.175;
 const COL={ fig:"#ede7d8", near:"#d7d1c3", mid:"#aeb7ad", far:"#83998f",
             faint:"#657c72", ghost:"#50645b", water:"#668d82", gold:"#d2ae68" };
 const VW=16, VH=9;
-let MOON_STYLE=4;
 const items=[], boxes=[], PROTECT=[]; let _grp=null;   // _grp:items 分组标签(人物游走/寻人/定墙 等开门条件用)
 function hit(x,y,w,h){ for(const b of boxes){ if(Math.abs(x-b.x)<(w+b.w)/2 && Math.abs(y-b.y)<(h+b.h)/2) return true; } return false; }
 function put(x,y,text,size,color,o){
@@ -306,12 +305,25 @@ const V={ branch:[..."枝條葉"], silk:[..."絲絛"], trunk:[..."幹皮瘤"], r
 function moonCluster(cx,cy){ anchor(cx,cy,"月",T2,COL.gold,1);
   [["皎",-0.62,-0.5],["桂",-0.7,0.42],["魄",0.66,-0.42],["盤",0.62,0.48],["蟾",0.0,-0.84]]
     .forEach(([t,dx,dy])=>put(cx+dx,cy+dy,t,T5,COL.gold,{f:0.9,a:0.82})); }
+function sunCluster(cx,cy){ anchor(cx,cy,"日",T2,COL.gold,1);
+  [["晴",-0.68,-0.48],["暄",-0.76,0.38],["曉",0.7,-0.42],["旭",0.7,0.42],["暉",0,-0.88]]
+    .forEach(([t,dx,dy])=>put(cx+dx,cy+dy,t,T5,COL.gold,{f:0.9,a:0.88}));
+  for(let k=0;k<20;k++){ const a=k/20*TAU, r=1.2+(k%2)*0.22;
+    put(cx+Math.cos(a)*r,cy+Math.sin(a)*r,pick([..."光明暖"]),T8,COL.gold,{f:0.66,pad:0.02,a:0.38}); } }
 function moonBeam(cx,cy,tx,ty){ const sgn=(tx!=null&&tx<cx)?1:-1;
   for(let k=0;k<28;k++){ const a=k/28*Math.PI*2; put(cx+Math.cos(a)*1.5,cy+Math.sin(a)*1.42,pick([..."暈霧霏"]),T7,COL.gold,{f:0.58,pad:0.03,a:0.28}); }
   const cols=3,rows=11,gw=0.56,gh=0.54,slant=0.06,x0=cx-sgn*0.1,y0=cy+1.15;
   for(let r=0;r<rows;r++){ const t=r/(rows-1);
     for(let c=0;c<cols;c++) put(x0-sgn*slant*r+(c-(cols-1)/2)*gw+(rnd()-0.5)*0.05, y0+r*gh+(rnd()-0.5)*0.04, pick(V.glow), T6-(T6-T7)*t, COL.gold, {f:0.72,pad:0.04,a:0.62*(1-0.62*t)+0.12}); }
   const xend=x0-sgn*slant*rows; protect(Math.min(x0,xend)-0.7,cy-1.8,Math.max(x0,xend)+0.8,y0+rows*gh+0.3); }
+function sunBeam(cx,cy,tx,ty){ const sgn=(tx!=null&&tx<cx)?1:-1;
+  for(let k=0;k<32;k++){ const a=k/32*TAU, r=1.55+(k%3)*0.08;
+    put(cx+Math.cos(a)*r,cy+Math.sin(a)*r,pick([..."晴暉"]),T7,COL.gold,{f:0.62,pad:0.03,a:0.34}); }
+  const cols=4,rows=10,gw=0.54,gh=0.56,slant=0.075,x0=cx-sgn*0.08,y0=cy+1.18;
+  for(let r=0;r<rows;r++){ const t=r/(rows-1);
+    for(let c=0;c<cols;c++) put(x0-sgn*slant*r+(c-(cols-1)/2)*gw+(rnd()-0.5)*0.05, y0+r*gh+(rnd()-0.5)*0.04,
+      pick([..."光暉明暖"]), T6-(T6-T7)*t, COL.gold, {f:0.72,pad:0.04,a:0.72*(1-0.58*t)+0.16}); }
+  const xend=x0-sgn*slant*rows; protect(Math.min(x0,xend)-0.85,cy-1.8,Math.max(x0,xend)+0.9,y0+rows*gh+0.3); }
 function pavilion(cx,eaveY,w,litX){ const half=w*0.66,up=0.7,apex=eaveY-1.3,gx=0.225;
   const eave=x=>eaveY-up*Math.pow(Math.abs((x-cx)/half),2.4);
   for(let L=1;L<=4;L++){ const f=L/5,hw=half*(1-0.9*f);
@@ -380,8 +392,9 @@ function rampart(){   // 园之四面外围墙(整座园在墙里;门即墙上�
 }
 function composeBing(){ items.length=0; boxes.length=0; PROTECT.length=0; _s=20260606>>>0;
   colophon();
-  moonCluster(8.0,1.05); pavilion(12.7,2.6,2.5,8.0);
-  _grp='麗娘'; heroine(9.7,4.2,T3); _grp=null; moonBeam(8.0,1.05,12.7,2.6);
+  _grp='日光'; sunCluster(8.0,1.05); sunBeam(8.0,1.05,12.7,2.6); _grp=null;
+  pavilion(12.7,2.6,2.5,8.0);
+  _grp='麗娘'; heroine(9.7,4.2,T3); _grp=null;
   willow(2.5,1.3,4.9);
   _grp='春香'; figure(10.65,4.55,"春香",T4,COL.near,"巾"); _grp=null; flowers(7.6,7.4,3.4,0.7,T5);
   rockery(2.3,8.1,1.7,1.8); pond(13.4,7.8,2.3,0.8); pine(5.0,6.8,1.6); wutong(10.5,6.7,1.5);
@@ -454,9 +467,9 @@ function composeXunmeng(){ items.length=0;boxes.length=0;PROTECT.length=0;_s=202
 
 const MX=x=>ox+x*scale, MY=y=>oy+y*scale;
 
-/* 夜绢底：低频纤维+随幕色温，不铺会产生摩尔纹的满屏网格。 */
+/* 绢底：低频纤维+随幕色温，不铺会产生摩尔纹的满屏网格。 */
 const SCENE_LOOK=[
-  {top:'#0b1813',mid:'#0a1511',bottom:'#06100d',glow:[83,122,94]},
+  {top:'#132a20',mid:'#0d2119',bottom:'#08150f',glow:[196,155,81]},
   {top:'#18160f',mid:'#11140f',bottom:'#090e0b',glow:[168,135,75]},
   {top:'#0a1418',mid:'#091217',bottom:'#070d12',glow:[72,101,120]},
   {top:'#0b1716',mid:'#091413',bottom:'#06100f',glow:[72,119,109]},
@@ -479,7 +492,7 @@ function buildPaper(){ paperCv=paperCv||document.createElement('canvas'); paperC
   const pc=paperCv.getContext('2d'); pc.setTransform(DPR,0,0,DPR,0,0); paper(pc,W,H); }
 
 /* ====== 量子态:每个 item 一个 coherence c ∈[0,1] ====== */
-const GPOOL=[...new Set([].concat(...items.map(it=>[...it.text])).concat([..."01零一光華皎暉牡丹柳月山池絲波石苔雲"]))];
+const GPOOL=[...new Set([].concat(...items.map(it=>[...it.text])).concat([..."01零一光華皎暉牡丹柳日月山池絲波石苔雲"]))];
 function randGlyphs(n){ let s=''; for(let i=0;i<n;i++) s+=GPOOL[(Math.random()*GPOOL.length)|0]; return s; }
 function hex2rgb(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
 const COLD=[131,153,143];                 // 未观测的冷玉灰
@@ -492,7 +505,7 @@ function initQuantum(){
     it.flickT=Math.random()*0.3; it.flickEvery=0.05+Math.random()*0.14;
     it.cur=randGlyphs(it.text.length);
   }
-  GPOOL.length=0; GPOOL.push(...new Set([].concat(...items.map(it=>[...it.text])).concat([..."01零一光華皎暉牡丹柳月山池絲波石苔雲霞魚"])));
+  GPOOL.length=0; GPOOL.push(...new Set([].concat(...items.map(it=>[...it.text])).concat([..."01零一光華皎暉牡丹柳日月山池絲波石苔雲霞魚"])));
 }
 
 /* ====== 过门进境 · 单向骨架 ====== */
@@ -524,6 +537,11 @@ function setHint(t,hold,priority){
   NARRATIVE.shown='__temporary';
   renderNarrative({label:'此刻',body:cleanHint(t)});
 }
+function setEventNarrative(card,hold,priority){
+  const now=performance.now(), p=priority==null?2:priority;
+  NARRATIVE.priority=p; NARRATIVE.lockUntil=now+(hold==null?4600:hold);
+  NARRATIVE.shown='__event'; renderNarrative(card);
+}
 function setFixedNarrative(card){
   NARRATIVE.fixedCard=card; NARRATIVE.priority=3; NARRATIVE.lockUntil=0; NARRATIVE.shown='__fixed';
   renderNarrative(card);
@@ -533,6 +551,34 @@ function setFallbackNarrative(card,hold){
   renderNarrative(card);
 }
 function releaseFixedNarrative(){ NARRATIVE.fixedCard=null; NARRATIVE.fallbackCard=null; NARRATIVE.shown=null; NARRATIVE.pending=null; NARRATIVE.pendingT=0; }
+function actOneBothAwake(){ return !!(WANDER['麗娘']&&WANDER['麗娘'].on&&WANDER['春香']&&WANDER['春香'].on); }
+function actOneWakeCard(){
+  const l=!!(WANDER['麗娘']&&WANDER['麗娘'].on), c=!!(WANDER['春香']&&WANDER['春香'].on);
+  if(!l&&!c) return {
+    label:'入園 · 先喚人',
+    title:'先去畫面中央偏右，喚醒麗娘與春香',
+    body:'麗娘在中央偏右，名字是較大的「麗／娘」；春香在她右側稍下，名字是「春／香」，頭上有一個「巾」字。',
+    action:'把目光或鼠標停在人物字身上，直到她們由亂字顯出姓名。二人同醒，才開始遊園。'
+  };
+  if(l&&!c) return {
+    label:'人物 · 杜麗娘',
+    title:'麗娘醒了，還差領路的春香',
+    body:'杜麗娘久居深閨，今日梳妝出門，將第一次細看牆外的春天。',
+    action:'春香就在麗娘右側稍下，頭上有「巾」字。再停在她身上，請她來領路。'
+  };
+  if(!l&&c) return {
+    label:'人物 · 春香',
+    title:'春香醒了，還要去請小姐',
+    body:'春香熟悉園路，性子明快；是她把滿園花信一一說給麗娘聽。',
+    action:'麗娘就在春香左側稍上，名字是較大的「麗／娘」。再停在她身上，請她入園。'
+  };
+  return {
+    label:'人物 · 二人同醒',
+    title:'春香領路，麗娘這才真正入園',
+    body:'從這一刻起，園景都從麗娘的初見展開。春香在前報花名、辨路徑，麗娘在後一處一處看見牆外的春天。',
+    action:'現在可以停手觀看。她們會依次走過春日、柳、山、松、桐、亭與池；途中仍可用目光或鼠標助她們看真。'
+  };
+}
 const ACT_LORE={
   0:{
     liyang:{label:'戲中 · 杜麗娘',title:'她在春色裡，也看見了自己',body:'麗娘久居深閨，今日才知道牆外竟有這樣一座園子。花木照眼，她那句「不到園林，怎知春色如許」，既是驚春，也像忽然認出了自己的年華。'},
@@ -544,7 +590,7 @@ const ACT_LORE={
     peony:{label:'園中 · 牡丹',title:'百花都開了，牡丹偏還早',body:'春香說園中花事已盛，唯有牡丹尚未趕上。未開並非無春意：緊合的花苞把顏色藏在裡頭，反教人多等一眼，也多添一分惦記。'},
     peonyrail:{label:'園中 · 芍藥',title:'芍藥臨欄，花枝與人正相近',body:'芍藥長在欄邊，低頭便可細看。花瓣柔而有層次，春香愛它熱鬧，麗娘見它正當好時節，心裡便添了一點說不明的憐惜。'},
     flowers:{label:'園中 · 群芳',title:'原來姹紫嫣紅，竟開遍了',body:'杜鵑、海棠、薔薇、荼蘼各有顏色，卻一向開在少人留意的斷井頹垣旁。滿眼花色之外，更教麗娘吃驚的是：這樣好的春光，從前竟與自己全不相干。'},
-    moon:{label:'裝置 · 月',title:'原作未寫的一輪清光',body:'《遊園》明寫的是晴絲、花木、雲霞與煙波，並未寫麗娘與春香在園中看月。這一輪清光是裝置替夜園添下的：讓滿屏濃色稍稍歇一歇，也提醒我們，眼前是一種重寫，而非原文插圖。'},
+    sun:{label:'園中 · 春日',title:'曉來天氣正好，春光已到庭院',body:'麗娘清晨起身，早茶過後隨春香入園。日光落在花木與池館上，晴絲在院中輕輕搖動；她第一次看見，原來深閨之外的春天這樣明亮。'},
     pond:{label:'園中 · 池水',title:'池面把花木又照了一遍',body:'岸上是柳色花影，水中便有一重倒影。風來時，整座園子在池面輕輕散開；風歇了，亭台枝葉又慢慢合攏，教人分不清哪一層春色更真。'},
     fish:{label:'園中 · 魚',title:'魚尾一擺，池水便醒了',body:'魚從萍藻下穿過，只留幾圈細紋。春香追著看魚，麗娘看水光被攪碎又復原；一動一靜之間，園子的幽處也有了生氣。'},
     rock:{label:'園中 · 湖山石',title:'石不開花，也自有春痕',body:'湖山石沉默地立在花木之間，罅隙裡卻生著苔，石根旁也沾了濕潤的青色。麗娘初次細看園子，連這些不起眼的深淺，都覺得新鮮。'},
@@ -573,11 +619,11 @@ function loreKeyForItem(it,act){
   const t=it.text||'';
   if(act===0){
     if(it.grp==='麗娘') return 'liyang'; if(it.grp==='春香') return 'chunxiang';
+    if(it.grp==='日光') return 'sun';
     if(t==='柳') return 'willow'; if(/[枝條葉絲絛幹皮瘤根]/.test(t)) return 'willowline';
     if(t==='亭') return 'pavilion'; if(/^(寶頂|簷|甍|瓦|柱|枋|欄|楯|階|基)$/.test(t)) return 'pavilionpart';
     if(t==='牡丹') return 'peony'; if(t==='芍藥') return 'peonyrail';
     if(/^(海棠|薔薇|杜鵑|荼蘼|蘭|菊)$/.test(t)) return 'flowers';
-    if(t==='月'||/^(皎|桂|魄|盤|蟾|暈|霏)$/.test(t)) return 'moon';
     if(t==='池'||/^[漣漪波粼萍藻]$/.test(t)) return 'pond'; if(t==='魚') return 'fish';
     if(t==='山'||t==='假山'||/^[石巖峰巒苔蘚磴罅竅]$/.test(t)) return 'rock';
     if(/^[牆甎]$/.test(t)) return 'wall'; if(/^[雲霞煙靄絮]$/.test(t)) return 'cloudrain';
@@ -596,17 +642,24 @@ function loreKeyForItem(it,act){
   }
   return null;
 }
-function showLore(key,force,action){
+function showLore(key,force,action,hold){
   const card=(ACT_LORE[cur]||{})[key]; if(!card) return;
   const now=performance.now();
   if(!force && (NARRATIVE.fixedCard||now<NARRATIVE.lockUntil||NARRATIVE.shown===key)) return;
-  NARRATIVE.priority=force?3:0; NARRATIVE.lockUntil=force?now+8200:0; NARRATIVE.shown=key;
+  NARRATIVE.priority=force?3:0; NARRATIVE.lockUntil=force?now+(hold==null?8200:hold):0; NARRATIVE.shown=key;
   renderNarrative(action?Object.assign({},card,{action}):card);
 }
 function updateLoreFocus(key,dt){
   const now=performance.now();
   if(now<NARRATIVE.lockUntil) return;
   if(NARRATIVE.fixedCard){ if(NARRATIVE.shown!=='__fixed'){ NARRATIVE.shown='__fixed'; renderNarrative(NARRATIVE.fixedCard); } return; }
+  if(cur===0&&!actOneBothAwake()){
+    NARRATIVE.pending=null; NARRATIVE.pendingT=0;
+    const card=actOneWakeCard(); NARRATIVE.fallbackCard=card;
+    if(NARRATIVE.shown!=='__wake'){ NARRATIVE.shown='__wake'; renderNarrative(card); }
+    return;
+  }
+  if(cur===0&&GUIDE.on&&!GUIDE.done&&!gateReady){ NARRATIVE.pending=null; NARRATIVE.pendingT=0; return; }
   NARRATIVE.priority=0;
   if(!key){
     const leftLore=NARRATIVE.shown && !String(NARRATIVE.shown).startsWith('__');
@@ -635,7 +688,7 @@ function updateActMark(i){
   const gaze=document.getElementById('gaze'); if(gaze) gaze.style.display='';  // 全程保留开关；驚夢臺虽不取目光增益，观众仍可随时停用摄像头
 }
 const OPEN_HINT=[                                     // 各站任务引导(开场)
-  '先看真麗娘與春香。二人魂醒後，會替你巡園。',
+  '先在畫面中央偏右喚醒麗娘與春香。二人同醒，才開始遊園。',
   '',                                                 // 惊梦台走 blow 提示
   '先看住四面園牆，把夢圈定；再隨麗娘入廊。',
   '先看真橋兩端的人。命途會從你先看見誰開始。',
@@ -652,6 +705,7 @@ function loadStation(i){ cur=i; releaseFixedNarrative(); STATIONS[i].compose(); 
     if(!MIC.on) permissionReady=MIC.request();                              // 正式过幕时等权限结果后再开始报幕倒计时，避免系统弹窗吞掉整段报幕
     // 麦克风提示改事件驱动:由 MIC.request() 解析后调 blowHint() 据真实状态更新,不再用固定 800ms 猜测(会与权限弹窗赛跑、误报"未取得麦克风")
     setHint('〔'+MU[i]+'〕'+STATIONS[i].name+' · 對滿屏亂字吹一口氣，或點按驚夢。此幕目光可歇。'); }
+  else if(i===0) setFallbackNarrative(actOneWakeCard(),0);
   else setHint('〔'+MU[i]+'〕'+STATIONS[i].name+' · '+OPEN_HINT[i]);
   if(document.getElementById('enter').classList.contains('gone') && i>0) showActCard(i,permissionReady); }   // 已入园后过场到新幕:浮一张幕首引(剧情推进);首幕/直入由入园页承担
 function blowHint(){ if(mode!=='blow'||collapsed) return;     // 惊梦台气息提示:据真实麦克风状态实时更新(事件驱动,由 MIC.request 解析后调用,不与权限弹窗赛跑)
@@ -889,14 +943,25 @@ if(navigator.mediaDevices&&navigator.mediaDevices.addEventListener){ let micRetr
   navigator.mediaDevices.addEventListener('devicechange',()=>{ clearTimeout(micRetry); micRetry=setTimeout(()=>{
     if(mode==='blow'&&document.getElementById('enter').classList.contains('gone')&&!MIC.on) MIC.request(); },900); }); }
 
-/* ====== 人物游走 + 魂粒子(显现后活过来) · 游园引导(结伴走向未亮锚字) ====== */
+/* ====== 人物游走 + 魂粒子(显现后活过来) · 游园引导(二人按戏路结伴游园) ====== */
 const WANDER={};
-const GUIDE={on:false,x:0,y:0,target:null};            // 游园队:二人结伴的公共行脚(一园春)
+const GUIDE={on:false,done:false,x:0,y:0,target:null,index:0,phase:'idle',timer:0};
 const XW={on:false,p:0,hold:0,cx0:7.4,cy0:6.1};        // 寻梦行:麗娘随指针走廊(寻梦廊)
 const BR={L:false,M:false,T:false,list:[],idle:0,threadObserved:false}; // 纠缠桥:L=麗娘明/M=柳夢梅明/T=纏絲已牵成
 const ANCHOR_VERSE={                                   // 锚字点亮的应景短句(春香口吻引路)
-  '月':'雲步初靜,月到中庭','柳':'柳絲裊娜,似曾相識','亭':'牡丹亭上,三生路近',
-  '松':'松鬣沉碧,夜愈靜了','桐':'桐陰滿砌,立盡春宵','山':'假山看真,夢裡分明','池':'魚戲粼粼,春水皆活'};
+  '日':'晴絲入院，日暖花明','柳':'柳絲低垂，春風細細','亭':'牡丹亭畔，花影相迎',
+  '松':'松色沉碧，日影徐移','桐':'桐陰滿砌，風過葉明','山':'湖山石畔，苔色新青','池':'魚戲粼粼，春水皆活'};
+const GUIDE_ORDER=['日','柳','山','松','桐','亭','池'];
+const GUIDE_LABEL={日:'春日',柳:'柳邊',山:'湖山石',松:'松下',桐:'桐陰',亭:'牡丹亭',池:'池館'};
+const GUIDE_STOPS={
+  日:{x:8.9,y:2.3,r:2.0,card:{label:'遊園 · 春日',title:'先是晴絲，從閒庭院裡輕輕吹來',body:'「裊晴絲吹來閒庭院，搖漾春如線。」麗娘抬頭時，日色正暖，花枝和衣袖都被春風牽動。',action:'她們在日光下站定；園中的第一處景正在顯形。'}},
+  柳:{x:3.55,y:3.1,r:1.45,card:{label:'遊園 · 柳邊',title:'柳絲一動，麗娘的腳步便慢了',body:'春香先看見滿樹青翠，麗娘卻留心每一根細條怎樣垂落、怎樣隨風。她第一次知道，春色也藏在這樣小的動靜裡。',action:'柳枝、柳葉與絲條會先安定，隨後再看真「柳」字。'}},
+  山:{x:3.45,y:6.75,r:1.75,card:{label:'遊園 · 湖山石',title:'石根的苔色，也沒有逃過她的眼睛',body:'「青山啼紅了杜鵑。」湖山石不開花，罅隙和石根卻含著濕潤的新綠；麗娘蹲下細看，春香在旁指認花聲。',action:'石、苔與山形先從亂字中定下來。'}},
+  松:{x:6.05,y:6.05,r:1.35,card:{label:'遊園 · 松下',title:'松針把滿園明色壓深了一筆',body:'花木繁盛處，松色顯得格外沉靜。日影穿過針葉落在地上，春香聽見枝間風響，麗娘看那片影子慢慢挪動。',action:'松下的字影正在聚攏。'}},
+  桐:{x:9.55,y:6.1,r:1.35,card:{label:'遊園 · 桐陰',title:'桐葉接住了高處的風',body:'桐葉比花枝舒展，風過時一面亮、一面暗。麗娘從葉隙望回園中，才看出亭、柳、山石彼此相望。',action:'桐陰先明，隨後看真「桐」字。'}},
+  亭:{x:11.45,y:4.55,r:2.35,card:{label:'遊園 · 牡丹亭',title:'到亭下，滿園春色才有了遠近',body:'柱、欄、簷、階把花影分成幾層。春香扶欄報花名，麗娘循階慢看；從亭中望出去，柳色、山石與池館都入了一幅園景。',action:'亭的構件與欄邊群芳會先安定，再看真「亭」字。'}},
+  池:{x:12.0,y:7.0,r:2.8,full:true,card:{label:'遊園 · 池畔',title:'她們到池邊時，先醒來的是水',body:'「畫廊金粉半零星，池館蒼苔一片青。」兩人沿池站定，魚、萍、波紋與岸邊苔色先從亂字中顯出，池面也把花木重新照了一遍。',action:'池畔景物已經定下；再等「池」字看真，東牆才會開徑。'}}
+};
 const HN=[..."零一二三四五六七八九"];                   // 汉字数词:进度只说中国话(族规)
 const STORY=[                                          // 一句一幕的剧情推进(白话,给没看过《牡丹亭》的人;按主作品四幕)
   '深閨少女杜麗娘，初見滿園春色 —— 不到園林，怎知春色如許',
@@ -904,7 +969,7 @@ const STORY=[                                          // 一句一幕的剧情�
   '夢醒了，她獨自回到園中，要尋夢裡那個人 —— 卻尋它不得',
   '三年生死兩茫茫，魂魄與書生在人鬼兩端相認 —— 只有愛，能把她喚回'];
 const ENTER_PROMPT=[
-  '移目或移鼠，讓虛墨凝成真字',
+  '先在畫面中央偏右喚醒麗娘與春香',
   '對滿屏亂字吹一口氣，或點按驚夢',
   '看定四壁，再隨麗娘入廊',
   '先看見誰，命途便向誰偏轉'];
@@ -923,11 +988,11 @@ function showActCard(i,permissionReady){               // 统一幕首引:幕号
 const MU=['壹','貳','參','柒'];                         // 四站幕号(对齐八幕总谱:桥=第柒幕);幕号亦不用阿拉伯数字
 const GONG=523.25;                                     // 宫(以 C5 为黄钟);以下皆三分损益生律,非平均律
 const LV={gong:1, shang:9/8, jue:81/64, zhi:3/2, yu:27/16, qgong:2, qshang:9/4};  // 宫 商 角 徵 羽 清宫 清商
-const ANCHOR_NOTE={'月':LV.qshang,'柳':LV.qgong,'亭':LV.yu,'桐':LV.zhi,'松':LV.jue,'山':LV.shang,'池':LV.gong}; // 一物一音·天高地低(月最清,池最沉)
+const ANCHOR_NOTE={'日':LV.qshang,'柳':LV.qgong,'亭':LV.yu,'桐':LV.zhi,'松':LV.jue,'山':LV.shang,'池':LV.gong}; // 一物一音·天高地低(日最清,池最沉)
 const FLOATS=[];                                       // 画面内浮诗
 function pickSoulCh(name){ const pool=[...('魂夢影息'+name)]; return pool[(Math.random()*pool.length)|0]; }
 function wanderSetup(){ for(const k of Object.keys(WANDER)) delete WANDER[k];
-  GUIDE.on=false; GUIDE.target=null; FLOATS.length=0;
+  GUIDE.on=false; GUIDE.done=false; GUIDE.target=null; GUIDE.index=0; GUIDE.phase='idle'; GUIDE.timer=0; FLOATS.length=0;
   XW.on=false; XW.p=0; XW.hold=0; BR.L=false; BR.M=false; BR.T=false; BR.idle=0; BR.threadObserved=false; BR.list.length=0;
   if(cur===2){ const its=items.filter(it=>it.grp==='麗娘');
     if(its.length){ XW.cx0=its.reduce((s,it)=>s+it.x,0)/its.length; XW.cy0=its.reduce((s,it)=>s+it.y,0)/its.length; } }
@@ -950,33 +1015,72 @@ function wanderWake(k){ const w=WANDER[k]; if(!w||w.on) return; w.on=true; w.eas
     ch:pickSoulCh(k), al:0.22+Math.random()*0.3, fs:T7*(0.8+Math.random()*0.5)});
   Sound.bell(GONG*LV.jue,0.07);                        // 魂醒一记轻磬(角)
   const ws=Object.values(WANDER);
-  if(cur===0 && ws.length===2 && ws.every(v=>v.on)){ GUIDE.on=true;
-    setHint('〔壹〕一園春 · 二人魂醒，結伴遊園 —— 她們駐足之處，字會自己看真；你也可親自以目點亮。'); }
-}
-function guideTick(dt){                                // 行脚:走向最近未亮锚字,站定旁侧等它被看真
-  if(!GUIDE.on) return;
-  if(!GUIDE.target || GUIDE.target.c>0.97){              // 看真到十成才换下一处(0.8 就走会把字撂在乱码上)
-    GUIDE.target=null; let bd=1e9;
-    for(const it of items){ if(!it.anc||it.c>0.97) continue;
-      const d=(it.x-GUIDE.x)**2+(it.y-GUIDE.y)**2; if(d<bd){ bd=d; GUIDE.target=it; } }
+  if(cur!==0) return;
+  const card=actOneWakeCard();
+  if(ws.length===2 && ws.every(v=>v.on)){
+    GUIDE.on=true; GUIDE.done=false; GUIDE.index=0; GUIDE.phase='intro'; GUIDE.timer=0; GUIDE.target=null;
+    NARRATIVE.fallbackCard=null; setActPhase('二人遊園'); setEventNarrative(card,5200,3);
+  }else{
+    NARRATIVE.fallbackCard=card; setEventNarrative(card,5200,3);
   }
-  const t=GUIDE.target;
-  if(t){ const dx=GUIDE.x-t.x, dy=GUIDE.y-t.y, dd=Math.hypot(dx,dy)||1;
-    const sx=t.x+dx/dd*1.15, sy=t.y+dy/dd*0.85;        // 落脚点:锚字旁侧,不压字
-    const vx=sx-GUIDE.x, vy=sy-GUIDE.y, vd=Math.hypot(vx,vy);
-    const sp=Math.min(0.6, vd*0.8);                    // 渐近渐慢,似步非步
-    if(vd>0.04){ GUIDE.x+=vx/vd*sp*dt; GUIDE.y+=vy/vd*sp*dt; }
-    if(vd<0.35){ GUIDE.settle=(GUIDE.settle||0)+dt;    // 驻足看真:二人到了,字被她们慢慢点亮(观众亲点更快)
-      if(GUIDE.settle>1.2) t.c=Math.min(1, t.c+dt*0.09); }
-    else GUIDE.settle=0; }
+}
+function revealGuideArea(target,cfg){
+  for(const it of items){
+    if(it===target||it.anc||it.grp==='麗娘'||it.grp==='春香') continue;
+    if(Math.hypot(it.x-target.x,it.y-target.y)<cfg.r) it.c=Math.max(it.c,cfg.full?1:0.88);
+  }
+}
+function guideTarget(){
+  const name=GUIDE_ORDER[GUIDE.index];
+  GUIDE.target=items.find(it=>it.anc&&it.text===name)||null;
+  return GUIDE.target;
+}
+function guideAnchorLore(target){
+  const key={日:'sun',柳:'willow',亭:'pavilion',松:'trees',桐:'trees',山:'rock',池:'pond'}[target.text];
+  const next=GUIDE_ORDER[GUIDE.index+1];
+  const action=next
+    ? '「'+target.text+'」已看真。解說讀完，春香會領麗娘往'+GUIDE_LABEL[next]+'去。'
+    : '「池」已看真。兩人在池邊站定；解說讀完，東牆缺處才會顯出一徑。';
+  if(key) showLore(key,true,action,5200);
+}
+function finishGuideStop(){
+  GUIDE.index++;
+  if(GUIDE.index>=GUIDE_ORDER.length){
+    GUIDE.done=true; GUIDE.target=null; GUIDE.phase='done'; setActPhase('遊園已畢'); gateOpen(); return;
+  }
+  GUIDE.target=null; GUIDE.phase='walking'; GUIDE.timer=0;
+}
+function guideTick(dt){                                // 固定戏路:日→柳→山→松→桐→亭→池
+  if(!GUIDE.on||GUIDE.done) return;
+  GUIDE.timer+=dt;
+  if(GUIDE.phase==='intro'){
+    if(GUIDE.timer<5.2) return;
+    GUIDE.timer=0; GUIDE.phase='walking';
+  }
+  const name=GUIDE_ORDER[GUIDE.index], cfg=GUIDE_STOPS[name], t=GUIDE.target||guideTarget();
+  if(!cfg||!t){ finishGuideStop(); return; }
+  if(GUIDE.phase==='walking'){
+    const vx=cfg.x-GUIDE.x, vy=cfg.y-GUIDE.y, vd=Math.hypot(vx,vy);
+    const sp=Math.min(0.82,vd*0.92);
+    if(vd>0.05){ GUIDE.x+=vx/vd*sp*dt; GUIDE.y+=vy/vd*sp*dt; }
+    if(vd<0.18){
+      GUIDE.phase='arrival'; GUIDE.timer=0; revealGuideArea(t,cfg);
+      setActPhase('遊園 · '+GUIDE_LABEL[name]); setEventNarrative(cfg.card,3900,3);
+    }
+  }else if(GUIDE.phase==='arrival'){
+    if(GUIDE.timer>=3.9){ GUIDE.phase='focus'; GUIDE.timer=0; }
+  }else if(GUIDE.phase==='focus'){
+    t.c=Math.min(1,t.c+dt*0.18);
+    if(t.c>=0.97){ t.c=1; revealGuideArea(t,cfg); guideAnchorLore(t); GUIDE.phase='pause'; GUIDE.timer=0; }
+  }else if(GUIDE.phase==='pause'&&GUIDE.timer>=5.2) finishGuideStop();
   GUIDE.x=Math.min(14.2,Math.max(1.8,GUIDE.x)); GUIDE.y=Math.min(7.4,Math.max(2.0,GUIDE.y));
 }
 function onAnchorLit(it){                              // 一字看真:应景短句浮起 + 此物固有之磬(一次性,_lit 闩死不重响)
   if(cur!==0) return;
   Sound.bell(GONG*(ANCHOR_NOTE[it.text]||LV.zhi), 0.09);
   const v=ANCHOR_VERSE[it.text]; if(v) FLOATS.push({x:it.x, y:it.y-0.55, txt:v, t:0});
-  const key={月:'moon',柳:'willow',亭:'pavilion',松:'trees',桐:'trees',山:'rock',池:'pond'}[it.text];
-  if(key) showLore(key,true,'「'+it.text+'」已看真；可再移近它聽一記專屬磬音，解說讀完後再繼續尋字。');
+  const key={日:'sun',柳:'willow',亭:'pavilion',松:'trees',桐:'trees',山:'rock',池:'pond'}[it.text];
+  if(key&&(!GUIDE.on||GUIDE.done)) showLore(key,true,'「'+it.text+'」已看真；可再移近它聽一記專屬磬音。');
 }
 function wanderTick(dt){
   guideTick(dt);
@@ -1054,6 +1158,7 @@ function drawItems(dt){
     if(gFresh && !GAZE.calibrating && !trans && gGain>0.001){   // 目光=第二只观测之手:看哪亮哪(与鼠标取并);扫视不点亮,凝视/驻留才算
       const RG=BRUSH*1.05, dg=Math.hypot(hsx-GAZE.sx,hsy-GAZE.sy);   // 判定区≈手大小;视点已稳,无须再放大
       if(dg<RG){ const t2=1-dg/RG; infl=Math.max(infl, t2*t2*(3-2*t2)*gGain); } }   // 乘驻留增益:看着不动会一路推到点亮(不必钉死一个像素)
+    if(cur===0&&!actOneBothAwake()&&it.grp!=='麗娘'&&it.grp!=='春香') infl=0; // 入园先见人:二人未同醒前，随机指针不能抢先点亮园景
     if(cur===3 && it.grp==='纏絲'){                  // 幽媾牵丝:相照之前丝不可牵;相照之后须小圈凝视沿丝而行
       if(!(BR.L&&BR.M)){ infl=0; it.c=Math.min(it.c,0.15); }
       else {
@@ -1086,7 +1191,7 @@ function drawItems(dt){
     ctx.font=`${fs}px ${SERIF}`;
     const r=COLD[0]+(it.trgb[0]-COLD[0])*c, gg=COLD[1]+(it.trgb[1]-COLD[1])*c, b=COLD[2]+(it.trgb[2]-COLD[2])*c;
     let aa=0.2+(it.tA-0.2)*c;
-    if(GUIDE.on && it===GUIDE.target) aa=Math.min(1, aa+0.16+0.16*Math.sin(gateT*2.6));  // 她们所候之字,微微呼吸
+    if(GUIDE.on&&!GUIDE.done&&it===GUIDE.target) aa=Math.min(1, aa+0.16+0.16*Math.sin(gateT*2.6));  // 她们将看之字,微微呼吸
     if(it.grp==='夢中人'&&cur===2&&XW.p>0.7) aa=Math.min(1, aa+0.10+0.10*Math.sin(gateT*1.8));  // 廊深人影:金边微醒
     ctx.fillStyle=`rgba(${r|0},${gg|0},${b|0},${aa})`;
     if(c>0.25){ ctx.shadowColor='rgba(0,0,0,0.5)'; ctx.shadowBlur=fs*0.16*c; } else ctx.shadowBlur=0;
@@ -1178,10 +1283,8 @@ function gateOpen(){ if(gateReady) return; gateReady=true; Sound.bell(GONG,0.1);
   else if(cur===2) showLore('dreamman',true,PASS[cur].hint);
   else setHint('〔'+MU[cur]+'〕'+STATIONS[cur].name+' —— '+PASS[cur].hint,8000,4); }
 function checkGoal(st,dt){
-  if(cur===0){                                        // 一园春:七大锚字尽亮
-    if(st.ancTot>0 && st.ancLit>=st.ancTot){ gateOpen(); return; }
-    if(st.ancLit!==lastProg){ lastProg=st.ancLit;
-      setHint('〔壹〕一園春 · '+(st.ancLit===0?'七字皆寐。先看真麗娘與春香，或親自點亮「月柳亭松桐山池」。':'七字已明其'+HN[st.ancLit]+'，餘字仍在疊加。'),2600,1); }
+  if(cur===0){                                        // 一园春:二人走完固定戏路，池字看真后才开径
+    if(GUIDE.done) gateOpen();
   } else if(cur===3){                                 // 糾纏橋(幽媾·回生)：先看見誰、是否牽絲，每次只生成一扇命途門
     const gl=(st.g['麗娘']||0)>0.85, gm=(st.g['柳夢梅']||0)>0.85;
     if(gl&&!BR.L){ BR.L=true; Sound.bell(GONG*LV.yu,0.09); showLore('liyang',true,'麗娘已明，西岸先浮「夢」；若繼續看見柳夢梅，命途仍會改寫。'); }
