@@ -8,10 +8,11 @@
 
 交互流程:
   1. 入园(轻触,激活 AudioContext;可选麦克风)。
-  2. 生命值 V 自 1 持续衰减:基础 -0.012/s + 雨密附加(最高 +0.010/s)。
-     指针悬于焰侧(柔光圈触及焰心)= 护焰:衰减减半(下限 -0.005/s)、
+  2. 生命值 V 自 1 持续衰减:基础 -0.005/s + 雨密附加(最高 +0.006/s)。
+     指针悬于焰侧时化为一只定住的手 = 护焰:只保留缓慢的基础衰减、
      焰亮且肉眼可见地稳住(摇曳/明灭幅度随 protectK 收敛)、麗娘卧影回暖
      —— 但 V 仍单调下行,救不回来。
+     手移开后先有 1.5s 预警摇曳,至 3.5s 才吃满额外衰减;回护即止住额外下降。
   2b. 自主风:守烛期每 15–25s 随机一阵风(焰猛晃,V -0.02~0.035);
      护焰=挡风,风损 ×(1-0.6×protectK)——"我在场,焰稳;不在场,险些灭"。
   3. 麦克风(可选,入园遮罩有说明):吹气=一阵风,V 骤减 0.06×挡风(不应期 2s);
@@ -24,12 +25,13 @@
   6. 点「燈」或 → 键:本幕终(離魂)→ 淡出回开场遮罩。R = 重新守烛。
 
 参数表:
-  V 衰减       基础 0.012/s;雨密附加 0.010×rainK;护焰 = max(0.005, 半衰)
+  V 衰减       护住时 0.005+0.006×rainK;离手先摇后衰,额外衰减以 1.5–3.5s 平滑升至
+               0.065+0.055×(1-V)/s;回护立即止住额外衰减,V 始终只降不升
   自主风       间隔 15–25s(首阵 12–20s,提前入题);损失 (0.02+rnd×0.015)×(1-0.6×protectK)
   rainK        min(1, T/70 + (1-V)×0.25) —— 雨随时间与衰亡渐密
   吹气         RMS:PUFF 0.10 立断,骤减 0.06×(1-0.6×protectK),不应期 2s;
                TH 0.045 持续 0.22s = 轻风(焰晃不减命);空格=轻风 0.03×挡风(不应期 1.5s,防连发)
-  护焰判定     指针距焰心 < BRUSH(短边×0.2)
+  护焰判定     指针距焰尖旁 < BRUSH×1.45(短边×0.2);靠近后显示固定姿态的护焰手
   凝定度 c     柔光圈内按 dt 归一上升(60fps 时 0.12),只升不降;c≥0.8 显真字(同主作品);
                月 c 封顶 0.5(雨夜无月,观测不出——"月落重生"的前提);题词成组判明(组均>0.6 整句立)
   烛灭节奏     0.45s 焰熄 → 字粒散落+魂粒升 → 2.6s 后金句,gateA 再 2.6s;verse 90s 无人自动谢幕
@@ -143,7 +145,7 @@
     <div class="sub">第 伍 幕</div>
     <div class="big">離 魂</div>
     <div class="story">中秋雨夜，燈將盡，人將逝 —— 她終是為情而死</div>
-    <div class="legend">移指至燭焰上方，以荷守火；麥克風可選</div>
+    <div class="legend">把手移到燭焰旁，替它擋風；麥克風可選</div>
     <button class="blink" id="enterBtn" type="button">進 入 此 幕</button>
   </div>
 <script>
@@ -284,8 +286,8 @@ const LV={gong:1, shang:9/8, jue:81/64, zhi:3/2, yu:27/16, qgong:2, qshang:9/4};
 /* phase: guard(守烛) → dying(烛灭·字散·魂升) → verse(金句·燈门) → end(谢幕) */
 let phase='guard', running=false;
 let V=1, T=0, rainK=0, dieT=0, fellDone=false, verseT=0, gateA=0, endT=0, gateT=0;
-let gust=0, protectK=0, protecting=false, warmL=0, hintStage=0, blewOnce=false, ended=false;
-const SH={on:false, x:0, y:0, r:0};                       // 遮挡(伞):跟着鼠标走,移近烛焰才成形——指针即遮挡
+let gust=0, protectK=0, protecting=false, unshieldedFor=0, warmL=0, hintStage=0, blewOnce=false, ended=false;
+const HAND={on:false, x:0, y:0, r:0};                     // 固定姿态的护焰手:跟随指针,靠近焰侧才显形
 let windT=12+Math.random()*8, verseHinted=false;          // 自主风倒计时(首阵 12–20s 提前入题,续阵 15–25s,见头注) / verse 提示只发一次
 let spaceCD=0, protectedOnce=false, tiMing=false, MOON=null; // 空格不应期 / 首次护焰回执 / 题词已判明 / 月(随生命西沉)
 let mouseX=-1e4, mouseY=-1e4, mouseOver=false, last=performance.now();
@@ -307,7 +309,7 @@ function setHint(t){ const h=document.getElementById('hint');               // �
 function setLore(title,body,action,label){ clearTimeout(hintTmr); writeNarrative(label||'戲中 · 鬧殤',title,body,action); }
 function setKeys(t){ document.getElementById('keys').textContent=t; }
 const KEYS0='R 重新守燭', KEYS1='R 重新守燭　·　→ 點「燈」出幕';   // 键位分阶段:守烛时场上无「燈」
-const HINT0='中秋雨夜 —— 移指至燭焰上方，以一葉荷為它遮雨；你守著，它便亮著，一旦松手，風雨立時欺上，燈頃刻將盡';   // 动作与代价一次讲清;幕名交给 seal 与款识
+const HINT0='中秋雨夜 —— 把手移到燭焰旁替它擋風。手在，焰便定；手離，焰先搖，再慢慢暗下，尚可回護';   // 动作、反馈与补救窗口一次讲清;幕名交给 seal 与款识
 
 /* ====== 声 · 雨夜(底噪极轻,宁静勿吵) ====== */
 const Sound={ ac:null, master:null, rainGain:null, started:false, alive_:false, timers:[], rainK:0, near:false, noiseBuffers:{},
@@ -384,7 +386,7 @@ const MIC={ on:false, requesting:false, raw:0, analyser:null, source:null, strea
       else this.hold=Math.max(0,this.hold-dt*1.2); } } };
 function gustBlow(k){ if(phase!=='guard') return; k=k==null?1:k;    // k=1 吹气 / 0.5 空格轻风
   gust=Math.max(gust,0.5+0.5*k); V=Math.max(0,V-0.06*k*(1-0.6*protectK)); Sound.gustWind(0.05*Math.max(0.5,k)); // 护焰=挡风
-  if(!blewOnce){ blewOnce=true; setLore('你也是這場風雨','原作以「風搖長命燈」寫麗娘病勢；在裝置裡，觀眾的氣息也會成為外界擾動。觀看不只救護，也可能傷害。','重新把荷葉移到焰尖上方。'); }   // 自拟
+  if(!blewOnce){ blewOnce=true; setLore('你也是這場風雨','原作以「風搖長命燈」寫麗娘病勢；在裝置裡，觀眾的氣息也會成為外界擾動。觀看不只救護，也可能傷害。','快把手移回燭焰旁。'); }   // 自拟
   if(V<=0) die(); }
 function gustSoft(){ if(phase!=='guard') return; gust=Math.max(gust,0.5); Sound.gustWind(0.02); } // 只晃不罚
 function ambientGust(){ if(phase!=='guard') return;                 // 自主风:守烛期的节拍器,也让"护焰=挡风"可感
@@ -414,19 +416,19 @@ function endScene(){ if(phase!=='verse'||gateA<0.15||ended) return; ended=true; 
 function resetScene(){                                    // R:重新守烛(从头再守一回)
   compose(); initQuantum(); SOULS.length=0;
   phase='guard'; V=1; T=0; rainK=0; dieT=0; fellDone=false; verseT=0; gateA=0; endT=0;
-  gust=0; protectK=0; warmL=0; hintStage=0; blewOnce=false; ended=false;
+  gust=0; protectK=0; unshieldedFor=0; warmL=0; hintStage=0; blewOnce=false; ended=false;
   spaceCD=0; protectedOnce=false; tiMing=false;
   windT=12+Math.random()*8; verseHinted=false; setKeys(KEYS0);
   if(Sound.ac && running) Sound.alive();                  // 谢幕回遮罩(running=false)不再起雨,幕间归静
   if(running&&Sound.ac&&!MIC.on) MIC.request();
-  if(running) setLore('長命燈只能延緩，不能回升','《鬧殤》以風雨和長命燈寫病中麗娘。此幕的生命值只降不升：陪伴有效，但不能把死亡改寫成可撤銷操作。',HINT0); }
+  if(running) setLore('守住長命燈','《鬧殤》的中秋雨夜，麗娘病中守著一盞將盡的燈。手掌可以替它擋一時風雨，卻不能叫燭身重新長回去。',HINT0); }
 
 /* ====== 分级提示(V 单调下行,只会逐级触发;首级=守烛前段微事件,填空窗) ====== */
 function hints(){ let st=0; if(V<0.85) st=1; if(V<0.7) st=2; if(V<0.45) st=3; if(V<0.22) st=4;
   if(st>hintStage){ hintStage=st;
     if(st===1){ setHint('她睡淺了'); Sound.bell(GONG*LV.jue,0.025); }   // 一记极轻角磬:系统活着,你做的有效
     if(st===2) setHint('雨密了，守著她的燭');
-    if(st===3) setHint('焰在抖，你的目光是它僅剩的暖');
+    if(st===3) setHint('焰在抖，把手留在它身旁');
     if(st===4) setHint('守不住的，陪它到最後'); } }
 
 /* ====== 绘制 ====== */
@@ -523,7 +525,7 @@ function newStreak(anyY){ return { x:Math.random()*W, y:anyY?Math.random()*H:-30
 function drawRain(dt){                                    // 雨:1px 竖细线短划,密度随 rainK 渐增
   const target=(phase==='guard'&&running)?(30+190*rainK):(phase==='dying'?80:(phase==='verse'||phase==='end')?8:22); // 烛灭后只余残滴,合于声场已塌
   while(RAIN.length<target) RAIN.push(newStreak(RAIN.length<30));
-  const fx=SH.x, fy=SH.y, RS=(phase==='guard'&&SH.on)?SH.r:0;   // 伞心=鼠标(遮挡跟手);穹弧本体在 drawCursor 画
+  const fx=HAND.x, fy=HAND.y, RS=(phase==='guard'&&HAND.on)?HAND.r:0; // 手掌所在处形成避雨的小片空隙
   ctx.lineWidth=1;
   for(let i=RAIN.length-1;i>=0;i--){ const r=RAIN[i]; r.y+=r.sp*dt;
     if(r.y>H+40){ if(RAIN.length>target){ RAIN.splice(i,1); continue; }   // 超额雨丝下完即收,不半空截断
@@ -531,7 +533,7 @@ function drawRain(dt){                                    // 雨:1px 竖细线�
     if(RS>6){ const dx=r.x-fx, dy=r.y-fy;
       if(dy>-RS && dy<RS*0.7 && Math.abs(dx)<RS){ const d=Math.hypot(dx,dy);
         if(d<RS){ r.x+=(dx>=0?1:-1)*(RS-d)*dt*3.4;                        // 顺穹面滑开:雨从遮挡两侧淌下
-          ctx.strokeStyle=`rgba(168,192,184,${(r.a*0.18).toFixed(3)})`;   // 伞下只余微痕
+          ctx.strokeStyle=`rgba(168,192,184,${(r.a*0.18).toFixed(3)})`;   // 掌侧只余微痕
           ctx.beginPath(); ctx.moveTo(r.x,r.y); ctx.lineTo(r.x,r.y+r.len*0.4); ctx.stroke(); continue; } } }
     ctx.strokeStyle=`rgba(168,192,184,${r.a})`;
     ctx.beginPath(); ctx.moveTo(r.x,r.y); ctx.lineTo(r.x,r.y+r.len); ctx.stroke(); }
@@ -567,29 +569,35 @@ function drawVerse(){                                     // 金句徐现,「燈
   ctx.fillStyle=`rgba(224,193,120,${(0.5*va).toFixed(3)})`;
   { let ty=y+fs*0.35; for(const ch of '鬧殤·尾聲'){ ctx.fillText(ch,tx,ty); ty+=tfs*1.15; } }
 }
-function drawCursor(){                                    // 自绘指针:柔光圈+小金环;移近烛焰即化为"遮挡"(一道穹弧伞)
+function drawCursor(){                                    // 自绘指针:柔光圈+小金环;移近烛焰即化为固定姿态的护焰手
   if(!mouseOver) return;
   if(phase==='guard'){
-    if(SH.on){                                           // 指针即遮挡:一片荷叶覆于焰上(雨夜以荷遮烛)——叶缘微皱、放射叶脉、随焰轻倾,非规整圆弧
-      const RS=SH.r, aA=0.24+0.4*protectK, gA=(0.14+0.24*protectK);
-      const tilt=Math.sin(gateT*0.7)*0.05+ (SH.x-MX(FL.x))*0.0006;   // 随风轻倾(并略随手偏)
-      const a0=Math.PI*1.0, a1=Math.PI*2.0, segs=44;
-      const rAt=a=>RS*(1+0.06*Math.sin(a*5.0+0.6)+0.03*Math.sin(a*9.0));   // 荷叶皱边(正弦叠加,非完美弧)
-      ctx.save(); ctx.translate(mouseX,mouseY); ctx.rotate(tilt);
-      ctx.strokeStyle=`rgba(150,184,150,${aA.toFixed(3)})`; ctx.lineWidth=1.6; ctx.lineJoin='round';
-      ctx.beginPath();                                                 // 叶缘
-      for(let i=0;i<=segs;i++){ const a=a0+(a1-a0)*i/segs, r=rAt(a), x=Math.cos(a)*r, y=Math.sin(a)*r*0.86;
-        i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+    if(HAND.on){
+      const RS=HAND.r, aA=0.28+0.46*protectK;
+      ctx.save(); ctx.translate(mouseX,mouseY); ctx.rotate(-0.12);
+      ctx.strokeStyle=`rgba(224,193,120,${aA.toFixed(3)})`; ctx.lineWidth=Math.max(1.2,RS*0.025); ctx.lineCap='round'; ctx.lineJoin='round';
+      ctx.beginPath();                                                   // 手腕与掌缘，固定成向右拢住火焰的姿态
+      ctx.moveTo(-RS*0.88,RS*0.34);
+      ctx.bezierCurveTo(-RS*0.58,RS*0.28,-RS*0.42,RS*0.08,-RS*0.36,-RS*0.08);
+      ctx.bezierCurveTo(-RS*0.20,-RS*0.50,RS*0.24,-RS*0.66,RS*0.60,-RS*0.46);
+      ctx.bezierCurveTo(RS*0.78,-RS*0.36,RS*0.76,-RS*0.18,RS*0.58,-RS*0.12);
+      ctx.bezierCurveTo(RS*0.26,-RS*0.02,RS*0.12,RS*0.18,RS*0.02,RS*0.38);
+      ctx.bezierCurveTo(-RS*0.08,RS*0.58,-RS*0.34,RS*0.68,-RS*0.88,RS*0.62);
       ctx.stroke();
-      const apY=-RS*0.14;                                              // 叶心(叶脉与叶柄交于此)
-      ctx.strokeStyle=`rgba(150,184,150,${(aA*0.55).toFixed(3)})`; ctx.lineWidth=1;
-      for(let k=0;k<=6;k++){ const a=a0+(a1-a0)*k/6, r=rAt(a);          // 放射叶脉
-        ctx.beginPath(); ctx.moveTo(0,apY); ctx.lineTo(Math.cos(a)*r, Math.sin(a)*r*0.86); ctx.stroke(); }
-      ctx.strokeStyle=`rgba(150,184,150,${aA.toFixed(3)})`; ctx.lineWidth=1.5;   // 叶柄(短,向上;像被一只手擎着)
-      ctx.beginPath(); ctx.moveTo(0,apY); ctx.quadraticCurveTo(RS*0.04,apY-RS*0.16, -RS*0.02,apY-RS*0.30); ctx.stroke();
+      for(let k=0;k<4;k++){                                             // 四指并拢，姿态不随风摆动
+        const y=-RS*(0.46-k*0.095);
+        ctx.beginPath();
+        ctx.moveTo(-RS*(0.22+k*0.025),y+RS*0.12);
+        ctx.quadraticCurveTo(RS*(0.18+k*0.07),y-RS*0.14,RS*(0.58-k*0.035),y+RS*0.02);
+        ctx.stroke();
+      }
+      ctx.beginPath();                                                   // 拇指在下，围成可见的风口
+      ctx.moveTo(-RS*0.34,RS*0.02);
+      ctx.quadraticCurveTo(RS*0.06,RS*0.06,RS*0.20,RS*0.34);
+      ctx.stroke();
       ctx.restore();
-      const g=ctx.createRadialGradient(mouseX,mouseY,0,mouseX,mouseY,RS*0.9);   // 叶下一团暖荫
-      g.addColorStop(0,`rgba(190,200,150,${(0.04+0.09*protectK).toFixed(3)})`); g.addColorStop(1,'rgba(190,200,150,0)');
+      const g=ctx.createRadialGradient(mouseX,mouseY,0,mouseX,mouseY,RS*0.9);
+      g.addColorStop(0,`rgba(224,193,120,${(0.035+0.075*protectK).toFixed(3)})`); g.addColorStop(1,'rgba(224,193,120,0)');
       ctx.fillStyle=g; ctx.fillRect(mouseX-RS,mouseY-RS,RS*2,RS*2);
     } else {
       const g=ctx.createRadialGradient(mouseX,mouseY,0,mouseX,mouseY,BRUSH*0.62);
@@ -630,26 +638,27 @@ function render(dt){
   if(phase==='guard' && running){
     T+=dt; spaceCD=Math.max(0,spaceCD-dt);
     rainK=Math.min(1, T/70 + (1-V)*0.25);
-    /* 遮挡=你的在场,跟着鼠标走;须小心罩住焰尖(焰尖随风轻摆,手要跟着护),甜区窄,稍一松手便护不住 */
+    /* 手掌=你的在场,跟着指针走;焰尖会随风摆,但判定留出足够回护余量 */
     const fxS=MX(FL.x), fyS=MY(FL.y+(1-V)*0.45);
     const lean=(Math.sin(gateT*0.85)*0.16+gust*0.5)*(0.5+0.6*(1-protectK));  // 焰尖随风摆(没护住摆得更凶)——手得跟着挪
     const tipX=fxS+lean*scale, tipY=fyS-BRUSH*0.55;       // 要护的是焰尖(焰心上方一点)
     const dM=Math.hypot(mouseX-tipX, mouseY-tipY);
-    SH.on = mouseOver && dM < BRUSH*1.9;                  // 移近焰尖才成形(收窄)
+    HAND.on = mouseOver && dM < BRUSH*1.75;               // 移近焰尖才显出护焰手
     let q=0;
-    if(SH.on) q=Math.max(0, 1-Math.max(0,dM-BRUSH*0.28)/(BRUSH*1.0));        // 甜区窄:焰尖 0.28 半径内满护,1.3 外为零——必须小心罩准
-    if(mouseY>fyS+BRUSH*0.2) q=0;                         // 落到焰下=挡不住自上而下的雨
+    if(HAND.on) q=Math.max(0, 1-Math.max(0,dM-BRUSH*0.34)/(BRUSH*1.1));       // 焰旁满护，边缘渐退
     protecting = q>0.05;
     protectK += (q-protectK)*Math.min(1,dt*5);            // 跟手紧:护几分即时可感
-    SH.x=mouseX; SH.y=mouseY; SH.r=scale*(0.42+0.3*Math.min(1,protectK*1.1));  // 穹弧收小:一只手掌覆住焰,而非大半个天
+    HAND.x=mouseX; HAND.y=mouseY; HAND.r=scale*(0.52+0.22*Math.min(1,protectK*1.1));
     warmL += ((protecting?0.55*protectK:0)-warmL)*Math.min(1,dt*0.5);
-    if(protectK>0.5 && !protectedOnce){ protectedOnce=true; setLore('一葉荷替你把雨分開','荷葉是裝置新增的交互物，不冒充原作道具；它把「守著她」變成可見的手勢，也讓保護與徒勞同時成立。','焰穩了些，但仍在慢慢衰減。'); }  // 首次护焰回执:点明"你是伞"
+    if(protectK>0.5 && !protectedOnce){ protectedOnce=true; setLore('手在，焰便定些','掌心攏住風口，火焰從急顫裡緩下來。燭身仍在一寸寸變短，卻不再被風雨催逼。','若焰搖得厲害，把手移回來；尚有回護的餘地。'); }
     if(MOON) MOON.y=MOON.my0+(1-V)*1.6;                   // 月随生命西沉,烛灭恰落尽——金句"月落"观众自己接上
     if(!tiMing){ let s=0,n=0; for(const it of items) if(it.grp==='題詞'){s+=it.c;n++;}
       if(n&&s/n>0.6){ tiMing=true; for(const it of items) if(it.grp==='題詞') it.c=1; } } // 题词成组判明:扫半即整句立,不留锯齿
-    let dec=0.006+0.010*rainK;                            // 护住时:慢衰(雨愈密愈快,仍不可逆——徒劳)
-    const neglect=1-protectK;                             // 疏于看护的程度
-    dec += neglect*neglect*(0.22+0.18*(1-V));             // 手一移开:衰减立时陡增,且越弱衰越快——立竿见影,约三四秒灯尽(幕中段更快),幕提前结束
+    if(protectK>0.5) unshieldedFor=0;
+    else unshieldedFor+=dt*(1-protectK);
+    let dec=0.005+0.006*rainK;                            // 护住时只余缓慢、不可逆的基础衰减
+    const exposure=Math.max(0,Math.min(1,(unshieldedFor-1.5)/2.0));
+    dec += exposure*exposure*(0.065+0.055*(1-V));         // 离手先摇1.5s，再缓慢转暗；回护即撤掉额外衰减
     V=Math.max(0,V-dec*dt);
     gust*=Math.pow(0.2,dt);
     windT-=dt; if(windT<=0){ windT=15+Math.random()*10; ambientGust(); }   // 自主风:守烛期不再真空
@@ -711,7 +720,7 @@ function enter(silent){
   document.getElementById('keys').classList.add('show');
   if(!silent){ Sound.start(); Sound.alive(); if(!MIC.on) MIC.request(); setTimeout(()=>Sound.bell(GONG*LV.zhi,0.055),340); }   // 入幕一记磬(徵)
   if(!running || phase!=='guard'){ resetScene(); }
-  running=true; spaceCD=0.8; setLore('長命燈只能延緩，不能回升','《鬧殤》以風雨和長命燈寫病中麗娘。此幕的生命值只降不升：陪伴有效，但不能把死亡改寫成可撤銷操作。',HINT0);              // 入园余波 0.8s 内忽略空格风(防"空格入园"顺手吹灭)
+  running=true; spaceCD=0.8; setLore('守住長命燈','《鬧殤》的中秋雨夜，麗娘病中守著一盞將盡的燈。手掌可以替它擋一時風雨，卻不能叫燭身重新長回去。',HINT0);              // 入园余波 0.8s 内忽略空格风(防"空格入园"顺手吹灭)
 }
 document.getElementById('enterBtn').addEventListener('click', ()=>enter(false));
 window.addEventListener('keydown', ev=>{

@@ -37,7 +37,7 @@
   .status{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--mist)}
   .status-dot{width:7px;height:7px;border-radius:50%;background:var(--water);box-shadow:0 0 12px rgba(102,141,130,.55)}
   .mode{font-family:var(--serif);font-size:14px;color:var(--gold)}
-  .list-head,.route{display:grid;grid-template-columns:54px minmax(150px,.9fr) minmax(240px,1.5fr) 112px 44px;align-items:center;column-gap:16px}
+  .list-head,.route{display:grid;grid-template-columns:54px minmax(150px,.9fr) minmax(240px,1.5fr) 44px;align-items:center;column-gap:16px}
   .list-head{min-height:44px;border-bottom:1px solid rgba(131,153,143,.2);font-size:11px;color:var(--mist)}
   .route{min-height:68px;border-bottom:1px solid rgba(131,153,143,.18);transition:background-color .14s ease,color .14s ease}
   a.route:hover{background:rgba(102,141,130,.08)}
@@ -46,9 +46,8 @@
   .name{min-width:0;font-family:var(--serif);font-size:19px;color:var(--bone)}
   .name small{display:block;margin-top:4px;font-family:var(--sans);font-size:11px;color:var(--mist)}
   .concept{min-width:0;font-size:13px;line-height:1.5;color:var(--mist)}
-  .source{font-size:11px;color:var(--water)}
   .launch{width:44px;height:44px;display:grid;place-items:center;font-size:18px;color:var(--cinnabar)}
-  .ending{grid-template-columns:54px minmax(150px,.9fr) minmax(240px,1.5fr) 112px minmax(220px,auto);padding:10px 0}
+  .ending{grid-template-columns:54px minmax(150px,.9fr) minmax(240px,1.5fr) minmax(220px,auto);padding:10px 0}
   .fates{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid rgba(131,153,143,.3)}
   .fates a{min-height:44px;padding:0 10px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:13px;color:var(--mist);
     border-left:1px solid rgba(131,153,143,.3);transition:background-color .14s ease,color .14s ease}
@@ -68,7 +67,6 @@
     .list-head{display:none}
     .route,.ending{grid-template-columns:38px minmax(0,1fr) 44px;column-gap:10px;min-height:76px}
     .route .concept{grid-column:2;margin-top:4px;padding-bottom:12px}
-    .route .source{display:none}
     .route .launch{grid-column:3;grid-row:1/3}
     .ending{padding:14px 0}
     .ending .concept{padding-bottom:8px}
@@ -100,31 +98,31 @@
       <div class="status"><span class="status-dot" aria-hidden="true"></span><span id="runtime">正在检查本地运行环境</span></div>
       <div class="mode">调试可跳转 · 正式仍单向</div>
     </div>
-    <div class="list-head" aria-hidden="true"><span>幕</span><span>场景</span><span>交互命题</span><span>实现归属</span><span></span></div>
+    <div class="list-head" aria-hidden="true"><span>幕</span><span>场景</span><span>交互命题</span><span></span></div>
     <section aria-label="八幕测试入口">
       <a class="route" data-scene="1" href="沉浸.html?scene=1" target="_blank" rel="noopener">
-        <span class="no">壹</span><span class="name">一園春<small>遊園</small></span><span class="concept">观测使园林显现；点真七个锚字</span><span class="source">主作品</span><span class="launch" aria-hidden="true">↗</span>
+        <span class="no">壹</span><span class="name">一園春<small>遊園</small></span><span class="concept">观测使园林显现；点真七个锚字</span><span class="launch" aria-hidden="true">↗</span>
       </a>
       <a class="route" data-scene="2" href="沉浸.html?scene=2" target="_blank" rel="noopener">
-        <span class="no">貳</span><span class="name">驚夢臺<small>驚夢</small></span><span class="concept">满屏乱字；吹气后坍缩为一句诗</span><span class="source">主作品</span><span class="launch" aria-hidden="true">↗</span>
+        <span class="no">貳</span><span class="name">驚夢臺<small>驚夢</small></span><span class="concept">满屏乱字；吹气后坍缩为一句诗</span><span class="launch" aria-hidden="true">↗</span>
       </a>
       <a class="route" data-scene="3" href="沉浸.html?scene=3" target="_blank" rel="noopener">
-        <span class="no">參</span><span class="name">尋夢廊<small>尋夢</small></span><span class="concept">定住四面园墙；沿廊寻找梦中人</span><span class="source">主作品</span><span class="launch" aria-hidden="true">↗</span>
+        <span class="no">參</span><span class="name">尋夢廊<small>尋夢</small></span><span class="concept">定住四面园墙；沿廊寻找梦中人</span><span class="launch" aria-hidden="true">↗</span>
       </a>
       <a class="route" data-scene="4" href="沉浸.html?scene=4" target="_blank" rel="noopener">
-        <span class="no">肆</span><span class="name">寫真<small>寫真</small></span><span class="concept">亲手描像；碰见不可克隆之墙</span><span class="source">独立幕</span><span class="launch" aria-hidden="true">↗</span>
+        <span class="no">肆</span><span class="name">寫真<small>寫真</small></span><span class="concept">亲手描像；碰见不可克隆之墙</span><span class="launch" aria-hidden="true">↗</span>
       </a>
       <a class="route" data-scene="5" href="沉浸.html?scene=5" target="_blank" rel="noopener">
-        <span class="no">伍</span><span class="name">離魂<small>鬧殤</small></span><span class="concept">以荷护烛；延缓却无法逆转退相干</span><span class="source">独立幕</span><span class="launch" aria-hidden="true">↗</span>
+        <span class="no">伍</span><span class="name">離魂<small>鬧殤</small></span><span class="concept">以手护烛；松手后先摇、缓灭，仍可回护</span><span class="launch" aria-hidden="true">↗</span>
       </a>
       <a class="route" data-scene="6" href="沉浸.html?scene=6" target="_blank" rel="noopener">
-        <span class="no">陸</span><span class="name">拾畫·叫畫<small>拾畫／玩真</small></span><span class="concept">三声叫画；让不可复制的状态渡回来</span><span class="source">独立幕</span><span class="launch" aria-hidden="true">↗</span>
+        <span class="no">陸</span><span class="name">拾畫·叫畫<small>拾畫／玩真</small></span><span class="concept">三声叫画；让不可复制的状态渡回来</span><span class="launch" aria-hidden="true">↗</span>
       </a>
       <a class="route" data-scene="7" href="沉浸.html?scene=7" target="_blank" rel="noopener">
-        <span class="no">柒</span><span class="name">糾纏橋<small>幽媾·回生</small></span><span class="concept">先看见谁、是否牵丝，决定通往哪一世</span><span class="source">主作品</span><span class="launch" aria-hidden="true">↗</span>
+        <span class="no">柒</span><span class="name">糾纏橋<small>幽媾·回生</small></span><span class="concept">先看见谁、是否牵丝，决定通往哪一世</span><span class="launch" aria-hidden="true">↗</span>
       </a>
       <div class="route ending">
-        <span class="no">捌</span><span class="name">三生路<small>多世界结局</small></span><span class="concept">三条观测路径分别落定为圆、殇、画</span><span class="source">三结局</span>
+        <span class="no">捌</span><span class="name">三生路<small>多世界结局</small></span><span class="concept">三条观测路径分别落定为圆、殇、画</span>
         <span class="fates" aria-label="三生路结局入口">
           <a href="沉浸.html?scene=8&amp;fate=yuan" target="_blank" rel="noopener">圓世</a>
           <a href="沉浸.html?scene=8&amp;fate=shang" target="_blank" rel="noopener">殤世</a>
