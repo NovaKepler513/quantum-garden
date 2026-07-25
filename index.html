@@ -17,26 +17,82 @@
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{height:100%;overflow:hidden;background:#07100e}
   #stage{position:fixed;inset:0;width:100vw;height:100vh;border:0;display:block;background:#07100e}
-  #loadVeil{position:fixed;z-index:2;inset:0;background:#07100e;display:grid;place-items:center;transition:opacity .45s ease,visibility .45s ease}
+  #loadVeil{position:fixed;z-index:8;inset:0;background:#07100e;display:grid;place-items:center;overflow:hidden;
+    transition:opacity 1.05s ease,visibility 1.05s ease}
   #loadVeil.done{opacity:0;visibility:hidden;pointer-events:none}
-  #loadMark{width:48px;height:1px;background:rgba(102,141,130,.25);overflow:hidden}
+  #loadMark{position:absolute;width:48px;height:1px;background:rgba(102,141,130,.25);overflow:hidden;transition:opacity .35s ease}
   #loadMark::after{content:"";display:block;width:18px;height:1px;background:#c66858;animation:seek 1.2s ease-in-out infinite}
-  #loadFail{position:fixed;z-index:3;left:20px;bottom:18px;display:none;align-items:center;gap:12px;color:#a7b6ae;font:12px -apple-system,"PingFang SC",sans-serif}
+  #loadVeil.ready #loadMark{opacity:0}
+  #opening{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;
+    padding:48px 24px;color:#ede7d8;font-family:"Songti SC","STSong","SimSun",serif;text-align:center;opacity:0;
+    transition:opacity .8s ease}
+  #loadVeil.ready #opening{opacity:1}
+  #opening::before,#opening::after{content:"";position:absolute;left:50%;width:min(640px,62vw);height:1px;
+    background:rgba(131,153,143,.18);transform:translateX(-50%) scaleX(.12);transition:transform 2.2s ease,background-color 2.2s ease}
+  #opening::before{top:calc(50% - 112px)}
+  #opening::after{top:calc(50% + 116px)}
+  #opening.title-complete::before,#opening.title-complete::after{transform:translateX(-50%) scaleX(1);background:rgba(198,104,88,.34)}
+  .opening-dust{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+  .opening-dust span{position:absolute;color:#657c72;font-size:14px;opacity:0;transform:translateY(7px);
+    animation:dust 4.8s ease-in-out infinite;animation-play-state:paused}
+  #loadVeil.ready .opening-dust span{animation-play-state:running}
+  .opening-kicker{margin-bottom:30px;color:#c66858;font:11px -apple-system,"PingFang SC",sans-serif;opacity:0;transition:opacity .8s ease}
+  #loadVeil.ready .opening-kicker{opacity:.9}
+  .opening-title{display:grid;grid-template-columns:repeat(4,74px);place-items:center;height:92px}
+  .opening-title span{display:grid;place-items:center;width:74px;height:92px;color:#83998f;font-size:72px;line-height:1;
+    opacity:.25;filter:blur(9px);transform:translateY(9px) scale(.94);transition:opacity 1s ease,filter 1s ease,transform 1s ease,color 1s ease,text-shadow 1s ease}
+  .opening-title span.locked{color:#ede7d8;opacity:1;filter:blur(0);transform:none;text-shadow:0 0 32px rgba(210,174,104,.22)}
+  .opening-sub{margin-top:28px;color:#d2ae68;font-size:16px;opacity:0;transform:translateY(6px);transition:opacity .9s ease,transform .9s ease}
+  .opening-sub.show{opacity:1;transform:none}
+  .opening-note{margin-top:14px;color:#83998f;font:11px -apple-system,"PingFang SC",sans-serif;opacity:0;transition:opacity .9s ease}
+  .opening-note.show{opacity:.82}
+  #openingSkip{position:absolute;right:28px;bottom:24px;min-width:58px;height:40px;border:0;border-bottom:1px solid rgba(198,104,88,.56);
+    background:transparent;color:#83998f;font:11px -apple-system,"PingFang SC",sans-serif;cursor:pointer;opacity:0;transition:opacity .4s ease,color .18s ease}
+  #openingSkip.show{opacity:.78}
+  #openingSkip:hover,#openingSkip:focus-visible{color:#ede7d8;opacity:1}
+  #openingSkip:focus-visible{outline:1px solid #c66858;outline-offset:3px}
+  #loadFail{position:fixed;z-index:9;left:20px;bottom:18px;display:none;align-items:center;gap:12px;color:#a7b6ae;font:12px -apple-system,"PingFang SC",sans-serif}
   #loadFail.show{display:flex}
   #retry{width:44px;height:44px;border:1px solid rgba(198,104,88,.72);background:#07100e;color:#ede7d8;font-size:18px;cursor:pointer}
   #retry:focus-visible{outline:1px solid #ede7d8;outline-offset:3px}
-  #orientationGate{display:none;position:fixed;z-index:4;inset:0;background:#07100e;color:#ede7d8;font-family:"Songti SC","STSong",serif;
+  #orientationGate{display:none;position:fixed;z-index:10;inset:0;background:#07100e;color:#ede7d8;font-family:"Songti SC","STSong",serif;
     align-items:center;justify-content:center;flex-direction:column;text-align:center}
   #orientationGate .turn{font-size:34px;color:#c66858}
   #orientationGate strong{margin-top:18px;font-size:20px;font-weight:400}
   #orientationGate small{margin-top:10px;font-size:12px;color:#83998f}
   @keyframes seek{0%{transform:translateX(-20px)}50%{transform:translateX(50px)}100%{transform:translateX(-20px)}}
-  @media(prefers-reduced-motion:reduce){#loadMark::after{animation:none;transform:translateX(15px)}}
+  @keyframes dust{0%,100%{opacity:0;transform:translateY(7px)}38%{opacity:.24}62%{opacity:.12;transform:translateY(-5px)}}
+  @media(max-width:720px){
+    #opening::before,#opening::after{width:calc(100vw - 56px)}
+    .opening-title{grid-template-columns:repeat(4,52px);height:64px}
+    .opening-title span{width:52px;height:64px;font-size:46px}
+    #opening::before{top:calc(50% - 92px)}
+    #opening::after{top:calc(50% + 96px)}
+  }
+  @media(prefers-reduced-motion:reduce){
+    #loadMark::after,.opening-dust span{animation:none}
+    .opening-title span{filter:none;transform:none;transition:none}
+  }
   @media(orientation:portrait) and (max-width:720px){#orientationGate{display:flex}}
 </style>
 </head>
 <body>
-  <div id="loadVeil" role="status" aria-label="正在载入量子游园"><span id="loadMark" aria-hidden="true"></span></div>
+  <div id="loadVeil" role="status" aria-live="polite" aria-label="正在载入量子游园">
+    <span id="loadMark" aria-hidden="true"></span>
+    <section id="opening" aria-label="量子游园入场">
+      <div class="opening-dust" id="openingDust" aria-hidden="true"></div>
+      <div class="opening-kicker">《牡丹亭》 × 量子觀測</div>
+      <div class="opening-title" aria-label="量子游园">
+        <span data-final="量" aria-hidden="true">量</span>
+        <span data-final="子" aria-hidden="true">子</span>
+        <span data-final="游" aria-hidden="true">游</span>
+        <span data-final="园" aria-hidden="true">园</span>
+      </div>
+      <div class="opening-sub">觀 之 · 即 現</div>
+      <div class="opening-note">一座尚未定形的園，正等你看見</div>
+      <button id="openingSkip" type="button" aria-label="略过入场动画" title="略过入场动画">略 過</button>
+    </section>
+  </div>
   <div id="loadFail" role="alert"><span>载入超过十二秒，请检查本地服务。</span><button id="retry" type="button" aria-label="重新载入" title="重新载入">↻</button></div>
   <div id="orientationGate" role="status"><span class="turn" aria-hidden="true">↻</span><strong>請橫置屏幕</strong><small>園林以十六比九展開</small></div>
   <iframe id="stage" title="量子游园沉浸舞台"
@@ -72,16 +128,65 @@ if(scene==='8'){
 if(params.get('setup')==='1') targetUrl.searchParams.set('setup','1');
 if(params.get('prelude')==='1') targetUrl.searchParams.set('prelude','1');
 const stage=document.getElementById('stage'), veil=document.getElementById('loadVeil'), fail=document.getElementById('loadFail');
+const opening=document.getElementById('opening'), openingLetters=[...document.querySelectorAll('.opening-title span')];
+const openingSub=document.querySelector('.opening-sub'), openingNote=document.querySelector('.opening-note'), openingSkip=document.getElementById('openingSkip');
+const openingPool=[...'量子游园觀夢花影雨絲零一疊加坍縮'];
+const reduced=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+const shouldPlayOpening=!route&&!params.has('act')&&params.get('debug')!=='1'&&params.get('setup')!=='1';
+let openingStarted=false, openingFinished=false;
+const openingTimers=[], openingFlickers=[];
+function later(fn,ms){ const id=setTimeout(fn,ms); openingTimers.push(id); return id; }
+function finishOpening(){
+  if(openingFinished) return;
+  openingFinished=true;
+  openingTimers.forEach(clearTimeout); openingFlickers.forEach(clearInterval);
+  openingLetters.forEach(el=>{ el.textContent=el.dataset.final; el.classList.add('locked'); });
+  opening.classList.add('title-complete'); openingSub.classList.add('show'); openingNote.classList.add('show');
+  veil.classList.add('done'); veil.setAttribute('aria-hidden','true');
+}
+function buildOpeningDust(){
+  const dust=document.getElementById('openingDust');
+  for(let i=0;i<34;i++){
+    const s=document.createElement('span'); s.textContent=openingPool[(i*7+3)%openingPool.length];
+    s.style.left=((i*37)%97+1)+'%'; s.style.top=((i*53)%89+5)+'%';
+    s.style.animationDelay=(-(i%12)*0.37)+'s'; s.style.animationDuration=(4.2+(i%7)*0.38)+'s';
+    dust.appendChild(s);
+  }
+}
+function startOpening(){
+  if(openingStarted||openingFinished) return;
+  openingStarted=true; veil.classList.add('ready'); veil.setAttribute('aria-label','量子游园入场动画');
+  buildOpeningDust();
+  if(reduced){
+    openingLetters.forEach(el=>el.classList.add('locked'));
+    opening.classList.add('title-complete'); openingSub.classList.add('show'); openingNote.classList.add('show');
+    later(finishOpening,1100); return;
+  }
+  openingLetters.forEach((el,i)=>{
+    const flicker=setInterval(()=>{ el.textContent=openingPool[(Math.random()*openingPool.length)|0]; },72);
+    openingFlickers.push(flicker);
+    later(()=>{ clearInterval(flicker); el.textContent=el.dataset.final; el.classList.add('locked'); },520+i*590);
+  });
+  later(()=>opening.classList.add('title-complete'),2850);
+  later(()=>openingSub.classList.add('show'),3350);
+  later(()=>openingNote.classList.add('show'),4050);
+  later(()=>openingSkip.classList.add('show'),4300);
+  later(finishOpening,6500);
+}
 let loadTimer=setTimeout(()=>fail.classList.add('show'),12000);
 stage.addEventListener('load',()=>{
   let ready=false;
   try{ ready=!!(stage.contentDocument&&stage.contentDocument.querySelector('canvas')); }catch(_){}
   if(!ready){ clearTimeout(loadTimer); fail.classList.add('show'); return; }
-  clearTimeout(loadTimer); veil.classList.add('done'); fail.classList.remove('show');
+  clearTimeout(loadTimer); fail.classList.remove('show');
+  if(shouldPlayOpening) startOpening(); else finishOpening();
 });
 stage.addEventListener('error',()=>{ clearTimeout(loadTimer); fail.classList.add('show'); });
 document.getElementById('retry').addEventListener('click',()=>{ fail.classList.remove('show'); veil.classList.remove('done');
   loadTimer=setTimeout(()=>fail.classList.add('show'),12000); stage.src=stage.src; });
+openingSkip.addEventListener('click',finishOpening);
+veil.addEventListener('pointerdown',e=>{ if(openingStarted&&e.target!==openingSkip) finishOpening(); });
+addEventListener('keydown',e=>{ if(openingStarted&&!openingFinished&&(e.key==='Escape'||e.key==='Enter'||e.code==='Space')){ e.preventDefault(); finishOpening(); } });
 stage.src=targetUrl.href;
 if(route) document.title='量子游园 · '+route.title+' · 调试';
 

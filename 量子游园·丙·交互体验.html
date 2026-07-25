@@ -92,8 +92,7 @@
   #prelude.is-waiting .mode-options,#prelude.is-waiting .question,#prelude.is-waiting .note{display:none}
   #prelude.is-waiting .waiting{display:block}
 
-  /* 第一幕报幕在预备幕选择之后出现。 */
-  #loading{display:none}
+  /* 第一幕报幕在预备幕选择之后出现；全作品片头由沉浸外壳负责。 */
   #enter{position:fixed;inset:0;z-index:9;background:rgba(7,16,14,.94);display:flex;flex-direction:column;
     align-items:center;justify-content:center;padding:48px 24px;font-family:var(--serif);cursor:none;transition:opacity .7s ease}
   #enter::before{content:"";position:absolute;inset:24px;border:1px solid rgba(131,153,143,.12);pointer-events:none}
@@ -235,10 +234,6 @@
       <button type="button" id="gazeFallback">改 用 指 針</button>
     </div>
   </section>
-  <div id="loading">
-    <div class="ld-title" id="ldTitle"></div>
-    <div class="ld-sub" id="ldSub">观 之 · 即 现</div>
-  </div>
   <div id="enter" role="button" tabindex="0" aria-label="轻触入园">
     <div class="eyebrow">量 子 游 園 · 《牡丹亭》 × 量子观测</div>
     <div class="sub">第 壹 幕</div>
@@ -1872,24 +1867,19 @@ resizeLayout();
   document.querySelector('#enter .blink').textContent=_entryLabel;
   const _enterEl=document.getElementById('enter');
   _enterEl.setAttribute('aria-label',_entryLabel.replace(/\s+/g,''));
-  if(_direct){
-    document.getElementById('loading').style.display='none';
-  }
   if(window.__resumeJourney){
     _enterEl.classList.add('journey');
     _enterEl.setAttribute('role','status');
     _enterEl.removeAttribute('tabindex');
     _enterEl.setAttribute('aria-label','第 '+MU[_act]+' 幕 '+_st.name+'，即將自動進入');
-    document.getElementById('loading').style.display='none';
   }
   loadStation(_act);
   initPrelude();
   if(_resumeGaze) setTimeout(()=>gazeToggle(true),window.__resumeJourney?(REDUCED?360:2400):260); }
 requestAnimationFrame(frame);
 
-/* ====== 载入序 + 缓缓浮现 + 自定义光标 + 序声(2026-06-14 一葳) ====== */
+/* ====== 幕页浮现 + 自定义光标 + 序声；总片头由沉浸外壳负责 ====== */
 (function(){
-  const ld=document.getElementById('loading');
   const cc=document.getElementById('curcur');
   const entered=()=>document.getElementById('enter').classList.contains('gone');
 
@@ -1933,10 +1923,8 @@ requestAnimationFrame(frame);
   addEventListener('pointerdown', ()=>{ if(!entered()){ if(cc) cc.classList.add('on'); IA.begin(); } });  // 被拦则首次交互接上
   addEventListener('keydown', ()=>{ if(!entered()) IA.begin(); });
 
-  /* —— 封面合焦：主动作一秒内可见，不再设七秒强制等待 —— */
-  let begun=false;
-  function beginReveal(){ if(begun) return; begun=true;
-    if(ld) ld.classList.add('gone');
+  /* —— 幕页合焦：预备幕选完方式后，用同一层报第一幕 —— */
+  function beginReveal(){
     const big=document.querySelector('#enter .big');
     requestAnimationFrame(()=>{ if(big) big.classList.add('revealed'); });
     const seq=[['.sub',1,180],['.story',0.92,420],['.legend',0.88,620]];
@@ -1944,16 +1932,7 @@ requestAnimationFrame(frame);
     setTimeout(()=>{ const b=document.querySelector('#enter .blink'); if(b) b.classList.add('go'); }, 820);
     if(window.__resumeJourney) setTimeout(enter,REDUCED?240:2200);    // 正式旅程统一短报幕，不要求每幕重复点击
   }
-  if(ld) ld.addEventListener('click', beginReveal);                             // 可点击跳过载入
-  if(!ld || getComputedStyle(ld).display==='none'){ beginReveal(); return; }    // 直入某幕:无载入序,直接显说明
-  /* 载入序:标题「量子游园」四字自模糊中徐徐凝出(blur→sharp+微升+金晕,逐字慢现,非闪变)+ 每字一记上行磬 */
-  const wrap=document.getElementById('ldTitle');
-  const spans=[...'量子游园'].map(ch=>{ const s=document.createElement('span'); s.textContent=ch; wrap.appendChild(s); return s; });
-  const LN=[1,9/8,81/64,3/2];
-  spans.forEach((s,i)=>setTimeout(()=>{ s.classList.add('lit'); IA.bell(523.25*LN[i],0.05); }, 800+i*820));   // 逐字凝出+上行磬
-  setTimeout(()=>ld.classList.add('bloom'), 800+spans.length*820+400);          // 全显后整体微呼吸
-  setTimeout(()=>{ document.getElementById('ldSub').classList.add('show'); IA.bell(523.25*2,0.04); }, 800+spans.length*820+800);  // tagline 后浮+清宫一记
-  setTimeout(beginReveal, 7000);                                                // 久留约7s 后自动转场(可随时点击跳过)
+  beginReveal();
 })();
 
 /* ====== 全屏沉浸(2026-06-13 一葳):右上角可见入口「全屏」+ F 键;装在 沉浸.html 外壳(iframe)里时,全屏整个外壳——跨幕换页不掉全屏 ====== */
