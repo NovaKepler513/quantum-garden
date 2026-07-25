@@ -70,17 +70,17 @@
   #scene{position:fixed;inset:0;display:block;cursor:none;z-index:1;touch-action:none}
   .ui{position:fixed;inset:0;pointer-events:none;z-index:5;font-family:var(--serif)}
   .ui .act{position:absolute;top:18px;left:18px;font-size:13px;color:var(--gold);opacity:.72}
-  .ui .narrative{position:absolute;left:18px;bottom:54px;width:min(620px,calc(100vw - 150px));min-height:88px;padding-left:14px;
+  .ui .narrative{position:absolute;left:18px;bottom:54px;width:min(680px,calc(100vw - 150px));min-height:104px;padding-left:14px;
       border-left:1px solid rgba(198,104,88,.62);text-align:left;text-shadow:0 1px 14px rgba(7,16,14,.75)}
   .ui .narrative::after{content:"";position:absolute;z-index:-1;left:-18px;right:-30px;top:-20px;bottom:-20px;
       background:linear-gradient(90deg,rgba(7,16,14,.9),rgba(7,16,14,.58) 74%,transparent)}
-  .narrative-label{display:block;margin-bottom:6px;font-family:var(--sans);font-size:11px;color:var(--cinnabar)}
-  .narrative-title{display:none;margin-bottom:5px;font-size:17px;line-height:1.45;color:var(--gold)}
+  .narrative-label{display:block;margin-bottom:6px;font-family:var(--sans);font-size:12px;color:var(--cinnabar)}
+  .narrative-title{display:none;margin-bottom:5px;font-size:19px;line-height:1.45;color:var(--gold)}
   .narrative-title.show{display:block}
-  .ui .hint{font-size:14px;line-height:1.7;color:var(--paper);
+  .ui .hint{font-size:16px;line-height:1.7;color:var(--paper);
       opacity:0;transition:opacity .28s;text-shadow:0 1px 14px rgba(7,16,14,.6)}
   .ui .hint.show{opacity:.8}
-  .narrative-action{display:none;margin-top:7px;font-family:var(--sans);font-size:11px;line-height:1.6;color:var(--muted)}
+  .narrative-action{display:none;margin-top:7px;font-family:var(--sans);font-size:12px;line-height:1.6;color:var(--muted)}
   .narrative-action.show{display:block}.narrative-action::before{content:"→";margin-right:7px;color:var(--cinnabar)}
   .ui .foot{position:absolute;right:120px;top:14px;pointer-events:auto}
   .ui .keys{position:absolute;right:18px;bottom:18px;max-width:52vw;text-align:right;font-size:11px;
@@ -108,7 +108,7 @@
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation:none!important;transition-duration:.01ms!important;transition-delay:0s!important}
   }
-  @media (max-width:640px){.ui .narrative{left:16px;bottom:54px;width:calc(100vw - 32px)}}
+  @media (max-width:640px){.ui .narrative{left:16px;bottom:54px;width:calc(100vw - 32px)}.narrative-title{font-size:18px}.ui .hint{font-size:15px;line-height:1.65}}
 </style>
 </head>
 <body>

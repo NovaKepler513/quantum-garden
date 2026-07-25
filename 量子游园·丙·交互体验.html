@@ -39,7 +39,7 @@
   .act-mark .name{font-size:18px;letter-spacing:0}
   .act-mark .phase{grid-column:2;font-family:var(--sans);font-size:11px;letter-spacing:0;color:var(--mist)}
   .act-mark::after{content:"";position:absolute;left:0;top:34px;width:1px;height:24px;background:rgba(198,104,88,.72)}
-  .prompt{position:absolute;left:32px;bottom:32px;width:min(620px,calc(100vw - 160px));min-height:92px;padding:0 20px 2px 16px;
+  .prompt{position:absolute;left:32px;bottom:32px;width:min(680px,calc(100vw - 160px));min-height:104px;padding:0 20px 2px 16px;
     border-left:1px solid rgba(198,104,88,.72);text-shadow:0 1px 18px rgba(0,0,0,.86);opacity:1;
     transition:opacity .34s ease}
   .prompt.changing{opacity:.16}
@@ -48,12 +48,12 @@
   .prompt.changing .label,.prompt.changing .hint-title,.prompt.changing .hint,.prompt.changing .hint-action{transform:translateY(5px)}
   .prompt::after{content:"";position:absolute;z-index:-1;left:-32px;right:-28px;top:-24px;bottom:-24px;
     background:linear-gradient(90deg,rgba(7,16,14,.92),rgba(7,16,14,.66) 72%,rgba(7,16,14,0));pointer-events:none}
-  .prompt .label{display:block;margin-bottom:7px;font-family:var(--sans);font-size:11px;letter-spacing:0;color:var(--cinnabar)}
-  .hint-title{display:none;margin-bottom:6px;font-size:17px;line-height:1.45;color:var(--gold);font-weight:400}
+  .prompt .label{display:block;margin-bottom:7px;font-family:var(--sans);font-size:12px;letter-spacing:0;color:var(--cinnabar)}
+  .hint-title{display:none;margin-bottom:6px;font-size:19px;line-height:1.45;color:var(--gold);font-weight:400}
   .hint-title.show{display:block}
-  .ui .hint{font-size:14px;line-height:1.72;color:var(--bone);opacity:0;transition:opacity .22s ease}
+  .ui .hint{font-size:16px;line-height:1.72;color:var(--bone);opacity:0;transition:opacity .22s ease}
   .ui .hint.show{opacity:.94}
-  .hint-action{display:none;margin-top:8px;font-family:var(--sans);font-size:11px;line-height:1.6;color:var(--mist)}
+  .hint-action{display:none;margin-top:8px;font-family:var(--sans);font-size:12px;line-height:1.6;color:var(--mist)}
   .hint-action.show{display:block}
   .hint-action::before{content:"→";margin-right:7px;color:var(--cinnabar)}
   .hint-action.exit-reminder{animation:exitReminder 8s ease-in-out infinite}
@@ -170,8 +170,8 @@
     .toolrail{top:8px;right:8px}
     .prompt{left:16px;bottom:20px;width:calc(100vw - 32px);min-height:84px;padding-left:12px;padding-right:8px}
     .prompt::after{left:-16px;right:-8px}
-    .hint-title{font-size:16px}
-    .ui .hint{font-size:14px;line-height:1.65}
+    .hint-title{font-size:18px}
+    .ui .hint{font-size:15px;line-height:1.65}
     .keys{display:none}
     #actcard .acn{font-size:40px}
     #actcard .acs{font-size:14px;max-width:320px;padding:0 16px}
@@ -378,7 +378,8 @@ function heroine(x,top,size){ const nm=[..."麗娘"]; let y=top;
   put(x+size*0.52,hy-size*0.34,"步搖",size*0.28,COL.gold,{f:0.66,a:0.82});
   protect(x-size*1.15,hy-size*0.6,x+size*1.15,y+size*0.6); }
 function colophon(){ const ins=[..."不到園林怎知春色如許"]; const x=15.62,y0=0.95,st=0.64;
-  ins.forEach((c,i)=>put(x,y0+i*st,c,T4,COL.gold,{f:0.85})); put(0.92,8.42,"一園春",T3,COL.gold,{pad:0.14}); put(0.96,7.95,"遊園",T5,COL.far,{pad:0.1}); }
+  _grp='題句'; ins.forEach((c,i)=>put(x,y0+i*st,c,T4,COL.gold,{f:0.85})); _grp=null;
+  put(0.92,8.42,"一園春",T3,COL.gold,{pad:0.14}); put(0.96,7.95,"遊園",T5,COL.far,{pad:0.1}); }
 function ground(prob){ const size=T8,step=size*1.5;
   for(let y=0.5;y<8.6;y+=step) for(let x=0.7;x<15.9;x+=step){ if(rnd()>prob) continue;
     const jx=x+(rnd()-0.5)*step*0.6, jy=y+(rnd()-0.5)*step*0.6; if(inProtect(jx,jy)) continue;
@@ -456,7 +457,7 @@ function composeBridge(){ items.length=0;boxes.length=0;PROTECT.length=0;_s=2026
 /* ===== 底图4 · 寻梦廊(长廊 + 梦的年谱) ===== */
 function composeXunmeng(){ items.length=0;boxes.length=0;PROTECT.length=0;_s=20260606>>>0;
   { const ins=[..."夢回鶯囀亂煞年光遍"]; const x=15.62,y0=0.95,st=0.64; ins.forEach((c,i)=>put(x,y0+i*st,c,T4,COL.gold,{f:0.85})); }
-  put(0.92,8.42,"尋夢廊",T3,COL.gold,{pad:0.14}); put(0.96,7.95,"尋夢",T5,COL.far,{pad:0.1});
+  put(12.35,8.28,"尋夢廊",T3,COL.gold,{pad:0.14}); put(12.4,7.8,"尋夢",T5,COL.far,{pad:0.1});
   _grp='麗娘'; heroinePlain(7.4,5.55,T4); _grp=null;     // 寻梦行者(素衣无簪钗):自廊口起步,墙定后随观者行向深处
   _grp='夢中人'; figureM(7.4,3.45,"柳夢梅",T6,"冠"); _grp=null;  // 廊深处梦中人:寻它不得(永不凝形)
   corridor(7.4,7.4,9); protect(4.2,2.9,10.6,7.8);
@@ -584,6 +585,7 @@ function actOneWakeCard(){
 }
 const ACT_LORE={
   0:{
+    openingverse:{label:'戲中 · 杜麗娘',title:'「不到園林，怎知春色如許」',body:'這一句不只是讚歎園林。麗娘從前不知牆外有這樣的春色，也未曾知道自己的青春可以如此明麗豐盛；一個「怎知」，正是她第一次看見天地，也第一次聽見自己的心。'},
     liyang:{label:'戲中 · 杜麗娘',title:'她在春色裡，也看見了自己',body:'麗娘久居深閨，今日才知道牆外竟有這樣一座園子。花木照眼，她那句「不到園林，怎知春色如許」，既是驚春，也像忽然認出了自己的年華。'},
     chunxiang:{label:'戲中 · 春香',title:'是春香，把她領到春天跟前',body:'春香一路報花名、說笑話，腳步比小姐輕快。她眼裡先是好玩的園子；有她在旁，麗娘才肯把閨門裡收著的心思，悄悄向春風放開一些。'},
     willow:{label:'園中 · 柳',title:'柳絲低垂，風一來便有了情態',body:'園中的柳不以濃色取勝，只憑一段柔軟。細條拂風，時聚時散；春香從樹下走得輕快，麗娘卻像被這一樹細密的動靜牽慢了腳步。'},
@@ -607,7 +609,7 @@ const ACT_LORE={
   2:{
     liyang:{label:'戲中 · 尋夢',title:'她獨自回到昨日的路',body:'《尋夢》讓麗娘甩開春香，按湖山石、牡丹亭、芍藥闌逐一追認。她找的不是景，而是夢曾在現實留下的證據。'},
     dreamman:{label:'廊深 · 柳夢梅',title:'看得見，卻不能看真',body:'此刻的柳夢梅只是麗娘記憶中的夢中人。你能辨出姓名，卻無法把他凝成實體；這正是「尋它不得」的視覺規則。'},
-    corridor:{label:'園中 · 畫廊',title:'廊把追尋拉成時間',body:'《尋夢》以「畫廊前」和一連串地點推進腳步。近大遠小的廊不是透視裝飾，而是麗娘越走越深、離現實越遠的時間軸。'},
+    corridor:{label:'園中 · 畫廊',title:'一步深似一步，昨日卻不肯回來',body:'《尋夢》從「畫廊前」起，一處一處重認舊遊。廊柱向深處層層收去，麗娘的腳步也越走越慢；景物彷彿仍在，昨日那個人卻始終不見。'},
     wall:{label:'園界 · 四面牆',title:'先圈住夢，才可能重走',body:'四面牆把散亂字粒約束成一座可辨認的園。這是本作的量子借喻：邊界先被觀測確定，路徑才有意義。'},
     chronology:{label:'廊側 · 春秋零一',title:'一場夢在兩種時間裡閃爍',body:'春秋是戲中流年，零一是裝置的計算底層。它們並置，提醒你：記憶既不是原夢，也不是純數據，而是每次重訪時重新生成。'},
     moon:{label:'廊上 · 月',title:'月還照著同一處，人物卻不在',body:'月作為跨幕不變的見證，反襯尋夢的失敗：景物可以重現，昨日的相逢卻不能靠重走路徑複製。'}
@@ -623,6 +625,7 @@ const ACT_LORE={
 function loreKeyForItem(it,act){
   const t=it.text||'';
   if(act===0){
+    if(it.grp==='題句') return 'openingverse';
     if(it.grp==='麗娘') return 'liyang'; if(it.grp==='春香') return 'chunxiang';
     if(it.grp==='日光') return 'sun';
     if(t==='柳') return 'willow'; if(/[枝條葉絲絛幹皮瘤根]/.test(t)) return 'willowline';
@@ -638,7 +641,7 @@ function loreKeyForItem(it,act){
   }else if(act===2){
     if(it.grp==='麗娘') return 'liyang'; if(it.grp==='夢中人') return 'dreamman';
     if(/^牆/.test(it.grp||'')||/^[牆甎]$/.test(t)) return 'wall';
-    if(t==='廊'||/^[柱簷階欄楯]$/.test(t)) return 'corridor';
+    if(t==='尋夢廊'||t==='尋夢'||t==='廊'||/^[柱簷階欄楯]$/.test(t)) return 'corridor';
     if(/^[春秋零一01]$/.test(t)) return 'chronology';
     if(t==='月'||/^(皎|桂|魄|盤|蟾)$/.test(t)) return 'moon';
   }else if(act===3){
