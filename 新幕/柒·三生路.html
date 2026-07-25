@@ -296,7 +296,7 @@ function initQuantum(){
     it.jamp=0.12+Math.random()*0.18;
     it.flickT=Math.random()*0.3; it.flickEvery=0.05+Math.random()*0.14;
     it.cur=randGlyphs(it.text.length);
-    it.auto=false; it.autoRate=0; it._lit=false; it.fy=0;
+    it.auto=false; it.autoRate=0; it._lit=false; it._sounded=false; it.fy=0;
   }
 }
 
@@ -393,6 +393,11 @@ function setGuide(title,body,action,label,force){
   if(force){ clearTimeout(NARR.timer); NARR.tempUntil=0; NARR.timer=null; }
   if(performance.now()>=NARR.tempUntil) writeNarrative(NARR.guide);
 }
+function updateTemporaryAction(action){
+  if(performance.now()>=NARR.tempUntil) return;
+  const a=document.getElementById('hintAction');
+  a.textContent=action||''; a.classList.toggle('show',!!action);
+}
 function showTemporary(card,ttl){
   clearTimeout(NARR.timer);
   NARR.tempUntil=performance.now()+ttl*1000;
@@ -481,16 +486,21 @@ function updateFate(dt){
       else if(!wakeFlag&&fateT>2.5){ wakeFlag=true; setHint('先喚醒一字，滿園記憶方肯想起'); }
     }
     if(relayStart && !phraseStart){                              // 当前一忆呼吸相候，必须被观测才醒
-      const t=relayOrder.find(it=>it.c<0.97);
+      if(relayTarget&&relayTarget.c>=0.97&&!relayTarget._sounded){
+        relayTarget._sounded=true;
+        if(!probeQuiet) Sound.bell(NOTES[relayTarget.ri],0.075);   // 只在按序完成 0.97 时奏音，首个任意唤醒字不抢拍
+      }
+      const t=relayOrder.find(it=>!it._sounded);
       if(t){
         if(relayTarget!==t){
           if(relayTarget) relayTarget.beckon=false;
           relayTarget=t; relayWaitT=0; relayHinted=false; t.beckon=true;
           setYuanTargetGuide(t);
+          updateTemporaryAction(`現在請去${placeName(t)}的「${t.text}」；停在实名金環內，直到它完全轉金。`);
         }
         relayWaitT+=dt;
         t.softCap=0; t.autoRate=0;
-        for(const o of relayOrder) if(o!==t) o.softCap=o._lit?0:0.55;   // 已醒者不回落，未轮到者只可微暖
+        for(const o of relayOrder) if(o!==t) o.softCap=o._sounded?0:(o._lit?o.c:0.55); // 未轮到者半亮或原位冻结，已完成者保持
         if(relayWaitT>7&&!relayHinted){ relayHinted=true;
           setHint(`仍在等${placeName(t)}的「${t.text}」。循外圈找金環，停住直到它完全轉金。`,7); }
       } else { phraseStart=true;
@@ -516,7 +526,7 @@ function updateFate(dt){
     if(meiFlag && !gateReady && fateT-meiT>1.2) gateOpen();
   } else {
     mountT=clamp01((fateT-1.2)/8.5);                           // 装裱进度(装裱即定影)
-    const stage=Math.min(4,Math.floor(mountT*4));
+    const stage=Math.min(4,Math.floor(mountT*5));                // 第五段从 80% 起可见约 1.7s，不与完成文案同帧
     if(stage!==mountGuideStage){
       mountGuideStage=stage;
       const titles=['園林尚在散態','第一層 · 收攏園景','第二層 · 記憶題畫','第三層 · 綾邊裝裱','立軸將成'];
@@ -542,9 +552,8 @@ function updateFate(dt){
 function onLit(it){ if(probeQuiet) return;
   if(FATE==='yuan'){
     if(it.kind==='anchor'){ const first=!relayStart; if(first) relayStart=true;
-      Sound.bell(NOTES[Math.min(it.ri||0,NOTES.length-1)],0.075);
       if(MEMORY_LORE[it.text]) setLore('記憶 · '+it.text,
-        (first?'接力不會自動播放。':'')+MEMORY_LORE[it.text],
+        (first?'此字先喚醒接力；正式磬聲將從第一枚候字開始。':'')+MEMORY_LORE[it.text],
         '讓它看至凝定，再移向下一枚候字。',7,'圓世 · 記憶接力'); }   // 上行琶音:一字一磬
     else if(it.kind==='phrase') Sound.bell(GONG*SEQ[it.idx],0.055);
   } else if(FATE==='shang'){
