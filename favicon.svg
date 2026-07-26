@@ -1,7 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="18" fill="#07100e"/>
-  <path d="M32 10c9 7 16 13 16 22 0 10-7 18-16 22-9-4-16-12-16-22 0-9 7-15 16-22z" fill="#c66858"/>
-  <path d="M12 32c7-9 13-16 20-16 8 0 15 7 20 16-5 9-12 16-20 16-7 0-13-7-20-16z" fill="#81988e" fill-opacity=".9"/>
-  <circle cx="32" cy="32" r="8" fill="#d2ae68"/>
-  <circle cx="32" cy="32" r="3" fill="#07100e"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="量子游园：园字与牡丹">
+  <rect width="64" height="64" rx="15" fill="#07100e"/>
+  <rect x="4.5" y="4.5" width="55" height="55" rx="12" fill="none" stroke="#81988e" stroke-opacity=".24"/>
+  <text x="29" y="46" fill="#d7bd78" font-family="Songti SC,STSong,SimSun,serif" font-size="40" font-weight="600" text-anchor="middle">園</text>
+  <g transform="translate(48 15)">
+    <ellipse cx="0" cy="-4.7" rx="4.2" ry="6" fill="#c66858"/>
+    <ellipse cx="4.5" cy="-1.4" rx="4.2" ry="6" fill="#c66858" transform="rotate(72 4.5 -1.4)"/>
+    <ellipse cx="2.8" cy="4" rx="4.2" ry="6" fill="#c66858" transform="rotate(144 2.8 4)"/>
+    <ellipse cx="-2.8" cy="4" rx="4.2" ry="6" fill="#c66858" transform="rotate(216 -2.8 4)"/>
+    <ellipse cx="-4.5" cy="-1.4" rx="4.2" ry="6" fill="#c66858" transform="rotate(288 -4.5 -1.4)"/>
+    <circle r="3.1" fill="#e2c982"/>
+    <circle cx="-1.2" cy="-.8" r=".55" fill="#8d5a45"/>
+    <circle cx="1.25" cy="-.65" r=".55" fill="#8d5a45"/>
+    <circle cx="0" cy="1.15" r=".55" fill="#8d5a45"/>
+  </g>
 </svg>

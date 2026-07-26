@@ -6,14 +6,14 @@
 
 一次由观看触发的游园：园林未先存在，人物未先定形，结局也不在入口处写好。
 
-[![Status](https://img.shields.io/badge/status-public_preview-c66858)](https://qg-yw6k3p.vercel.app/)
+[![Status](https://img.shields.io/badge/status-public_preview-c66858)](https://quantum-garden-art.vercel.app/)
 ![Structure](https://img.shields.io/badge/structure-8_acts-d2ae68)
 ![Runtime](https://img.shields.io/badge/runtime-local_in_browser-668d82)
 [![License](https://img.shields.io/badge/license-GPL--3.0-83998f)](LICENSE)
 
-[在线体验](https://qg-yw6k3p.vercel.app/) ·
-[八幕调试](https://qg-yw6k3p.vercel.app/%E6%B5%8B%E8%AF%95%E6%80%BB%E8%A7%88.html) ·
-[设备检查](https://qg-yw6k3p.vercel.app/?scene=1&setup=1) ·
+[在线体验](https://quantum-garden-art.vercel.app/) ·
+[八幕调试](https://quantum-garden-art.vercel.app/%E6%B5%8B%E8%AF%95%E6%80%BB%E8%A7%88.html) ·
+[设备检查](https://quantum-garden-art.vercel.app/?scene=1&setup=1) ·
 [交互规格手册](docs/量子游园·交互规格手册.md) ·
 [设计文档](docs/量子游园·交互设计文档.md) ·
 [创作研究记录](docs/量子游园·创作研究记录.md)
