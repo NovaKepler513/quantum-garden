@@ -567,44 +567,57 @@ function setFallbackNarrative(card,hold){
 }
 function releaseFixedNarrative(){ NARRATIVE.fixedCard=null; NARRATIVE.fallbackCard=null; NARRATIVE.shown=null; NARRATIVE.pending=null; NARRATIVE.pendingT=0; NARRATIVE.awayT=0; }
 function actOneBothAwake(){ return !!(WANDER['麗娘']&&WANDER['麗娘'].on&&WANDER['春香']&&WANDER['春香'].on); }
-function actOneWakeCard(){
-  const l=!!(WANDER['麗娘']&&WANDER['麗娘'].on), c=!!(WANDER['春香']&&WANDER['春香'].on);
-  if(!c) return {
+function actOneGardenOpen(){ return cur!==0||GUIDE.done||(GUIDE.on&&GUIDE.phase!=='threshold'&&GUIDE.threshold<=0.001); }
+const ACT_ONE_DIALOGUE={
+  seek:{
     label:'入園 · 先喚人',
     title:'往畫面中央偏右，先喚春香',
     body:'有人引路，才好遊園。'
-  };
-  if(!l&&c) return {
-    label:'春香',
-    title:'小姐，早茶時了，請行。'
-  };
-  return {
-    label:'麗娘',
-    title:'不到園林，怎知春色如許。'
-  };
+  },
+  report:{
+    label:'牆這邊 · 春香',
+    title:'小姐，我方才誤走到後邊。',
+    body:'誰知府後藏著一座大花園，花明柳綠，好耍子哩。'
+  },
+  question:{
+    label:'閨中 · 麗娘',
+    title:'那花園在哪裡？',
+    body:'春香偏不肯說，麗娘笑著又問：「可有什麼景致？」'
+  },
+  crossing:{
+    label:'閨中 · 麗娘與春香',
+    title:'原來有這等一個所在。',
+    body:'春香指向府後：「亭臺六七座，鞦韆一兩架。」見麗娘還未動，又低聲道：「老爺下鄉，有幾日了。」門外無人，兩人才走過去。'
+  }
+};
+function actOneWakeCard(){
+  const l=!!(WANDER['麗娘']&&WANDER['麗娘'].on), c=!!(WANDER['春香']&&WANDER['春香'].on);
+  if(!c) return ACT_ONE_DIALOGUE.seek;
+  if(!l&&c) return ACT_ONE_DIALOGUE.report;
+  return ACT_ONE_DIALOGUE.question;
 }
 const ACT_LORE={
   0:{
-    openingverse:{label:'戲中 · 杜麗娘',title:'「不到園林，怎知春色如許」',body:'這一句不只是讚歎園林。麗娘從前不知牆外有這樣的春色，也未曾知道自己的青春可以如此明麗豐盛；一個「怎知」，正是她第一次看見天地，也第一次聽見自己的心。'},
-    liyang:{label:'戲中 · 杜麗娘',title:'她在春色裡，也看見了自己',body:'麗娘久居深閨，今日才知道牆外竟有這樣一座園子。花木照眼，她那句「不到園林，怎知春色如許」，既是驚春，也像忽然認出了自己的年華。'},
-    chunxiang:{label:'戲中 · 春香',title:'是春香，把她領到春天跟前',body:'春香一路報花名、說笑話，腳步比小姐輕快。她眼裡先是好玩的園子；有她在旁，麗娘才肯把閨門裡收著的心思，悄悄向春風放開一些。'},
-    willow:{label:'園中 · 柳',title:'柳絲低垂，風一來便有了情態',body:'園中的柳不以濃色取勝，只憑一段柔軟。細條拂風，時聚時散；春香從樹下走得輕快，麗娘卻像被這一樹細密的動靜牽慢了腳步。'},
-    willowline:{label:'園中 · 枝葉絲條',title:'一樹垂楊，要細看才看得盡',body:'枝有伸屈，葉有向背，絲條又各自隨風。春香看的是滿樹青翠，麗娘卻連一根細線的顫動也不肯錯過；同一樹柳，在兩雙眼裡自有兩種看法。'},
-    pavilion:{label:'園中 · 牡丹亭',title:'花木深處，恰好有亭可坐',body:'一路看花行來，亭子正在花木與池水之間。倚欄片刻，近處花枝，遠處柳色，滿園景物從這裡慢慢排開。'},
-    pavilionpart:{label:'園中 · 亭之構件',title:'簷下有陰，欄外有春',body:'柱、欄、簷、階原是尋常木石，到了春日也各有明暗。春香扶欄探看，麗娘循階緩步；人的身影一入亭中，簷影與欄外春色便有了照應。'},
-    peony:{label:'曲中 · 牡丹',title:'「牡丹雖好，他春歸怎占的先」',body:'春香先說「是花都放了，那牡丹還早」，麗娘便接出這一句。牡丹尚未開遍，反襯眼前群芳已盛，也讓她更覺得春光易過，等不得人。'},
-    peonyrail:{label:'園中 · 芍藥',title:'芍藥臨欄，花枝與人正相近',body:'芍藥長在欄邊，低頭便可細看。花瓣柔而有層次，春香愛它熱鬧，麗娘見它正當好時節，心裡便添了一點說不明的憐惜。'},
-    dujuan:{label:'曲中 · 杜鵑',title:'「遍青山啼紅了杜鵑」',body:'杜鵑既是花色，也帶著啼聲。麗娘說一個「啼紅」，山色、鳥聲與傷春的心緒便疊在一起；眼前看見的是紅花，耳邊聽見的卻像是春將歸去。'},
-    tumi:{label:'曲中 · 荼蘼',title:'「荼蘼外煙絲醉軟」',body:'荼蘼開在春深處，花外晴絲被暖風牽得柔軟。這一句不只寫花，也寫空氣的質地：麗娘所見的春色，正在風裡慢慢鬆開。'},
-    flowers:{label:'曲中 · 群芳',title:'「原來姹紫嫣紅開遍」',body:'《遊園》以這一句總寫百花，並沒有把海棠、薔薇、蘭、菊逐一點名。裝置讓它們同在日光下顯形，是把「開遍」化成可遊可看的滿園花色。'},
-    sun:{label:'園中 · 春日',title:'曉來天氣正好，春光已到庭院',body:'麗娘清晨起身，早茶過後隨春香入園。日光落在花木與池館上，晴絲在院中輕輕搖動；她第一次看見，原來深閨之外的春天這樣明亮。'},
-    pond:{label:'園中 · 池水',title:'水邊又見一重春色',body:'柳影、花枝、亭台都落進池裡。風來，倒影被波紋揉開；風定，又一點點合起來。麗娘臨水看得久，春香卻去追萍下的魚。'},
-    fish:{label:'園中 · 魚',title:'魚尾一擺，池水便醒了',body:'魚從萍藻下穿過，只留幾圈細紋。春香追著看魚，麗娘看水光被攪碎又復原；一動一靜之間，園子的幽處也有了生氣。'},
-    rock:{label:'園中 · 湖山石',title:'石不開花，也自有春痕',body:'湖山石沉默地立在花木之間，罅隙裡卻生著苔，石根旁也沾了濕潤的青色。麗娘初次細看園子，連這些不起眼的深淺，都覺得新鮮。'},
-    wall:{label:'園中 · 園牆',title:'春色偏開到斷井頹垣旁',body:'牆垣已有些舊了，花卻照樣沿著牆根盛開。「都付與斷井頹垣」一句裡藏著惋惜：這一片好春光，長久無人認真看它。'},
-    cloudrain:{label:'園中 · 雲雨煙霞',title:'雲霞一開一合，園中便換了天光',body:'日明時，花色照眼；雲影過來，池水與亭台便沉靜一些。麗娘一路所見，不只花木，還有風聲、水氣與天色的變化。'},
-    costume:{label:'戲中 · 妝束',title:'只是去看園子，她卻梳妝得格外鄭重',body:'雲髻理好，羅衣整齊，花鈿在鏡前微微一照。今日並非赴宴見客，麗娘仍仔細收拾自己，像是隱約知道：這一回出閨，眼前會有些不同。'},
-    trees:{label:'園中 · 松桐',title:'松色沉，桐影疏',body:'松針密，顏色深；桐葉闊，風一過便簌簌作響。春香聽葉聲，麗娘看日影在石階上慢慢挪。'}
+    openingverse:{label:'園中 · 麗娘',title:'「不到園林，怎知春色如許」',body:'「原來你說的園子，是這樣。」麗娘停在門內，回頭望了一眼。書房只剩屋簷一角，花香已經到了跟前。'},
+    liyang:{label:'園中 · 麗娘',title:'她走出幾步，又回頭望門',body:'春香已到花徑上，回身喚她：「小姐，來呀。」麗娘這才跟上。'},
+    chunxiang:{label:'園中 · 春香',title:'她方才還是誤闖，此刻已走在前面',body:'春香隔幾步便回頭一次，生怕小姐忽然改了主意。等麗娘跟上，她才指著前路笑：「我沒有哄你罷？」'},
+    willow:{label:'園中 · 柳下',title:'「小姐，這柳條也會留人。」',body:'春香從枝下鑽過，衣袖卻被一縷柳絲輕輕勾住。麗娘替她摘開，自己又在樹下多站了一會兒。'},
+    willowline:{label:'園中 · 柳下',title:'風過一回，柳便換一回模樣',body:'春香數枝，麗娘看葉；才看清這一條，那一條又垂到眼前。兩人誰也沒有數完，索性隨它去了。'},
+    pavilion:{label:'園中 · 牡丹亭',title:'亭子原來藏在花木後面',body:'春香先看見一角飛簷，沿花徑又走幾步，欄與柱才相繼露出。麗娘倚上欄杆，才看見方才被花木遮住的池水。'},
+    pavilionpart:{label:'亭中',title:'「小姐，且在這裡坐坐。」',body:'亭裡涼一些。春香扶欄往外探：「小姐，從這裡連池水也看得見。」'},
+    peony:{label:'園中 · 春香與麗娘',title:'「牡丹雖好，他春歸怎占的先」',body:'春香偏說牡丹還早，麗娘便笑著反問一句。春香還要爭，轉身又去數別的花。'},
+    peonyrail:{label:'欄邊 · 芍藥',title:'花枝低得伸手便可碰到',body:'春香見花枝壓到欄邊，伸手扶住。麗娘俯身看了一會兒：「仔細些，別折著它。」'},
+    dujuan:{label:'園中 · 麗娘',title:'「遍青山啼紅了杜鵑」',body:'山坡那邊忽然一聲鳥叫。春香抬頭去找，只看見一片紅花。麗娘問：「方才那一聲，是從哪裡來的？」鳥聲又起，仍不見鳥。'},
+    tumi:{label:'園中 · 荼蘼外',title:'「荼蘼外煙絲醉軟」',body:'春香伸手去捉晴絲，才到指間便斷了。她又去追第二縷，麗娘在後面笑：「慢些，仔細撲進花裡。」'},
+    flowers:{label:'園中 · 春香與麗娘',title:'「原來姹紫嫣紅開遍」',body:'春香一路報花名，越報越快，到了後面自己也亂了。麗娘輕聲問：「這些花，年年都這樣開麼？」春香想了想：「該是年年都開。」'},
+    sun:{label:'園中 · 春日',title:'日影已經移過牆頭',body:'麗娘抬手遮了一下眼。春香走在亮處，回頭笑她：「小姐在房裡坐久了，連日頭也怕。」'},
+    pond:{label:'池邊 · 麗娘與春香',title:'「這裡還藏著一個園子。」',body:'麗娘俯身看水，亭、柳和她的臉擠在一處。春香拿指尖一點，水紋散開：「小姐不見了。」麗娘笑著去攔她的手。'},
+    fish:{label:'池邊 · 春香',title:'「小姐，魚在萍底下。」',body:'春香才指到左邊，魚尾已從右邊一閃而過。她追著水紋繞了半圈，麗娘在原處看她，終於忍不住笑。'},
+    rock:{label:'湖山石畔',title:'石縫裡還留著昨夜的濕氣',body:'春香踩著磴道先上去，又回身拉住麗娘。她摸到苔痕深處還濕著，便問：「這裡昨夜下過雨麼？」'},
+    wall:{label:'園中 · 回望',title:'麗娘在牆下停了一回',body:'牆那邊忽然傳來一聲門響。麗娘立刻回頭；等了片刻，沒有人來。春香已走出幾步，又折回來牽她。'},
+    cloudrain:{label:'園中 · 天色',title:'一片雲影從二人身上走過',body:'池水先暗，亭柱隨後暗下來，遠處的花仍亮著。春香催著往明處去，麗娘卻留在原地，看那片陰影怎樣慢慢移開。'},
+    costume:{label:'園中 · 麗娘',title:'她把衣袖往回收了一寸',body:'花枝與柳絲總來近身，步搖也被風碰得輕響。麗娘幾次整理衣襟，後來走得深了，便顧不得這些了。'},
+    trees:{label:'園中 · 松桐間',title:'「這裡的風，怎麼也有兩種聲音？」',body:'松針響得細密，桐葉卻一陣一陣。春香閉眼分辨，麗娘也停下來；兩種葉聲隔著石階，一問一答。'}
   },
   2:{
     liyang:{label:'戲中 · 尋夢',title:'她獨自回到昨日的路',body:'《尋夢》讓麗娘甩開春香，按湖山石、牡丹亭、芍藥闌逐一追認。她找的不是景，而是夢曾在現實留下的證據。'},
@@ -672,6 +685,7 @@ function updateLoreFocus(key,dt){
     if(NARRATIVE.shown!=='__wake'){ NARRATIVE.shown='__wake'; renderNarrative(card); }
     return;
   }
+  if(cur===0&&!actOneGardenOpen()){ NARRATIVE.pending=null; NARRATIVE.pendingT=0; NARRATIVE.awayT=0; return; }
   if(cur===0&&GUIDE.on&&!GUIDE.done&&!gateReady){ NARRATIVE.pending=null; NARRATIVE.pendingT=0; NARRATIVE.awayT=0; return; }
   NARRATIVE.priority=0;
   if(!key){
@@ -958,7 +972,7 @@ if(navigator.mediaDevices&&navigator.mediaDevices.addEventListener){ let micRetr
 
 /* ====== 人物游走 + 魂粒子(显现后活过来) · 游园引导(二人按戏路结伴游园) ====== */
 const WANDER={};
-const GUIDE={on:false,done:false,x:0,y:0,target:null,index:0,phase:'idle',timer:0};
+const GUIDE={on:false,done:false,x:0,y:0,target:null,index:0,phase:'idle',timer:0,threshold:1};
 const XW={on:false,p:0,hold:0,cx0:7.4,cy0:6.1};        // 寻梦行:麗娘随指针走廊(寻梦廊)
 const BR={L:false,M:false,T:false,list:[],idle:0,threadObserved:false}; // 纠缠桥:L=麗娘明/M=柳夢梅明/T=纏絲已牵成
 const ANCHOR_VERSE={                                   // 锚字点亮的应景短句(春香口吻引路)
@@ -1005,7 +1019,7 @@ const ANCHOR_NOTE={'日':LV.qshang,'柳':LV.qgong,'亭':LV.yu,'桐':LV.zhi,'松'
 const FLOATS=[];                                       // 画面内浮诗
 function pickSoulCh(name){ const pool=[...('魂夢影息'+name)]; return pool[(Math.random()*pool.length)|0]; }
 function wanderSetup(){ for(const k of Object.keys(WANDER)) delete WANDER[k];
-  GUIDE.on=false; GUIDE.done=false; GUIDE.target=null; GUIDE.index=0; GUIDE.phase='idle'; GUIDE.timer=0; FLOATS.length=0;
+  GUIDE.on=false; GUIDE.done=false; GUIDE.target=null; GUIDE.index=0; GUIDE.phase='idle'; GUIDE.timer=0; GUIDE.threshold=cur===0?1:0; FLOATS.length=0;
   XW.on=false; XW.p=0; XW.hold=0; BR.L=false; BR.M=false; BR.T=false; BR.idle=0; BR.threadObserved=false; BR.list.length=0;
   if(cur===2){ const its=items.filter(it=>it.grp==='麗娘');
     if(its.length){ XW.cx0=its.reduce((s,it)=>s+it.x,0)/its.length; XW.cy0=its.reduce((s,it)=>s+it.y,0)/its.length; } }
@@ -1031,8 +1045,12 @@ function wanderWake(k){ const w=WANDER[k]; if(!w||w.on) return; w.on=true; w.eas
   if(cur!==0) return;
   const card=actOneWakeCard();
   if(k==='春香'&&WANDER['麗娘']&&!WANDER['麗娘'].on){
-    GUIDE.phase='summon'; GUIDE.timer=0; NARRATIVE.fallbackCard=null;
-    setActPhase('春香請行'); setEventNarrative(card,2800,3); return;
+    GUIDE.phase='spring-report'; GUIDE.timer=0; NARRATIVE.fallbackCard=null;
+    setActPhase('一牆之外'); setEventNarrative(ACT_ONE_DIALOGUE.report,4300,3); return;
+  }
+  if(k==='麗娘'&&GUIDE.phase==='liyang-question'){
+    NARRATIVE.fallbackCard=null;
+    setActPhase('麗娘追問'); setEventNarrative(ACT_ONE_DIALOGUE.question,4200,3); return;
   }
   if(ws.length===2 && ws.every(v=>v.on)){
     GUIDE.on=true; GUIDE.done=false; GUIDE.index=0; GUIDE.phase='intro'; GUIDE.timer=0; GUIDE.target=null;
@@ -1064,17 +1082,31 @@ function finishGuideStop(){
   }
   GUIDE.target=null; GUIDE.phase='walking'; GUIDE.timer=0;
 }
-function guideTick(dt){                                // 固定戏路:日→柳→山→松→桐→亭→池
-  if(GUIDE.phase==='summon'){
+function guideTick(dt){                                // 先过墙入园，再按固定戏路:日→柳→山→松→桐→亭→池
+  if(GUIDE.phase==='spring-report'){
     GUIDE.timer+=dt;
-    if(GUIDE.timer>=2.8){
+    if(GUIDE.timer>=4.3){
+      GUIDE.phase='liyang-question'; GUIDE.timer=0;
       for(const it of items) if(it.grp==='麗娘') it.c=1;
       wanderWake('麗娘');
     }
     return;
   }
+  if(GUIDE.phase==='liyang-question'){
+    GUIDE.timer+=dt;
+    if(GUIDE.timer>=4.2){
+      GUIDE.on=true; GUIDE.done=false; GUIDE.index=0; GUIDE.phase='threshold'; GUIDE.timer=0; GUIDE.target=null;
+      NARRATIVE.fallbackCard=null; setActPhase('越牆入園'); setEventNarrative(ACT_ONE_DIALOGUE.crossing,4600,3);
+    }
+    return;
+  }
   if(!GUIDE.on||GUIDE.done) return;
   GUIDE.timer+=dt;
+  if(GUIDE.phase==='threshold'){
+    GUIDE.threshold=REDUCED?0:Math.max(0,1-GUIDE.timer/3.2);
+    if(GUIDE.timer<4.6) return;
+    GUIDE.threshold=0; GUIDE.timer=0; GUIDE.phase='walking'; setActPhase('二人遊園');
+  }
   if(GUIDE.phase==='intro'){
     if(GUIDE.timer<4.4) return;
     GUIDE.timer=0; GUIDE.phase='walking';
@@ -1096,6 +1128,27 @@ function guideTick(dt){                                // 固定戏路:日→柳
     if(t.c>=0.97){ t.c=1; GUIDE.phase='pause'; GUIDE.timer=0; }
   }else if(GUIDE.phase==='pause'&&GUIDE.timer>=2.6) finishGuideStop();
   GUIDE.x=Math.min(14.2,Math.max(1.8,GUIDE.x)); GUIDE.y=Math.min(7.4,Math.max(2.0,GUIDE.y));
+}
+function drawActOneThreshold(){
+  if(cur!==0||GUIDE.threshold<=0.001) return;
+  const a=GUIDE.threshold, wallX=MX(9.08), top=MY(0.68), bottom=MY(8.52), gapY=MY(4.55);
+  const gapHalf=(1-a)*scale*1.72;
+  ctx.save();
+  ctx.fillStyle=`rgba(3,8,7,${(a*0.48).toFixed(3)})`;
+  ctx.fillRect(0,0,Math.max(0,wallX-scale*0.08),H);
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.font=`${Math.max(9,(scale*T8)|0)}px ${SERIF}`;
+  const step=Math.max(14,scale*0.30);
+  for(let y=top,i=0;y<=bottom;y+=step,i++){
+    if(Math.abs(y-gapY)<gapHalf) continue;
+    const offset=i%2?scale*0.08:-scale*0.08;
+    ctx.fillStyle=`rgba(122,143,133,${(a*(i%3===0?0.42:0.29)).toFixed(3)})`;
+    ctx.fillText(i%2?'甎':'牆',wallX+offset,y);
+  }
+  ctx.strokeStyle=`rgba(151,165,153,${(a*0.18).toFixed(3)})`; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(wallX,top); ctx.lineTo(wallX,Math.max(top,gapY-gapHalf));
+  ctx.moveTo(wallX,Math.min(bottom,gapY+gapHalf)); ctx.lineTo(wallX,bottom); ctx.stroke();
+  ctx.restore();
 }
 function onAnchorLit(it){                              // 一字看真:应景短句浮起 + 此物固有之磬(一次性,_lit 闩死不重响)
   if(cur!==0) return;
@@ -1180,9 +1233,9 @@ function drawItems(dt){
     if(gFresh && !GAZE.calibrating && !trans && gGain>0.001){   // 目光=第二只观测之手:看哪亮哪(与鼠标取并);扫视不点亮,凝视/驻留才算
       const RG=BRUSH*1.05, dg=Math.hypot(hsx-GAZE.sx,hsy-GAZE.sy);   // 判定区≈手大小;视点已稳,无须再放大
       if(dg<RG){ const t2=1-dg/RG; infl=Math.max(infl, t2*t2*(3-2*t2)*gGain); } }   // 乘驻留增益:看着不动会一路推到点亮(不必钉死一个像素)
-    if(cur===0&&!actOneBothAwake()){
+    if(cur===0&&!actOneGardenOpen()){
       const springAwake=!!(WANDER['春香']&&WANDER['春香'].on);
-      if((!springAwake&&it.grp!=='春香')||springAwake) infl=0; // 先由观众唤春香；她再请小姐，园景与麗娘都不抢先显现
+      if((!springAwake&&it.grp!=='春香')||springAwake) infl=0; // 越墙前只许唤春香；问园、等隙与开门期间，园景和麗娘都不受观测
     }
     if(cur===3 && it.grp==='纏絲'){                  // 幽媾牵丝:相照之前丝不可牵;相照之后须小圈凝视沿丝而行
       if(!(BR.L&&BR.M)){ infl=0; it.c=Math.min(it.c,0.15); }
@@ -1366,7 +1419,7 @@ function frame(now){
       ctx.font=`12px ${SERIF}`; ctx.textAlign='center'; ctx.fillStyle='rgba(126,159,144,0.55)';
       ctx.fillText('氣', W/2, by-12);
     } }
-  else { const st=drawItems(dt); wanderTick(dt); drawSouls(); drawFloats(dt);
+  else { const st=drawItems(dt); drawActOneThreshold(); wanderTick(dt); drawSouls(); drawFloats(dt);
     for(const k in WANDER){
       const wakeAt=(cur===0&&k==='春香')?0.78:0.92;    // 入园不写操作说明后，春香清晰可辨即应声；其余人物仍守原阈值
       if(!WANDER[k].on && (st.g[k]||0)>wakeAt) wanderWake(k);
