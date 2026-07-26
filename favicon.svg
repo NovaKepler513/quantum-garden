@@ -1,16 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="量子游园：园字与牡丹">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="量子游园：量字正被观测显真">
+  <defs>
+    <clipPath id="settled"><rect x="27" width="37" height="64"/></clipPath>
+  </defs>
   <rect width="64" height="64" rx="15" fill="#07100e"/>
-  <rect x="4.5" y="4.5" width="55" height="55" rx="12" fill="none" stroke="#81988e" stroke-opacity=".24"/>
-  <text x="29" y="46" fill="#d7bd78" font-family="Songti SC,STSong,SimSun,serif" font-size="40" font-weight="600" text-anchor="middle">園</text>
-  <g transform="translate(48 15)">
-    <ellipse cx="0" cy="-4.7" rx="4.2" ry="6" fill="#c66858"/>
-    <ellipse cx="4.5" cy="-1.4" rx="4.2" ry="6" fill="#c66858" transform="rotate(72 4.5 -1.4)"/>
-    <ellipse cx="2.8" cy="4" rx="4.2" ry="6" fill="#c66858" transform="rotate(144 2.8 4)"/>
-    <ellipse cx="-2.8" cy="4" rx="4.2" ry="6" fill="#c66858" transform="rotate(216 -2.8 4)"/>
-    <ellipse cx="-4.5" cy="-1.4" rx="4.2" ry="6" fill="#c66858" transform="rotate(288 -4.5 -1.4)"/>
-    <circle r="3.1" fill="#e2c982"/>
-    <circle cx="-1.2" cy="-.8" r=".55" fill="#8d5a45"/>
-    <circle cx="1.25" cy="-.65" r=".55" fill="#8d5a45"/>
-    <circle cx="0" cy="1.15" r=".55" fill="#8d5a45"/>
+  <path d="M7 32h50" stroke="#81988e" stroke-opacity=".16"/>
+  <text x="31" y="48" fill="#657c72" fill-opacity=".58" font-family="Songti SC,STSong,SimSun,serif" font-size="45" font-weight="600" text-anchor="middle">量</text>
+  <text x="31" y="48" fill="#ede7d8" clip-path="url(#settled)" font-family="Songti SC,STSong,SimSun,serif" font-size="45" font-weight="600" text-anchor="middle">量</text>
+  <g transform="translate(46 18) rotate(-18)">
+    <path d="M-5.4 1.7A5.7 5.7 0 0 1 1.7-5.4" fill="none" stroke="#c66858" stroke-width="1.45" stroke-linecap="round"/>
+    <circle r="1.65" fill="#c66858"/>
   </g>
 </svg>
