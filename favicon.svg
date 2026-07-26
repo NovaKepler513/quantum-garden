@@ -1,11 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="量子游园：量字正被观测显真">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="量子游园：園字正被观测显真">
   <defs>
     <clipPath id="settled"><rect x="27" width="37" height="64"/></clipPath>
   </defs>
   <rect width="64" height="64" rx="15" fill="#07100e"/>
   <path d="M7 32h50" stroke="#81988e" stroke-opacity=".16"/>
-  <text x="31" y="48" fill="#657c72" fill-opacity=".58" font-family="Songti SC,STSong,SimSun,serif" font-size="45" font-weight="600" text-anchor="middle">量</text>
-  <text x="31" y="48" fill="#ede7d8" clip-path="url(#settled)" font-family="Songti SC,STSong,SimSun,serif" font-size="45" font-weight="600" text-anchor="middle">量</text>
+  <text x="31" y="47" fill="#657c72" fill-opacity=".58" font-family="Songti SC,STSong,SimSun,serif" font-size="42" font-weight="600" text-anchor="middle">園</text>
+  <text x="31" y="47" fill="#ede7d8" clip-path="url(#settled)" font-family="Songti SC,STSong,SimSun,serif" font-size="42" font-weight="600" text-anchor="middle">園</text>
   <g transform="translate(46 18) rotate(-18)">
     <path d="M-5.4 1.7A5.7 5.7 0 0 1 1.7-5.4" fill="none" stroke="#c66858" stroke-width="1.45" stroke-linecap="round"/>
     <circle r="1.65" fill="#c66858"/>
